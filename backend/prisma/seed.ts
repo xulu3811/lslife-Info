@@ -478,26 +478,59 @@ const categoryTreeSeed = [
 
   },
 
-  // 2. 房屋租售
+  // 2. 二手房
   {
-    id: 'cat_house',
-    name: '房屋租售',
+    id: 'cat_house_sale',
+    name: '二手房',
     icon: 'home',
-    iconUrl: '/assets/icons/3d_flat_housing.png',
+    iconUrl: '/assets/icons/3d_flat_house_sale.png',
     sortOrder: 2,
     isLeaf: false,
     isActive: true,
     children: [
       {
-        id: 'cat_house_rent',
-            iconUrl: '/assets/icons/3d_flat_house_rent.png',
-        name: '整租/合租',
+        id: 'house_sale_residential',
+        name: '普通住宅',
+        icon: '🏢',
+        iconUrl: '/assets/icons/3d_flat_house_sale.png',
         sortOrder: 1,
-        isLeaf: false,
+        isLeaf: true,
         isActive: true,
-        children: [
-          {
-            id: 'house_rent_full',
+        attributeSchema: JSON.stringify([
+          { key: 'price', label: '售价', fieldType: 'SELECT', required: true, options: ['面议', '万元'] },
+          { key: 'layout', label: '户型', fieldType: 'SELECT', required: true, options: ['1室1厅1卫', '2室1厅1卫', '3室2厅2卫', '4室及以上', '其他'] },
+          { key: 'area', label: '面积(平方米)', fieldType: 'TEXT', required: true, placeholder: '例: 120' },
+          { key: 'facilities', label: '配套', fieldType: 'MULTI_SELECT', required: false, options: ['电梯房', '满五唯一', '带车位', '精装修', '近学校'] },
+        ]),
+      },
+      {
+        id: 'house_sale_villa',
+        name: '别墅/排屋',
+        icon: '🏡',
+        iconUrl: '/assets/icons/3d_flat_house_sale.png',
+        sortOrder: 2,
+        isLeaf: true,
+        isActive: true,
+        attributeSchema: JSON.stringify([
+          { key: 'price', label: '售价(万元)', fieldType: 'TEXT', required: true, placeholder: '例: 500' },
+          { key: 'area', label: '建筑面积', fieldType: 'TEXT', required: true, placeholder: '例: 300' },
+          { key: 'facilities', label: '特色', fieldType: 'MULTI_SELECT', required: false, options: ['带院子', '带地下室', '精装修', '双车位'] },
+        ]),
+      },
+    ],
+  },
+  // 3. 租房
+  {
+    id: 'cat_house_rent',
+    name: '租房',
+    icon: 'home',
+    iconUrl: '/assets/icons/3d_flat_house_rent.png',
+    sortOrder: 3,
+    isLeaf: false,
+    isActive: true,
+    children: [
+      {
+        id: 'house_rent_full',
             name: '整套出租',
             icon: '🏠',
             iconUrl: '/assets/icons/3d_flat_house_rent.png',
@@ -540,175 +573,7 @@ const categoryTreeSeed = [
           },
         ],
       },
-      {
-        id: 'cat_house_sale',
-            iconUrl: '/assets/icons/3d_flat_house_sale.png',
-        name: '二手买卖',
-        sortOrder: 2,
-        isLeaf: false,
-        isActive: true,
-        children: [
-          {
-            id: 'house_sale_residential',
-            name: '普通住宅',
-            icon: '🏢',
-            iconUrl: '/assets/icons/3d_flat_house_sale.png',
-            sortOrder: 1,
-            isLeaf: true,
-            isActive: true,
-            attributeSchema: JSON.stringify([
-              { key: 'price', label: '售价', fieldType: 'SELECT', required: true, options: ['面议', '万元'] },
-              { key: 'layout', label: '户型', fieldType: 'SELECT', required: true, options: ['1室1厅1卫', '2室1厅1卫', '3室2厅2卫', '4室及以上', '其他'] },
-              { key: 'area', label: '面积(平方米)', fieldType: 'TEXT', required: true, placeholder: '例: 120' },
-              { key: 'facilities', label: '配套', fieldType: 'MULTI_SELECT', required: false, options: ['电梯房', '满五唯一', '带车位', '精装修', '近学校'] },
-            ]),
-          },
-          {
-            id: 'house_sale_villa',
-            name: '别墅/排屋',
-            icon: '🏡',
-            iconUrl: '/assets/icons/3d_flat_house_sale.png',
-            sortOrder: 2,
-            isLeaf: true,
-            isActive: true,
-            attributeSchema: JSON.stringify([
-              { key: 'price', label: '售价(万元)', fieldType: 'TEXT', required: true, placeholder: '例: 500' },
-              { key: 'area', label: '建筑面积', fieldType: 'TEXT', required: true, placeholder: '例: 300' },
-              { key: 'facilities', label: '特色', fieldType: 'MULTI_SELECT', required: false, options: ['带院子', '带地下室', '精装修', '双车位'] },
-            ]),
-          },
-        ]
-      },
-      {
-        id: 'cat_house_shop',
-            iconUrl: '/assets/icons/3d_flat_house_shop.png',
-        name: '商铺/办公',
-        sortOrder: 3,
-        isLeaf: false,
-        isActive: true,
-        children: [
-          {
-            id: 'house_shop_street',
-            name: '临街商铺',
-            icon: '🏪',
-            iconUrl: '/assets/icons/3d_flat_house_shop.png',
-            sortOrder: 1,
-            isLeaf: true,
-            isActive: true,
-            attributeSchema: JSON.stringify([
-              { key: 'price', label: '租金/售价', fieldType: 'SELECT', required: true, options: ['面议', '元/月', '万元'] },
-              { key: 'area', label: '面积(平方米)', fieldType: 'TEXT', required: true, placeholder: '例: 200' },
-              { key: 'facilities', label: '配套', fieldType: 'MULTI_SELECT', required: false, options: ['可明火', '外摆区', '带烟道', '独立水电'] },
-            ]),
-          },
-          {
-            id: 'house_shop_office',
-            name: '写字楼/办公',
-            icon: '💻',
-            iconUrl: '/assets/icons/3d_flat_house_shop.png',
-            sortOrder: 2,
-            isLeaf: true,
-            isActive: true,
-            attributeSchema: JSON.stringify([
-              { key: 'price', label: '租金/售价', fieldType: 'SELECT', required: true, options: ['面议', '元/月', '万元'] },
-              { key: 'area', label: '面积(平方米)', fieldType: 'TEXT', required: true, placeholder: '例: 150' },
-              { key: 'facilities', label: '配套', fieldType: 'MULTI_SELECT', required: false, options: ['中央空调', '免费车位', '拎包入住', '电梯'] },
-            ]),
-          }
-        ]
-      },
-      {
-        id: 'cat_house_factory',
-            iconUrl: '/assets/icons/3d_flat_house_factory.png',
-        name: '厂房/土地',
-        sortOrder: 4,
-        isLeaf: false,
-        isActive: true,
-        children: [
-          {
-            id: 'house_fac_factory',
-            name: '厂房',
-            icon: '🏭',
-            iconUrl: '/assets/icons/3d_flat_house_factory.png',
-            sortOrder: 1,
-            isLeaf: true,
-            isActive: true,
-            attributeSchema: JSON.stringify([
-              { key: 'price', label: '租金/售价', fieldType: 'SELECT', required: true, options: ['面议', '元/月', '万元'] },
-              { key: 'area', label: '面积(平方米)', fieldType: 'TEXT', required: true, placeholder: '例: 500' },
-              { key: 'facilities', label: '配套', fieldType: 'MULTI_SELECT', required: false, options: ['标准厂房', '三相电', '带行车', '消防验收'] },
-            ]),
-          },
-          {
-            id: 'house_fac_warehouse',
-            name: '仓库',
-            icon: '📦',
-            iconUrl: '/assets/icons/3d_flat_house_factory.png',
-            sortOrder: 2,
-            isLeaf: true,
-            isActive: true,
-            attributeSchema: JSON.stringify([
-              { key: 'price', label: '租金/售价', fieldType: 'SELECT', required: true, options: ['面议', '元/月', '万元'] },
-              { key: 'area', label: '面积(平方米)', fieldType: 'TEXT', required: true, placeholder: '例: 300' },
-              { key: 'facilities', label: '配套', fieldType: 'MULTI_SELECT', required: false, options: ['高台库', '恒温恒湿', '可进大车', '叉车服务'] },
-            ]),
-          },
-          {
-            id: 'house_fac_land',
-            name: '土地/农林',
-            icon: '🌾',
-            iconUrl: '/assets/icons/3d_flat_house_factory.png',
-            sortOrder: 3,
-            isLeaf: true,
-            isActive: true,
-            attributeSchema: JSON.stringify([
-              { key: 'price', label: '租金/售价', fieldType: 'SELECT', required: true, options: ['面议', '元/年', '万元'] },
-              { key: 'area', label: '面积(亩/平方米)', fieldType: 'TEXT', required: true, placeholder: '例: 10亩' },
-              { key: 'facilities', label: '配套', fieldType: 'MULTI_SELECT', required: false, options: ['水源充足', '交通便利', '可建温室', '年限长'] },
-            ]),
-          }
-        ]
-      },
-      {
-        id: 'cat_house_short',
-            iconUrl: '/assets/icons/3d_flat_house_short.png',
-        name: '日租/民宿',
-        sortOrder: 5,
-        isLeaf: false,
-        isActive: true,
-        children: [
-          {
-            id: 'house_short_homestay',
-            name: '旅游民宿',
-            icon: '🏖️',
-            iconUrl: '/assets/icons/3d_flat_house_short.png',
-            sortOrder: 1,
-            isLeaf: true,
-            isActive: true,
-            attributeSchema: JSON.stringify([
-              { key: 'price', label: '日租金', fieldType: 'SELECT', required: true, options: ['面议', '元/天'] },
-              { key: 'layout', label: '房型', fieldType: 'SELECT', required: true, options: ['大床房', '双床房', '家庭套房', '整栋别墅'] },
-              { key: 'facilities', label: '配套', fieldType: 'MULTI_SELECT', required: false, options: ['智能门锁', '可做饭', '可带宠物', '免费停车'] },
-            ]),
-          },
-          {
-            id: 'house_short_apt',
-            name: '短租公寓',
-            icon: '🏨',
-            iconUrl: '/assets/icons/3d_flat_house_short.png',
-            sortOrder: 2,
-            isLeaf: true,
-            isActive: true,
-            attributeSchema: JSON.stringify([
-              { key: 'price', label: '租金', fieldType: 'SELECT', required: true, options: ['面议', '元/月', '元/周'] },
-              { key: 'layout', label: '房型', fieldType: 'SELECT', required: true, options: ['单间', '1室1厅', '2室1厅'] },
-              { key: 'facilities', label: '配套', fieldType: 'MULTI_SELECT', required: false, options: ['拎包入住', '洗衣机', '空调', '宽带'] },
-            ]),
-          }
-        ]
-      },
-    ],
-  },
+
   // 3. 家政保洁
   {
     id: 'cat_service',
@@ -1463,7 +1328,7 @@ const categoryTreeSeed = [
   // 6. 招聘求职
   {
     id: 'cat_job',
-    name: '招聘求职',
+    name: '求职招聘',
     icon: 'work',
     iconUrl: '/assets/icons/3d_flat_jobs.png',
     sortOrder: 6,
@@ -1816,124 +1681,6 @@ const categoryTreeSeed = [
           }
         ]
       },
-    ],
-  },
-  // 7. 租车服务
-  {
-    id: 'cat_car_rental',
-    name: '拼车/租车',
-    icon: 'local-shipping',
-    iconUrl: '/assets/icons/3d_flat_car_rental.png',
-    sortOrder: 7,
-    isLeaf: false,
-    isActive: true,
-    children: [
-      {
-        id: 'car_carpool_person_find_car',
-        name: '人找车',
-        icon: '🙋',
-            iconUrl: '/assets/icons/3d_flat_car_carpool_person.png',
-        sortOrder: 1,
-        isLeaf: true,
-        isActive: true,
-        attributeSchema: JSON.stringify([
-          { key: 'departure', label: '出发地', fieldType: 'TEXT', required: true, placeholder: '例如: 连山县城' },
-          { key: 'destination', label: '目的地', fieldType: 'TEXT', required: true, placeholder: '例如: 清远市区' },
-          { key: 'time', label: '出发时间', fieldType: 'TEXT', required: true, placeholder: '例如: 明早8点' },
-          { key: 'people', label: '乘车人数', fieldType: 'TEXT', required: true, placeholder: '例如: 2人' },
-        ]),
-      },
-      {
-        id: 'car_carpool_car_find_person',
-        name: '车找人',
-        icon: '🚘',
-            iconUrl: '/assets/icons/3d_flat_car_suv.png',
-        sortOrder: 2,
-        isLeaf: true,
-        isActive: true,
-        attributeSchema: JSON.stringify([
-          { key: 'departure', label: '出发地', fieldType: 'TEXT', required: true, placeholder: '例如: 连山' },
-          { key: 'destination', label: '目的地', fieldType: 'TEXT', required: true, placeholder: '例如: 广州' },
-          { key: 'time', label: '出发时间', fieldType: 'TEXT', required: true, placeholder: '例如: 今晚6点' },
-          { key: 'seats', label: '空余座位', fieldType: 'TEXT', required: true, placeholder: '例如: 3座' },
-        ]),
-      },
-      {
-        id: 'car_carpool_goods',
-        name: '捎带货',
-        icon: '📦',
-            iconUrl: '/assets/icons/3d_flat_pt_errand.png',
-        sortOrder: 3,
-        isLeaf: true,
-        isActive: true,
-        attributeSchema: JSON.stringify([
-          { key: 'route', label: '起止路线', fieldType: 'TEXT', required: true, placeholder: '例如: 连山-连州' },
-          { key: 'goods', label: '货物描述', fieldType: 'TEXT', required: true, placeholder: '例如: 两个小纸箱' },
-        ]),
-      },
-      {
-        id: 'car_rental_suv',
-            iconUrl: '/assets/icons/3d_flat_car_suv.png',
-        name: '轿车 / SUV 租赁',
-        icon: '🚗',
-        sortOrder: 4,
-        isLeaf: true,
-        isActive: true,
-        attributeSchema: JSON.stringify([
-          { key: 'carType', label: '车型', fieldType: 'TEXT', required: true, placeholder: '例如: 丰田卡罗拉' },
-          { key: 'rentType', label: '租期类型', fieldType: 'SELECT', required: true, options: ['日租', '月租'] },
-        ]),
-      },
-      {
-        id: 'car_rental_wedding',
-        name: '婚车租赁',
-        icon: '🎀',
-            iconUrl: '/assets/icons/3d_flat_car_luxury.png',
-        sortOrder: 5,
-        isLeaf: true,
-        isActive: true,
-        attributeSchema: JSON.stringify([
-          { key: 'carType', label: '婚车车型', fieldType: 'TEXT', required: true, placeholder: '例如: 奔驰S级 / 宝马7系' },
-          { key: 'rentType', label: '服务包含', fieldType: 'SELECT', required: true, options: ['带司机', '自驾'] },
-        ]),
-      },
-      {
-        id: 'car_rental_bus',
-        name: '大巴商务车租赁',
-        icon: '🚌',
-            iconUrl: '/assets/icons/3d_flat_car_bus.png',
-        sortOrder: 6,
-        isLeaf: true,
-        isActive: true,
-        attributeSchema: JSON.stringify([
-          { key: 'carType', label: '车型', fieldType: 'TEXT', required: true, placeholder: '例如: 别克GL8 / 考斯特' },
-          { key: 'seats', label: '座位数', fieldType: 'TEXT', required: true, placeholder: '例如: 7座 / 20座' },
-        ]),
-      },
-      {
-        id: 'car_rental_truck',
-        name: '货车/工程车租赁',
-        icon: '🚚',
-            iconUrl: '/assets/icons/3d_flat_car_truck.png',
-        sortOrder: 7,
-        isLeaf: true,
-        isActive: true,
-        attributeSchema: JSON.stringify([
-          { key: 'carType', label: '车辆类型', fieldType: 'TEXT', required: true, placeholder: '例如: 4.2米箱货 / 挖掘机' },
-        ]),
-      }
-    ],
-  },
-  // 8. 兼职零工
-  {
-    id: 'cat_part_time',
-    name: '兼职零工',
-    icon: 'schedule',
-    iconUrl: '/assets/icons/3d_flat_parttime.png',
-    sortOrder: 8,
-    isLeaf: false,
-    isActive: true,
-    children: [
       {
         id: 'cat_pt_temp',
         name: '日结/临工',
@@ -2144,8 +1891,114 @@ const categoryTreeSeed = [
         ]
       },
     ],
-  },
 
+  },
+  // 7. 租车服务
+  {
+    id: 'cat_car_rental',
+    name: '拼车/租车',
+    icon: 'local-shipping',
+    iconUrl: '/assets/icons/3d_flat_car_rental.png',
+    sortOrder: 7,
+    isLeaf: false,
+    isActive: true,
+    children: [
+      {
+        id: 'car_carpool_person_find_car',
+        name: '人找车',
+        icon: '🙋',
+            iconUrl: '/assets/icons/3d_flat_car_carpool_person.png',
+        sortOrder: 1,
+        isLeaf: true,
+        isActive: true,
+        attributeSchema: JSON.stringify([
+          { key: 'departure', label: '出发地', fieldType: 'TEXT', required: true, placeholder: '例如: 连山县城' },
+          { key: 'destination', label: '目的地', fieldType: 'TEXT', required: true, placeholder: '例如: 清远市区' },
+          { key: 'time', label: '出发时间', fieldType: 'TEXT', required: true, placeholder: '例如: 明早8点' },
+          { key: 'people', label: '乘车人数', fieldType: 'TEXT', required: true, placeholder: '例如: 2人' },
+        ]),
+      },
+      {
+        id: 'car_carpool_car_find_person',
+        name: '车找人',
+        icon: '🚘',
+            iconUrl: '/assets/icons/3d_flat_car_suv.png',
+        sortOrder: 2,
+        isLeaf: true,
+        isActive: true,
+        attributeSchema: JSON.stringify([
+          { key: 'departure', label: '出发地', fieldType: 'TEXT', required: true, placeholder: '例如: 连山' },
+          { key: 'destination', label: '目的地', fieldType: 'TEXT', required: true, placeholder: '例如: 广州' },
+          { key: 'time', label: '出发时间', fieldType: 'TEXT', required: true, placeholder: '例如: 今晚6点' },
+          { key: 'seats', label: '空余座位', fieldType: 'TEXT', required: true, placeholder: '例如: 3座' },
+        ]),
+      },
+      {
+        id: 'car_carpool_goods',
+        name: '捎带货',
+        icon: '📦',
+            iconUrl: '/assets/icons/3d_flat_pt_errand.png',
+        sortOrder: 3,
+        isLeaf: true,
+        isActive: true,
+        attributeSchema: JSON.stringify([
+          { key: 'route', label: '起止路线', fieldType: 'TEXT', required: true, placeholder: '例如: 连山-连州' },
+          { key: 'goods', label: '货物描述', fieldType: 'TEXT', required: true, placeholder: '例如: 两个小纸箱' },
+        ]),
+      },
+      {
+        id: 'car_rental_suv',
+            iconUrl: '/assets/icons/3d_flat_car_suv.png',
+        name: '轿车 / SUV 租赁',
+        icon: '🚗',
+        sortOrder: 4,
+        isLeaf: true,
+        isActive: true,
+        attributeSchema: JSON.stringify([
+          { key: 'carType', label: '车型', fieldType: 'TEXT', required: true, placeholder: '例如: 丰田卡罗拉' },
+          { key: 'rentType', label: '租期类型', fieldType: 'SELECT', required: true, options: ['日租', '月租'] },
+        ]),
+      },
+      {
+        id: 'car_rental_wedding',
+        name: '婚车租赁',
+        icon: '🎀',
+            iconUrl: '/assets/icons/3d_flat_car_luxury.png',
+        sortOrder: 5,
+        isLeaf: true,
+        isActive: true,
+        attributeSchema: JSON.stringify([
+          { key: 'carType', label: '婚车车型', fieldType: 'TEXT', required: true, placeholder: '例如: 奔驰S级 / 宝马7系' },
+          { key: 'rentType', label: '服务包含', fieldType: 'SELECT', required: true, options: ['带司机', '自驾'] },
+        ]),
+      },
+      {
+        id: 'car_rental_bus',
+        name: '大巴商务车租赁',
+        icon: '🚌',
+            iconUrl: '/assets/icons/3d_flat_car_bus.png',
+        sortOrder: 6,
+        isLeaf: true,
+        isActive: true,
+        attributeSchema: JSON.stringify([
+          { key: 'carType', label: '车型', fieldType: 'TEXT', required: true, placeholder: '例如: 别克GL8 / 考斯特' },
+          { key: 'seats', label: '座位数', fieldType: 'TEXT', required: true, placeholder: '例如: 7座 / 20座' },
+        ]),
+      },
+      {
+        id: 'car_rental_truck',
+        name: '货车/工程车租赁',
+        icon: '🚚',
+            iconUrl: '/assets/icons/3d_flat_car_truck.png',
+        sortOrder: 7,
+        isLeaf: true,
+        isActive: true,
+        attributeSchema: JSON.stringify([
+          { key: 'carType', label: '车辆类型', fieldType: 'TEXT', required: true, placeholder: '例如: 4.2米箱货 / 挖掘机' },
+        ]),
+      }
+    ],
+  },
   // 9. 教育培训
   {
     id: 'cat_education',

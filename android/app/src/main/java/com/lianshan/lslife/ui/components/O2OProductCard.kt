@@ -17,6 +17,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -93,55 +96,69 @@ fun O2OProductCard(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Price tag and Add Button
+                // Avatar, Name, Phone, Chat
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 2.dp),
-                    verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(top = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    if (post.price != null && post.price > 0) {
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(
-                                "¥",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFFE1251B),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp,
-                                modifier = Modifier.padding(bottom = 1.dp, end = 1.dp)
-                            )
-                            Text(
-                                "%.2f".format(post.price),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = Color(0xFFE1251B),
-                                fontWeight = FontWeight.Black,
-                                fontSize = 16.sp
-                            )
-                        }
-                    } else {
-                        Text(
-                            "面议",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = Color(0xFFE1251B),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        )
-                    }
-
+                    val avatarUrl = post.user?.avatar ?: post.merchant?.logo ?: "https://api.dicebear.com/7.x/avataaars/png?seed=${post.id}"
+                    val authorName = post.user?.nickname ?: post.merchant?.name ?: "Antigravity"
+                    
+                    AsyncImage(
+                        model = avatarUrl,
+                        contentDescription = "Avatar",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = authorName,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color.Gray,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(4.dp))
+                    
+                    // Phone Button
                     Box(
                         modifier = Modifier
-                            .size(26.dp)
+                            .size(28.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFE1251B))
-                            .clickable { onAddCartClick() },
+                            .background(Color(0xFFE8F5E9))
+                            .clickable { /* TODO: Phone */ },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            Icons.Filled.Add,
-                            contentDescription = "加购物车",
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp)
+                            Icons.Filled.Phone,
+                            contentDescription = "电话",
+                            tint = Color(0xFF4CAF50),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    // Message Button
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFFEBEE))
+                            .clickable { onAddCartClick() }, // Reuse existing callback for action
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Filled.Chat,
+                            contentDescription = "私聊",
+                            tint = Color(0xFFE53935),
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }

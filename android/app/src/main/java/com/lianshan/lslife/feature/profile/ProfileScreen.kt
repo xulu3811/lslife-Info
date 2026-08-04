@@ -35,6 +35,15 @@ import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material.icons.outlined.WorkspacePremium
+import androidx.compose.material.icons.outlined.List
+import androidx.compose.material.icons.outlined.PendingActions
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.Archive
+import androidx.compose.material.icons.outlined.StarRate
+import androidx.compose.material.icons.outlined.HowToReg
+import androidx.compose.material.icons.outlined.TrendingUp
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.SupportAgent
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
@@ -159,66 +168,80 @@ fun ProfileScreen(
                 }
             }
 
-            // --- Section 1: 订单 (Orders) ---
-            SectionTitle(title = "订单", showChevron = true, onClick = { /* To full orders */ })
+            // --- Data Board ---
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.lg, vertical = Dimens.md),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                DataBoardItem(label = "收藏", count = user?.favoritesCount?.toString() ?: "-")
+                DataBoardItem(label = "足迹", count = user?.footprintsCount?.toString() ?: "-")
+                DataBoardItem(label = "关注/粉丝", count = user?.followersCount?.toString() ?: "-")
+            }
+            Spacer(modifier = Modifier.height(Dimens.md))
+
+            // --- Section 1: 我的发布 (My Posts) ---
+            SectionTitle(title = "我的发布", showChevron = true, onClick = onOpenMyPosts)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Dimens.sm, vertical = Dimens.md),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OrderGridItem(icon = Icons.Outlined.Schedule, label = "待付款", modifier = Modifier.weight(1f))
-                OrderGridItem(icon = Icons.Outlined.LocalShipping, label = "待收货", modifier = Modifier.weight(1f))
-                OrderGridItem(icon = Icons.Outlined.CheckCircleOutline, label = "已完成", modifier = Modifier.weight(1f))
-                OrderGridItem(icon = Icons.Outlined.ChatBubbleOutline, label = "评价", modifier = Modifier.weight(1f))
-                OrderGridItem(icon = Icons.Outlined.HeadsetMic, label = "售后", modifier = Modifier.weight(1f))
+                OrderGridItem(icon = Icons.Outlined.List, label = "全部发布", modifier = Modifier.weight(1f).clickable { onOpenMyPosts() })
+                OrderGridItem(icon = Icons.Outlined.PendingActions, label = "审核中", modifier = Modifier.weight(1f).clickable { onOpenMyPosts() })
+                OrderGridItem(icon = Icons.Outlined.Visibility, label = "展示中", modifier = Modifier.weight(1f).clickable { onOpenMyPosts() })
+                OrderGridItem(icon = Icons.Outlined.Archive, label = "已下架", modifier = Modifier.weight(1f).clickable { onOpenMyPosts() })
             }
 
             Spacer(modifier = Modifier.height(Dimens.md))
 
-            // --- Section 2: 钱包 (Wallet) ---
-            SectionTitle(title = "钱包")
+            // --- Section 2: 商业推广 (Commercial Promotion) ---
+            SectionTitle(title = "商业推广")
             ProfileMenuRow(
                 icon = Icons.Outlined.AccountBalanceWallet,
-                title = "余额",
+                title = "账户余额",
                 rightText = "¥%.2f".format(user?.walletBalance ?: 0.0),
                 onClick = onOpenWallet,
                 showDivider = true
             )
             ProfileMenuRow(
-                icon = Icons.Outlined.LocalActivity,
-                title = "积分",
-                rightText = "${user?.points ?: 0}分",
-                onClick = onOpenWallet,
-                showDivider = true
-            )
-            ProfileMenuRow(
                 icon = Icons.Outlined.WorkspacePremium,
-                title = "会员权益",
+                title = "超级会员",
                 rightText = tierLabel(user?.membershipTier),
                 onClick = onOpenMembership,
                 showDivider = true
             )
+            ProfileMenuRow(
+                icon = Icons.Outlined.TrendingUp,
+                title = "推广中心",
+                onClick = { /* Placeholder for promotion center */ },
+                showDivider = true
+            )
 
-            // --- Section 3: 个人与服务 (Personal Info & Services) ---
-            SectionTitle(title = "个人与服务")
-            ProfileMenuRow(
-                icon = Icons.Outlined.Place,
-                title = "收货地址",
-                onClick = onOpenAddress,
-                showDivider = true
-            )
-            ProfileMenuRow(
-                icon = Icons.Outlined.Edit,
-                title = "我的发布",
-                onClick = onOpenMyPosts,
-                showDivider = true
-            )
+            // --- Section 3: 信任与服务 (Trust & Services) ---
+            SectionTitle(title = "信任与服务")
             ProfileMenuRow(
                 icon = Icons.Outlined.VerifiedUser,
                 title = "实名认证",
                 rightText = if (user?.realNameStatus == "verified") "已完成" else "去认证",
                 onClick = onOpenRealName,
+                showDivider = true
+            )
+            ProfileMenuRow(
+                icon = Icons.Outlined.HowToReg,
+                title = "身份认证",
+                rightText = if (user?.identityType != "NORMAL") "已认证" else "去认证",
+                onClick = { /* Identity verification */ },
+                showDivider = true
+            )
+            ProfileMenuRow(
+                icon = Icons.Outlined.StarRate,
+                title = "信用评价",
+                rightText = "${user?.creditScore ?: 100}分",
+                onClick = { /* Credit score */ },
                 showDivider = false
             )
 
@@ -226,6 +249,18 @@ fun ProfileScreen(
 
             // --- Section 4: 更多 (More) ---
             SectionTitle(title = "更多")
+            ProfileMenuRow(
+                icon = Icons.Outlined.SupportAgent,
+                title = "客服中心",
+                onClick = { /* Customer service */ },
+                showDivider = true
+            )
+            ProfileMenuRow(
+                icon = Icons.Outlined.Info,
+                title = "关于我们",
+                onClick = { /* About us */ },
+                showDivider = true
+            )
             ProfileMenuRow(
                 icon = Icons.Outlined.Settings,
                 title = "设置&隐私",
@@ -330,7 +365,16 @@ private fun ProfileMenuRow(
 }
 
 private fun tierLabel(tier: String?) = when (tier) {
-    "vip" -> "超级会员"
-    "premium" -> "至尊会员"
-    else -> "普通用户"
+    "premium" -> "超级会员"
+    "vip" -> "普通会员"
+    else -> "免费用户"
+}
+
+@Composable
+private fun DataBoardItem(label: String, count: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = count, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
 }

@@ -87,15 +87,15 @@ private data class CategoryItem(
 
 private val defaultCategories = listOf(
     CategoryItem("cat_idle", "个人闲置", "shopping-bag", "/assets/icons/3d_flat_secondhand.png"),
-    CategoryItem("cat_house", "房屋租售", "home", "/assets/icons/3d_flat_housing.png"),
     CategoryItem("cat_service", "家政保洁", "cleaning-services", "/assets/icons/3d_flat_cleaning.png"),
-    CategoryItem("cat_maintenance", "水电维修", "build", "/assets/icons/3d_flat_repair.png"),
     CategoryItem("cat_veggies", "同城生鲜", "shopping-basket", "/assets/icons/3d_flat_fresh_food.png"),
-    CategoryItem("cat_job", "招聘求职", "work", "/assets/icons/3d_flat_jobs.png"),
-    CategoryItem("cat_car_rental", "拼车/租车", "local-shipping", "/assets/icons/3d_flat_car_rental.png"),
-    CategoryItem("cat_part_time", "兼职零工", "schedule", "/assets/icons/3d_flat_parttime.png"),
-    CategoryItem("cat_education", "教育培训", "school", "/assets/icons/3d_flat_education.png"),
+    CategoryItem("cat_maintenance", "水电维修", "build", "/assets/icons/3d_flat_repair.png"),
     CategoryItem("cat_dining", "餐饮娱乐", "restaurant", "/assets/icons/3d_flat_dining.png"),
+    CategoryItem("cat_house_sale", "二手房", "home", "/assets/icons/3d_flat_housing.png"),
+    CategoryItem("cat_house_rent", "租房", "home", "/assets/icons/3d_flat_house_short.png"),
+    CategoryItem("cat_job", "求职招聘", "work", "/assets/icons/3d_flat_jobs.png"),
+    CategoryItem("cat_car_rental", "拼车/租车", "local-shipping", "/assets/icons/3d_flat_car_rental.png"),
+    CategoryItem("cat_education", "教育培训", "school", "/assets/icons/3d_flat_education.png"),
 )
 
 private val sorts = listOf(
@@ -295,7 +295,7 @@ fun HomeScreen(
                     ) {
                         val commerceIds = setOf("cat_idle", "cat_veggies", "cat_service", "cat_maintenance", "cat_dining")
                         val commerceItems = displayCategories.filter { it.id in commerceIds }
-                        val infoIds = setOf("cat_house", "cat_job", "cat_part_time", "cat_car_rental", "cat_education")
+                        val infoIds = setOf("cat_house_sale", "cat_house_rent", "cat_job", "cat_car_rental", "cat_education")
                         val infoItems = displayCategories.filter { it.id in infoIds }
 
                         if (commerceItems.isNotEmpty() || infoItems.isNotEmpty()) {
@@ -370,7 +370,7 @@ fun HomeScreen(
                                             }
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Text(
-                                                    text = "同城交易",
+                                                    text = "生活服务",
                                                     fontSize = 17.sp,
                                                     fontWeight = FontWeight.ExtraBold,
                                                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,

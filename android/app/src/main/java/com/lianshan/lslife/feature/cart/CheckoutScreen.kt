@@ -80,9 +80,16 @@ fun CheckoutScreen(
         },
         bottomBar = {
             if (!state.loading && state.error == null && state.entries.isNotEmpty()) {
-                Surface(color = Color.White, shadowElevation = 8.dp) {
+                Surface(
+                    color = Color.White,
+                    shadowElevation = 8.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.md, vertical = Dimens.sm),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(horizontal = Dimens.md, vertical = Dimens.md),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End
                     ) {

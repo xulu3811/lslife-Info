@@ -197,6 +197,7 @@ fun CartScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .navigationBarsPadding()
                                 .padding(horizontal = Dimens.md, vertical = Dimens.sm),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {

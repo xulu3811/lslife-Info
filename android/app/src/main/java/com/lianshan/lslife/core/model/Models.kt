@@ -43,6 +43,11 @@ data class User(
     val realName: String? = null,
     val walletBalance: Double = 0.0,
     val points: Int = 0,
+    val followersCount: Int = 0,
+    val favoritesCount: Int = 0,
+    val footprintsCount: Int = 0,
+    val identityType: String = "NORMAL",
+    val creditScore: Int = 100
 )
 
 @Serializable

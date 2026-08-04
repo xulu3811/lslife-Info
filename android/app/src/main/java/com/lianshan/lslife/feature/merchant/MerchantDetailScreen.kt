@@ -207,7 +207,7 @@ fun MerchantDetailScreen(
             )
 
             // Floating Cart Pill
-            if (state.merchant != null) {
+            if (state.merchant != null && com.lianshan.lslife.core.config.AppConfig.ENABLE_COMMERCE_CART) {
                 AnimatedVisibility(
                     visible = true,
                     enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),

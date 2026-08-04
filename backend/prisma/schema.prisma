@@ -28,6 +28,11 @@ model User {
   idCardHandheldImage String? // 手持身份证照
   walletBalance       Float     @default(0)
   points              Int       @default(0)
+  followersCount      Int       @default(0) // 新增：我的关注/粉丝数
+  favoritesCount      Int       @default(0) // 新增：我的收藏数
+  footprintsCount     Int       @default(0) // 新增：浏览足迹数
+  identityType        String    @default("NORMAL") // 新增：身份认证类型 (NORMAL, LANDLORD, HR, etc.)
+  creditScore         Int       @default(100) // 新增：信用评价分
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 

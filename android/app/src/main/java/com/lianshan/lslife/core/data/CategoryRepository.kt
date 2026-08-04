@@ -42,19 +42,68 @@ class CategoryRepository @Inject constructor(
         res.onSuccess { tree ->
             // --- Fallback/Override to guarantee correct TradeMode even if backend is outdated ---
             val commerceIds = setOf("cat_idle", "cat_veggies", "cat_service", "cat_maintenance", "cat_dining")
-            val infoIds = setOf("cat_house", "cat_job", "cat_part_time", "cat_car_rental", "cat_education")
+            val infoIds = setOf("cat_house", "cat_house_sale", "cat_house_rent", "cat_job", "cat_part_time", "cat_car_rental", "cat_education")
             
             fun fixTradeMode(nodes: List<CategoryNode>, parentId: String?): List<CategoryNode> {
-                return nodes.map { node ->
+                val newNodes = mutableListOf<CategoryNode>()
+                for (node in nodes) {
                     val topId = parentId ?: node.id
-                    val fixedMode = when {
-                        commerceIds.contains(topId) -> com.lianshan.lslife.core.model.TradeMode.O2O_STORE
-                        infoIds.contains(topId) -> com.lianshan.lslife.core.model.TradeMode.INFO_PUBLISH
-                        else -> node.tradeMode
+                    if (parentId == null && node.id == "cat_house") {
+                        val saleChildren = node.children.filter { !it.id.contains("rent", ignoreCase = true) && !it.name.contains("租") }
+                        val rentChildren = node.children.filter { it.id.contains("rent", ignoreCase = true) || it.name.contains("租") }
+                        newNodes.add(
+                            CategoryNode(
+                                id = "cat_house_sale",
+                                name = "二手房",
+                                icon = "home",
+                                iconUrl = "/assets/icons/3d_flat_housing.png",
+                                sortOrder = 2,
+                                isLeaf = false,
+                                isActive = true,
+                                children = fixTradeMode(saleChildren, "cat_house_sale"),
+                                tradeMode = com.lianshan.lslife.core.model.TradeMode.INFO_PUBLISH
+                            )
+                        )
+                        newNodes.add(
+                            CategoryNode(
+                                id = "cat_house_rent",
+                                name = "租房",
+                                icon = "home",
+                                iconUrl = "/assets/icons/3d_flat_house_short.png",
+                                sortOrder = 3,
+                                isLeaf = false,
+                                isActive = true,
+                                children = fixTradeMode(rentChildren, "cat_house_rent"),
+                                tradeMode = com.lianshan.lslife.core.model.TradeMode.INFO_PUBLISH
+                            )
+                        )
+                    } else if (parentId == null && node.id == "cat_job") {
+                        val partTimeNode = nodes.find { it.id == "cat_part_time" }
+                        val allJobChildren = node.children.toMutableList()
+                        if (partTimeNode != null) {
+                            allJobChildren.addAll(partTimeNode.children)
+                        }
+                        newNodes.add(
+                            node.copy(
+                                name = "求职招聘",
+                                iconUrl = "/assets/icons/3d_flat_jobs.png",
+                                children = fixTradeMode(allJobChildren, "cat_job"),
+                                tradeMode = com.lianshan.lslife.core.model.TradeMode.INFO_PUBLISH
+                            )
+                        )
+                    } else if (parentId == null && node.id == "cat_part_time") {
+                        // Skip, it is merged into cat_job
+                    } else {
+                        val fixedMode = when {
+                            commerceIds.contains(topId) -> com.lianshan.lslife.core.model.TradeMode.O2O_STORE
+                            infoIds.contains(topId) -> com.lianshan.lslife.core.model.TradeMode.INFO_PUBLISH
+                            else -> node.tradeMode
+                        }
+                        val finalMode = if (topId == "cat_idle") com.lianshan.lslife.core.model.TradeMode.C2C_IDLE else fixedMode
+                        newNodes.add(node.copy(tradeMode = finalMode, children = fixTradeMode(node.children, topId)))
                     }
-                    val finalMode = if (topId == "cat_idle") com.lianshan.lslife.core.model.TradeMode.C2C_IDLE else fixedMode
-                    node.copy(tradeMode = finalMode, children = fixTradeMode(node.children, topId))
                 }
+                return newNodes
             }
             val fixedTree = fixTradeMode(tree, null)
             // ----------------------------------------------------------------------------------

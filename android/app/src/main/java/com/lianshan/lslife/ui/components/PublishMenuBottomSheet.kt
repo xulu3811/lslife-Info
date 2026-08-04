@@ -27,13 +27,13 @@ private data class PublishMenuItem(
 
 private val publishMenuItems = listOf(
     PublishMenuItem("cat_idle", "闲置物品", "shopping-bag", "/assets/icons/3d_flat_secondhand.png", Color(0xFFE52F2F)),
-    PublishMenuItem("cat_house", "房源租售", "home", "/assets/icons/3d_flat_housing.png", Color(0xFF2196F3)),
+    PublishMenuItem("cat_house_sale", "二手房源", "home", "/assets/icons/3d_flat_housing.png", Color(0xFF2196F3)),
+    PublishMenuItem("cat_house_rent", "房屋出租", "home", "/assets/icons/3d_flat_house_short.png", Color(0xFF2196F3)),
     PublishMenuItem("cat_service", "家政保洁", "cleaning-services", "/assets/icons/3d_flat_cleaning.png", Color(0xFFFF9800)),
-    PublishMenuItem("cat_maintenance", "水电维修", "build", "/assets/icons/3d_flat_repair.png", Color(0xFF607D8B)),
     PublishMenuItem("cat_veggies", "同城生鲜", "shopping-basket", "/assets/icons/3d_flat_fresh_food.png", Color(0xFF4CAF50)),
-    PublishMenuItem("cat_job", "本地招聘", "work", "/assets/icons/3d_flat_jobs.png", Color(0xFF00BCD4)),
+    PublishMenuItem("cat_job", "求职招聘", "work", "/assets/icons/3d_flat_jobs.png", Color(0xFF00BCD4)),
     PublishMenuItem("cat_car_rental", "拼车租车", "local-shipping", "/assets/icons/3d_flat_car_rental.png", Color(0xFF3F51B5)),
-    PublishMenuItem("cat_part_time", "兼职零工", "schedule", "/assets/icons/3d_flat_parttime.png", Color(0xFF9C27B0)),
+    PublishMenuItem("cat_maintenance", "水电维修", "build", "/assets/icons/3d_flat_repair.png", Color(0xFF607D8B)),
     PublishMenuItem("cat_education", "教育培训", "school", "/assets/icons/3d_flat_education.png", Color(0xFFE91E63)),
     PublishMenuItem("cat_dining", "餐饮娱乐", "restaurant", "/assets/icons/3d_flat_dining.png", Color(0xFFFF5722))
 )
@@ -69,51 +69,24 @@ fun PublishMenuBottomSheet(
                 modifier = Modifier.padding(bottom = Dimens.xl)
             )
 
-            val commerceIds = setOf("cat_idle", "cat_veggies", "cat_service", "cat_maintenance", "cat_dining")
-            val commerceItems = publishMenuItems.filter { it.id in commerceIds }
-            if (commerceItems.isNotEmpty()) {
-                Surface(
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-                    color = Color(0xFFFFF5F2),
-                    modifier = Modifier.fillMaxWidth().padding(bottom = Dimens.md)
-                ) {
-                    Column(modifier = Modifier.padding(vertical = Dimens.md)) {
-                        Column(modifier = Modifier.padding(start = Dimens.md, end = Dimens.md, bottom = Dimens.md)) {
-                            Text("📦 直接交易服务", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color(0xFFD84315))
-                            Text("支持在线担保交易、购物车与配送", style = MaterialTheme.typography.bodySmall, color = Color(0xFFE64A19))
-                        }
+            Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                color = Color(0xFFF5F6F8),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(vertical = Dimens.lg)) {
+                    val chunkedItems = publishMenuItems.chunked(5)
+                    chunkedItems.forEachIndexed { index, rowItems ->
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            commerceItems.forEach { item ->
+                            rowItems.forEach { item ->
                                 PublishMenuItemBox(item, onDismiss, onNavigateToPublish)
                             }
-                            repeat(5 - commerceItems.size) {
+                            repeat(5 - rowItems.size) {
                                 Spacer(modifier = Modifier.weight(1f))
                             }
                         }
-                    }
-                }
-            }
-
-            val infoIds = setOf("cat_house", "cat_job", "cat_part_time", "cat_car_rental", "cat_education")
-            val infoItems = publishMenuItems.filter { it.id in infoIds }
-            if (infoItems.isNotEmpty()) {
-                Surface(
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-                    color = Color(0xFFF2F8FF),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(vertical = Dimens.md)) {
-                        Column(modifier = Modifier.padding(start = Dimens.md, end = Dimens.md, bottom = Dimens.md)) {
-                            Text("📢 本地同城信息", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color(0xFF1565C0))
-                            Text("仅提供信息展示与供需对接", style = MaterialTheme.typography.bodySmall, color = Color(0xFF1976D2))
-                        }
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            infoItems.forEach { item ->
-                                PublishMenuItemBox(item, onDismiss, onNavigateToPublish)
-                            }
-                            repeat(5 - infoItems.size) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
+                        if (index < chunkedItems.size - 1) {
+                            Spacer(Modifier.height(Dimens.lg))
                         }
                     }
                 }

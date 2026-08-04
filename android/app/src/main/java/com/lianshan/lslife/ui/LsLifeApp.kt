@@ -37,6 +37,9 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.outlined.Email
+import com.lianshan.lslife.feature.chat.ChatSessionListScreen
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -93,13 +96,16 @@ private data class Tab(
     val unselectedIcon: ImageVector,
 )
 
-private val tabs = listOf(
+private val allTabs = listOf(
     Tab(Routes.HOME, R.string.nav_home, Icons.Filled.Home, Icons.Outlined.Home),
     Tab(Routes.CATEGORY, R.string.nav_category, Icons.Filled.ManageSearch, Icons.Outlined.ManageSearch),
     Tab(Routes.PUBLISH, R.string.nav_publish, Icons.Filled.AddCircle, Icons.Outlined.AddCircle),
-    Tab(Routes.CART, R.string.nav_cart, Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCart),
+    Tab(Routes.MESSAGE_LIST, R.string.nav_messages, Icons.Filled.Email, Icons.Outlined.Email),
     Tab(Routes.PROFILE, R.string.nav_profile, Icons.Filled.Person, Icons.Outlined.Person),
 )
+
+private val tabs: List<Tab>
+    get() = allTabs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -135,7 +141,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                         tabs.forEach { tab ->
                             val selected = backStackEntry?.destination?.hierarchy?.any { it.route == tab.route } == true
                             val isPublish = tab.route == Routes.PUBLISH
-                            val isCart = tab.route == Routes.CART
+                            val isMessages = tab.route == Routes.MESSAGE_LIST
                             NavigationBarItem(
                                 selected = selected,
                                 onClick = {
@@ -171,14 +177,14 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                                             )
                                         }
                                     } else {
-                                        if (isCart && cartItemCount > 0) {
+                                        if (isMessages && unreadCount > 0) {
                                             BadgedBox(
                                                 badge = {
                                                     Badge(
                                                         containerColor = androidx.compose.ui.graphics.Color(0xFFE53935),
                                                         contentColor = androidx.compose.ui.graphics.Color.White
                                                     ) {
-                                                        val text = if (cartItemCount > 99) "99+" else cartItemCount.toString()
+                                                        val text = if (unreadCount > 99) "99+" else unreadCount.toString()
                                                         Text(text)
                                                     }
                                                 }
@@ -276,6 +282,13 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
             }
             composable(Routes.ORDERS) {
                 OrderListScreen(onTrack = { navController.navigate(Routes.orderTrack(it)) })
+            }
+            composable(Routes.MESSAGE_LIST) {
+                ChatSessionListScreen(
+                    onNavigateToChat = { sessionId, targetUserId, targetName ->
+                        navController.navigate(Routes.chat(sessionId, targetUserId, targetName))
+                    }
+                )
             }
             composable(
                 route = Routes.PUBLISH,
