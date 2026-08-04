@@ -8,6 +8,7 @@ import { ok } from './lib/http.js';
 import { notFound, errorHandler } from './middleware/error.js';
 
 import authRoutes from './modules/auth.js';
+import userRoutes from './modules/users.js';
 import merchantRoutes from './modules/merchants.js';
 import cartRoutes from './modules/cart.js';
 import orderRoutes from './modules/orders.js';
@@ -65,6 +66,7 @@ export function createApp() {
   );
 
   app.use('/api/auth', authRoutes);
+  app.use('/api/users', userRoutes);
   app.use('/api/categories', categoryRoutes);
   app.use('/api/merchants', merchantRoutes);
   app.use('/api/cart', cartRoutes);

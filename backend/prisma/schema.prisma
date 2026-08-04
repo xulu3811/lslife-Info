@@ -46,6 +46,27 @@ model User {
   subscriptions  Subscription[]
   transactions   WalletTransaction[]
   ownedMerchants Merchant[]          @relation("MerchantOwner")
+  merchantCertification MerchantCertification?
+  wallet         UserWallet?
+  walletLogs     WalletLog[]
+}
+
+model MerchantCertification {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  status             String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  certType           String   @default("ENTERPRISE") // ENTERPRISE | INDIVIDUAL
+  storeName          String
+  categoryId         String
+  contactName        String
+  contactPhone       String
+  businessLicenseUrl String?
+  storePhotos        String   @default("[]") // JSON string array of URLs
+  rejectReason       String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationCode {
@@ -404,4 +425,38 @@ model SystemConfig {
   key       String   @id // e.g., "merchant_require_approval"
   value     String // e.g., "true" or "false"
   updatedAt DateTime @updatedAt
+}
+
+// ================= 虚拟货币钱包系统 =================
+model UserWallet {
+  userId        String   @id // 引用自 User.id
+  coinBalance   Int      @default(0) // 猫币余额
+  totalRecharged Float   @default(0.00) // 累计充值 (RMB)
+  version       Int      @default(0) // 乐观锁版本号
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WalletLog {
+  id            String   @id @default(cuid())
+  userId        String
+  amount        Int      // 变动数量 (正负值)
+  balanceAfter  Int      // 变动后余额快照
+  tradeType     String   // RECHARGE, REWARD, CONSUME_TOP, CONSUME_POST 等
+  relatedBizId  String?  // 关联业务 ID
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model RechargePackage {
+  id          Int      @id @default(autoincrement())
+  price       Float    // RMB 售价
+  coinsAmount Int      // 基础猫币数量
+  bonusCoins  Int      @default(0) // 赠送猫币
+  isActive    Boolean  @default(true) // 是否上架
 }

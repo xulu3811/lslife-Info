@@ -9,6 +9,25 @@ import { moderateContent } from '../services/moderation.js';
 
 const router = Router();
 
+function mapPostUser(user: any) {
+  if (!user) return null;
+  const isMerchant = !!user.merchantCertification && user.merchantCertification.status === 'APPROVED';
+  let authLabel = '普通用户';
+  if (isMerchant) authLabel = '认证商家';
+  else if (user.realNameStatus === 'verified') authLabel = '认证个人用户';
+  return {
+    id: user.id,
+    nickname: user.nickname,
+    avatar: user.avatar,
+    phone: user.phone,
+    isMerchant,
+    authLabel,
+    merchantId: isMerchant && user.ownedMerchants?.length > 0 ? user.ownedMerchants[0].id : null,
+    identityType: user.identityType
+  };
+}
+
+
 const UNLIMITED_PHONES = ['19926387658', '13828577665'];
 const MONTHLY_LIMIT: Record<string, number> = { free: 10, vip: 20, premium: 50 };
 
@@ -162,9 +181,10 @@ router.get(
   '/',
   optionalAuth,
   asyncHandler(async (req, res) => {
-    const { category, publisherType, listingType, mine, page, pageSize, q, minPrice, maxPrice, sortBy, attrFilter } = z
+    const { category, publisherId, publisherType, listingType, mine, page, pageSize, q, minPrice, maxPrice, sortBy, attrFilter } = z
       .object({
         category: z.string().optional(),
+        publisherId: z.string().optional(),
         publisherType: z.enum(['INDIVIDUAL', 'MERCHANT']).optional(),
         listingType: z.enum(['GOODS', 'SERVICE']).optional(),
         mine: z.string().optional().transform(v => v === 'true'),
@@ -247,7 +267,7 @@ router.get(
             }
           }
           if (conditions.length > 0) {
-            const rawResult = await prisma.$queryRaw<{id: string}[]>`SELECT id FROM "Post" WHERE ${Prisma.join(conditions, Prisma.sql` AND `)}`;
+            const rawResult = await prisma.$queryRaw<{id: string}[]>`SELECT id FROM "Post" WHERE ${Prisma.join(conditions, ' AND ')}`;
             where.id = { in: rawResult.map(r => r.id) };
           }
         } else {
@@ -294,7 +314,7 @@ router.get(
         skip: (page - 1) * pageSize,
         take: pageSize,
         include: {
-          user: { select: { id: true, nickname: true, avatar: true } },
+          user: { select: { id: true, nickname: true, avatar: true, phone: true, identityType: true, realNameStatus: true, merchantCertification: { select: { status: true } }, ownedMerchants: { select: { id: true }, take: 1 } } },
           merchant: { select: { name: true, logo: true, status: true } },
         },
       }),
@@ -359,8 +379,9 @@ router.get(
       page,
       pageSize,
       aggregations,
-      list: posts.map((p) => ({
+      list: posts.map((p: any) => ({
         ...p,
+        user: mapPostUser(p.user),
         images: JSON.parse(p.images) as string[],
         attributes: JSON.parse(p.attributes) as Record<string, string>,
       })),
@@ -414,7 +435,7 @@ router.get(
         orderBy: { createdAt: 'desc' },
         take: 10,
         include: {
-          user: { select: { id: true, nickname: true, avatar: true } },
+          user: { select: { id: true, nickname: true, avatar: true, phone: true, identityType: true, realNameStatus: true, merchantCertification: { select: { status: true } }, ownedMerchants: { select: { id: true }, take: 1 } } },
           merchant: { select: { name: true, logo: true, status: true } },
         },
       });
@@ -469,7 +490,7 @@ router.get(
     const post = await prisma.post.findUnique({
       where: { id: req.params.id },
       include: {
-        user: { select: { id: true, nickname: true, avatar: true, phone: true } },
+        user: { select: { id: true, nickname: true, avatar: true, phone: true, identityType: true, realNameStatus: true, merchantCertification: { select: { status: true } }, ownedMerchants: { select: { id: true }, take: 1 } } },
         merchant: { select: { name: true, logo: true, phone: true } },
       },
     });

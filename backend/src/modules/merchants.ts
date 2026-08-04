@@ -124,4 +124,73 @@ router.post(
   })
 );
 
+/** 提交商家资质认证 */
+router.post(
+  '/certify',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const userId = (req as any).user!.id;
+    const { certType, storeName, categoryId, contactName, contactPhone, businessLicenseUrl, storePhotos } = z
+      .object({
+        certType: z.enum(['ENTERPRISE', 'INDIVIDUAL']).default('ENTERPRISE'),
+        storeName: z.string().min(2),
+        categoryId: z.string().default(''),
+        contactName: z.string().min(2),
+        contactPhone: z.string().min(11),
+        businessLicenseUrl: z.string().optional(),
+        storePhotos: z.array(z.string()).default([]),
+      })
+      .parse(req.body);
+
+    const cert = await prisma.merchantCertification.upsert({
+      where: { userId },
+      update: {
+        certType,
+        storeName,
+        categoryId,
+        contactName,
+        contactPhone,
+        businessLicenseUrl,
+        storePhotos: JSON.stringify(storePhotos),
+        status: 'PENDING',
+        rejectReason: null,
+      },
+      create: {
+        userId,
+        certType,
+        storeName,
+        categoryId,
+        contactName,
+        contactPhone,
+        businessLicenseUrl,
+        storePhotos: JSON.stringify(storePhotos),
+        status: 'PENDING',
+      },
+    });
+
+    return ok(res, cert, '认证资质已提交审核');
+  })
+);
+
+/** 获取当前用户的商家认证状态 */
+router.get(
+  '/certify/status',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const userId = (req as any).user!.id;
+    const cert = await prisma.merchantCertification.findUnique({
+      where: { userId },
+    });
+
+    if (!cert) {
+      return ok(res, null, '未提交认证');
+    }
+
+    return ok(res, {
+      ...cert,
+      storePhotos: JSON.parse(cert.storePhotos),
+    });
+  })
+);
+
 export default router;
