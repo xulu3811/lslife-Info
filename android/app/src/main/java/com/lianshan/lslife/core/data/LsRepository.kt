@@ -68,8 +68,6 @@ class LsRepository @Inject constructor(
     suspend fun mockConfirm(orderNo: String) = safeCall { api.mockConfirm(MockConfirmRequest(orderNo)) }
     suspend fun recharge(amount: Double, type: String = "cash", channel: String = "mock") = safeCall { api.recharge(RechargeRequest(amount, type, channel)) }
 
-    // 钱包
-    suspend fun walletInfo(page: Int = 1, limit: Int = 20) = safeCall { api.walletInfo(page, limit) }
 
     // 地址
     suspend fun addresses() = safeCall { api.addresses() }
@@ -83,6 +81,7 @@ class LsRepository @Inject constructor(
         category: String? = null,
         publisherType: String? = null,
         listingType: String? = null,
+        publisherId: String? = null,
         mine: Boolean? = null,
         q: String? = null,
         minPrice: Double? = null,
@@ -93,12 +92,13 @@ class LsRepository @Inject constructor(
         pageSize: Int = 20
     ) = safeCall { 
         val attrJson = attrFilter?.takeIf { it.isNotEmpty() }?.let { map ->
-            buildJsonObject {
-                map.forEach { (k, v) -> put(k, v) }
+            kotlinx.serialization.json.buildJsonObject {
+                map.forEach { (k, v) -> put(k, kotlinx.serialization.json.JsonPrimitive(v)) }
             }.toString()
         }
-        api.posts(category, publisherType, listingType, mine, q, minPrice, maxPrice, sortBy, attrJson, page, pageSize) 
+        api.posts(category, publisherType, listingType, publisherId, mine, q, minPrice, maxPrice, sortBy, attrJson, page, pageSize) 
     }
+
     suspend fun quota() = safeCall { api.quota() }
     suspend fun getDiscoverPosts(categoryId: String?) = safeCall { api.getDiscoverPosts(categoryId) }
     suspend fun post(id: String) = safeCall { api.post(id) }
@@ -131,6 +131,12 @@ class LsRepository @Inject constructor(
     suspend fun uploadImage(part: okhttp3.MultipartBody.Part) = safeCall { api.uploadImage(part) }
     suspend fun uploadImagesBatch(parts: List<okhttp3.MultipartBody.Part>) = safeCall { api.uploadImagesBatch(parts) }
     suspend fun uploadAudio(part: okhttp3.MultipartBody.Part) = safeCall { api.uploadAudio(part) }
+
+    // 商家认证
+    suspend fun getMerchantCertifyStatus(): Result<MerchantCertification?> = safeCall { api.merchantCertifyStatus() }
+    suspend fun submitMerchantCertification(req: MerchantCertifyRequest) = safeCall { api.submitMerchantCertification(req) }
+    
+    suspend fun getUserPublicProfile(userId: String): Result<PublicUserResponse> = safeCall { api.getUserPublicProfile(userId) }
 }
 
 private fun Merchant.toEntity() = MerchantEntity(

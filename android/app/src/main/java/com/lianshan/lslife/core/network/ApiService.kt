@@ -92,10 +92,22 @@ interface ApiService {
 
     // 钱包
     @GET("wallet/info")
-    suspend fun walletInfo(
+    suspend fun getWalletInfo(): ApiEnvelope<UserWalletResponse>
+
+    @GET("wallet/logs")
+    suspend fun getWalletLogs(
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20,
-    ): ApiEnvelope<WalletInfoResponse>
+    ): ApiEnvelope<WalletLogPage>
+
+    @GET("wallet/packages")
+    suspend fun getRechargePackages(): ApiEnvelope<List<RechargePackage>>
+
+    @POST("wallet/consume")
+    suspend fun consumeCoins(@Body body: ConsumeRequest): ApiEnvelope<Any>
+
+    @POST("wallet/recharge")
+    suspend fun rechargeWallet(@Body body: Map<String, Int>): ApiEnvelope<Any>
 
     // 收货地址
     @GET("addresses")
@@ -119,6 +131,7 @@ interface ApiService {
         @Query("category") category: String? = null,
         @Query("publisherType") publisherType: String? = null,
         @Query("listingType") listingType: String? = null,
+        @Query("publisherId") publisherId: String? = null,
         @Query("mine") mine: Boolean? = null,
         @Query("q") q: String? = null,
         @Query("minPrice") minPrice: Double? = null,
@@ -190,4 +203,14 @@ interface ApiService {
 
     @POST("chat/sessions/{id}/messages/{msgId}/recall")
     suspend fun recallMessage(@Path("id") sessionId: String, @Path("msgId") msgId: String): ApiEnvelope<kotlinx.serialization.json.JsonObject>
+
+    // 商家认证
+    @GET("merchants/certify/status")
+    suspend fun merchantCertifyStatus(): ApiEnvelope<MerchantCertification?>
+
+    @POST("merchants/certify")
+    suspend fun submitMerchantCertification(@Body body: MerchantCertifyRequest): ApiEnvelope<MerchantCertification>
+
+    @GET("users/{userId}/public")
+    suspend fun getUserPublicProfile(@Path("userId") userId: String): ApiEnvelope<PublicUserResponse>
 }

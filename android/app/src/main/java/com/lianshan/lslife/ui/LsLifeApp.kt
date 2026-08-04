@@ -337,6 +337,13 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
+                    },
+                    onPublisherClick = { publisherId, isMerchant ->
+                        if (isMerchant) {
+                            navController.navigate(Routes.merchant(publisherId))
+                        } else {
+                            navController.navigate(Routes.publicProfile(publisherId))
+                        }
                     }
                 )
             }
@@ -374,6 +381,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                     onOpenRealName = { navController.navigate(Routes.REAL_NAME_AGREEMENT) },
                     onOpenMyPosts = { navController.navigate(Routes.MY_POSTS) },
                     onOpenWallet = { navController.navigate(Routes.WALLET) },
+                    onOpenMerchantCertify = { navController.navigate(Routes.MERCHANT_CERTIFY) },
                     onLoggedOut = {
                         navController.navigate(Routes.LOGIN) { popUpTo(0) }
                     },
@@ -409,6 +417,19 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
             }
             composable(Routes.MEMBERSHIP) {
                 MembershipScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.MERCHANT_CERTIFY) {
+                com.lianshan.lslife.feature.profile.MerchantCertifyScreen(
+                    navController = navController
+                )
+            }
+            composable(Routes.PUBLIC_PROFILE) { entry ->
+                com.lianshan.lslife.feature.profile.PublicProfileScreen(
+                    userId = entry.arguments?.getString("userId") ?: "",
+                    onBack = { navController.popBackStack() },
+                    onOpenPost = { postId -> navController.navigate(Routes.postDetail(postId)) },
+                    onChatClick = { targetId, targetName -> navController.navigate(Routes.chat("draft", targetId, targetName)) }
+                )
             }
             composable(Routes.ADDRESS_LIST) { AddressScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.MESSAGE_LIST) { 

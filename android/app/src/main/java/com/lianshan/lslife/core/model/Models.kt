@@ -217,6 +217,10 @@ data class PostUser(
     val id: String? = null,
     val nickname: String? = null,
     val avatar: String? = null,
+    val isMerchant: Boolean = false,
+    val authLabel: String = "认证个人用户",
+    val merchantId: String? = null,
+    val identityType: String? = null
 )
 
 @Serializable
@@ -308,11 +312,42 @@ data class Pagination(
 )
 
 @Serializable
-data class WalletInfoResponse(
-    val balance: Double,
-    val points: Int,
-    val transactions: List<WalletTransaction> = emptyList(),
-    val pagination: Pagination,
+data class UserWalletResponse(
+    val coinBalance: Int,
+    val totalRecharged: Double
+)
+
+@Serializable
+data class WalletLog(
+    val id: String,
+    val userId: String,
+    val amount: Int,
+    val balanceAfter: Int,
+    val tradeType: String,
+    val relatedBizId: String? = null,
+    val createdAt: String
+)
+
+@Serializable
+data class WalletLogPage(
+    val items: List<WalletLog> = emptyList(),
+    val pagination: Pagination
+)
+
+@Serializable
+data class RechargePackage(
+    val id: Int,
+    val price: Double,
+    val coinsAmount: Int,
+    val bonusCoins: Int = 0,
+    val isActive: Boolean = true
+)
+
+@Serializable
+data class ConsumeRequest(
+    val amount: Int,
+    val tradeType: String,
+    val relatedBizId: String? = null
 )
 
 @Serializable

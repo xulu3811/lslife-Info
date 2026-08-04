@@ -25,6 +25,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -40,6 +42,7 @@ fun PostDetailScreen(
     onChatClick: (String, String) -> Unit, // targetUserId, targetName
     onBuyClick: (String) -> Unit, // postId
     onPhoneClick: (String) -> Unit = {}, // phone number
+    onPublisherClick: (String, Boolean) -> Unit = { _, _ -> },
     viewModel: PostDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -278,7 +281,10 @@ fun PostDetailScreen(
 
                     // Publisher Card
                     item {
-                        Surface(color = scheme.surface, modifier = Modifier.fillMaxWidth().padding(bottom = Dimens.lg)) {
+                        Surface(
+                            color = scheme.surface,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = Dimens.lg)
+                        ) {
                             Row(
                                 modifier = Modifier.padding(Dimens.lg),
                                 verticalAlignment = Alignment.CenterVertically
@@ -290,12 +296,45 @@ fun PostDetailScreen(
                                     contentScale = ContentScale.Crop
                                 )
                                 Spacer(Modifier.width(Dimens.md))
-                                Column {
+                                Column(modifier = Modifier.weight(1f)) {
                                     Text(post.user?.nickname ?: "连山用户", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                                    Text("认证个人用户", style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                                    val authLabel = post.user?.authLabel ?: "认证个人用户"
+                                    val isMerchant = post.user?.isMerchant == true || post.publisherType == "MERCHANT"
+                                    Text(
+                                        text = authLabel,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = if (isMerchant) Color(0xFFD4AF37) else scheme.onSurfaceVariant
+                                    )
                                 }
-                                Spacer(Modifier.weight(1f))
-                                Icon(Icons.Filled.ArrowBack, null, tint = Color.Transparent) // Placeholder for layout balance or 'view profile' icon
+                                
+                                val isMerchant = post.user?.isMerchant == true || post.publisherType == "MERCHANT"
+                                val actualMerchantId = post.merchantId ?: post.user?.merchantId
+                                val isMerchantClick = isMerchant && actualMerchantId != null
+                                OutlinedButton(
+                                    onClick = {
+                                        val targetId = if (isMerchantClick) actualMerchantId else post.user?.id
+                                        if (targetId != null) {
+                                            onPublisherClick(targetId, isMerchantClick)
+                                        }
+                                    },
+                                    modifier = Modifier.height(32.dp),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                                    border = BorderStroke(1.dp, scheme.primary),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Text(
+                                        text = if (isMerchant) "进店逛逛" else "TA的发布",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = scheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = scheme.primary
+                                    )
+                                }
                             }
                         }
                     }

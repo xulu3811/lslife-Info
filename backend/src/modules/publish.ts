@@ -22,8 +22,7 @@ function mapPostUser(user: any) {
     phone: user.phone,
     isMerchant,
     authLabel,
-    merchantId: isMerchant && user.ownedMerchants?.length > 0 ? user.ownedMerchants[0].id : null,
-    identityType: user.identityType
+    merchantId: isMerchant && user.ownedMerchants?.length > 0 ? user.ownedMerchants[0].id : null
   };
 }
 
@@ -314,7 +313,7 @@ router.get(
         skip: (page - 1) * pageSize,
         take: pageSize,
         include: {
-          user: { select: { id: true, nickname: true, avatar: true, phone: true, identityType: true, realNameStatus: true, merchantCertification: { select: { status: true } }, ownedMerchants: { select: { id: true }, take: 1 } } },
+          user: { select: { id: true, nickname: true, avatar: true, phone: true, realNameStatus: true, merchantCertification: { select: { status: true } }, ownedMerchants: { select: { id: true }, take: 1 } } },
           merchant: { select: { name: true, logo: true, status: true } },
         },
       }),
@@ -435,7 +434,7 @@ router.get(
         orderBy: { createdAt: 'desc' },
         take: 10,
         include: {
-          user: { select: { id: true, nickname: true, avatar: true, phone: true, identityType: true, realNameStatus: true, merchantCertification: { select: { status: true } }, ownedMerchants: { select: { id: true }, take: 1 } } },
+          user: { select: { id: true, nickname: true, avatar: true, phone: true, realNameStatus: true, merchantCertification: { select: { status: true } }, ownedMerchants: { select: { id: true }, take: 1 } } },
           merchant: { select: { name: true, logo: true, status: true } },
         },
       });
@@ -490,7 +489,7 @@ router.get(
     const post = await prisma.post.findUnique({
       where: { id: req.params.id },
       include: {
-        user: { select: { id: true, nickname: true, avatar: true, phone: true, identityType: true, realNameStatus: true, merchantCertification: { select: { status: true } }, ownedMerchants: { select: { id: true }, take: 1 } } },
+        user: { select: { id: true, nickname: true, avatar: true, phone: true, realNameStatus: true, merchantCertification: { select: { status: true } }, ownedMerchants: { select: { id: true }, take: 1 } } },
         merchant: { select: { name: true, logo: true, phone: true } },
       },
     });

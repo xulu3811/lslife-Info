@@ -114,3 +114,40 @@ data class RechargeRequest(
     val type: String = "cash",
     val channel: String = "wechat",
 )
+
+@Serializable
+data class MerchantCertifyRequest(
+    val certType: String,
+    val storeName: String,
+    val categoryId: String,
+    val contactName: String,
+    val contactPhone: String,
+    val businessLicenseUrl: String? = null,
+    val storePhotos: List<String> = emptyList()
+)
+
+@Serializable
+data class MerchantCertification(
+    val id: String,
+    val userId: String,
+    val status: String,
+    val certType: String,
+    val storeName: String,
+    val categoryId: String,
+    val contactName: String,
+    val contactPhone: String,
+    val businessLicenseUrl: String? = null,
+    val storePhotos: List<String> = emptyList(),
+    val rejectReason: String? = null
+)
+
+@Serializable
+data class PublicUserResponse(
+    val id: String,
+    val nickname: String? = null,
+    val avatar: String? = null,
+    val authLabel: String? = null,
+    val isMerchant: Boolean = false,
+    val identityType: String? = null,
+    val createdAt: String? = null
+)

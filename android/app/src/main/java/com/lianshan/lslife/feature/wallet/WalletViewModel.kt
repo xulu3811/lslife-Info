@@ -2,8 +2,7 @@ package com.lianshan.lslife.feature.wallet
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.model.WalletTransaction
+import com.lianshan.lslife.core.model.RechargePackage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,77 +13,60 @@ import javax.inject.Inject
 
 data class WalletUiState(
     val isLoading: Boolean = false,
-    val balance: Double = 0.0,
-    val points: Int = 0,
-    val transactions: List<WalletTransaction> = emptyList(),
-    val error: String? = null,
-    val isRecharging: Boolean = false,
-    val rechargeSuccess: Boolean = false
+    val coinBalance: Int = 0,
+    val packages: List<RechargePackage> = emptyList(),
+    val selectedPackageId: Int? = null,
+    val error: String? = null
 )
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    private val repository: LsRepository
+    private val walletRepository: WalletRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WalletUiState())
     val uiState: StateFlow<WalletUiState> = _uiState.asStateFlow()
 
     init {
-        loadWalletInfo()
+        loadWalletData()
     }
 
-    fun loadWalletInfo() {
+    fun loadWalletData() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            repository.walletInfo()
-                .onSuccess { info ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            balance = info.balance,
-                            points = info.points,
-                            transactions = info.transactions
-                        )
-                    }
+            try {
+                val walletInfo = walletRepository.getWalletInfo()
+                val pkgList = walletRepository.getPackages()
+
+                _uiState.update { 
+                    it.copy(
+                        isLoading = false,
+                        coinBalance = walletInfo.coinBalance,
+                        packages = pkgList,
+                        selectedPackageId = pkgList.firstOrNull()?.id // 默认选中首个套餐
+                    ) 
                 }
-                .onFailure { e ->
-                    _uiState.update {
-                        it.copy(isLoading = false, error = e.message ?: "Failed to load wallet info")
-                    }
-                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message ?: "加载失败") }
+            }
         }
     }
 
-    fun recharge(amount: Double) {
+    fun selectPackage(packageId: Int) {
+        _uiState.update { it.copy(selectedPackageId = packageId) }
+    }
+
+    fun recharge() {
+        val selectedId = _uiState.value.selectedPackageId ?: return
         viewModelScope.launch {
-            _uiState.update { it.copy(isRecharging = true, error = null, rechargeSuccess = false) }
-            repository.recharge(amount, "cash", "mock")
-                .onSuccess { result ->
-                    if (result.paid || result.paymentId != null) {
-                        // Confirm mock payment if necessary or assume success
-                        if (result.orderId != null || result.paymentId != null) {
-                            val orderNo = result.paymentId ?: "" // In our mock, paymentId might be used or orderNo returned inside prepayPayload
-                            // For simplicity, wait a moment and reload
-                            kotlinx.coroutines.delay(1000)
-                            loadWalletInfo()
-                            _uiState.update { it.copy(isRecharging = false, rechargeSuccess = true) }
-                        } else {
-                            _uiState.update { it.copy(isRecharging = false, rechargeSuccess = true) }
-                        }
-                    } else {
-                        _uiState.update { it.copy(isRecharging = false, error = "Recharge failed") }
-                    }
-                }
-                .onFailure { e ->
-                    _uiState.update {
-                        it.copy(isRecharging = false, error = e.message ?: "Failed to recharge")
-                    }
-                }
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                walletRepository.recharge(selectedId)
+                // 充值成功后重新加载钱包数据
+                loadWalletData()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message ?: "充值失败") }
+            }
         }
-    }
-
-    fun clearRechargeSuccess() {
-        _uiState.update { it.copy(rechargeSuccess = false) }
     }
 }

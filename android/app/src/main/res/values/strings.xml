@@ -7,4 +7,5 @@
     <string name="nav_profile">我的</string>
     <string name="nav_messages">消息</string>
     <string name="nav_category">分类</string>
+    <string name="virtual_coin_name">猫币</string>
 </resources>

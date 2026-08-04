@@ -291,7 +291,7 @@ fun HomeScreen(
                 item(span = StaggeredGridItemSpan.FullLine) {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(0.dp),
-                        modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+                        modifier = Modifier.padding(top = 4.dp, bottom = 0.dp)
                     ) {
                         val commerceIds = setOf("cat_idle", "cat_veggies", "cat_service", "cat_maintenance", "cat_dining")
                         val commerceItems = displayCategories.filter { it.id in commerceIds }
@@ -302,7 +302,7 @@ fun HomeScreen(
                             Surface(
                                 shape = RoundedCornerShape(16.dp),
                                 color = Color.White,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = Dimens.sm)
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 0.dp)
                             ) {
                                 Box(modifier = Modifier.fillMaxWidth()) {
                                     androidx.compose.foundation.Canvas(modifier = Modifier.matchParentSize()) {
@@ -379,7 +379,7 @@ fun HomeScreen(
                                             }
                                         }
 
-                                        Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 16.dp)) {
+                                        Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 4.dp)) {
                                             infoItems.forEach { item ->
                                                 CategoryItemView(item, state.category) { id, name -> onNavigateToCategory(id, name) }
                                             }

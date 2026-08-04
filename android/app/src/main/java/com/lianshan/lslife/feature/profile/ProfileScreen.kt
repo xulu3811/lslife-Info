@@ -81,6 +81,7 @@ fun ProfileScreen(
     onOpenRealName: () -> Unit,
     onOpenMyPosts: () -> Unit,
     onOpenWallet: () -> Unit,
+    onOpenMerchantCertify: () -> Unit,
     onLoggedOut: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -232,9 +233,18 @@ fun ProfileScreen(
             )
             ProfileMenuRow(
                 icon = Icons.Outlined.HowToReg,
-                title = "身份认证",
-                rightText = if (user?.identityType != "NORMAL") "已认证" else "去认证",
-                onClick = { /* Identity verification */ },
+                title = "商家入驻/店铺认证",
+                rightText = when (state.merchantCertStatus) {
+                    "PENDING" -> "审核中"
+                    "APPROVED" -> "已认证"
+                    "REJECTED" -> "被驳回"
+                    else -> "去认证"
+                },
+                onClick = {
+                    if (state.merchantCertStatus != "PENDING" && state.merchantCertStatus != "APPROVED") {
+                        onOpenMerchantCertify()
+                    }
+                },
                 showDivider = true
             )
             ProfileMenuRow(

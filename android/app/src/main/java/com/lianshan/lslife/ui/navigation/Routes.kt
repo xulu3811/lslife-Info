@@ -18,6 +18,8 @@ object Routes {
     const val PERSONAL_INFO = "personal_info"
     const val EDIT_PROFILE = "edit_profile"
     const val MEMBERSHIP = "membership"
+    const val MERCHANT_CERTIFY = "merchant_certify"
+    const val PUBLIC_PROFILE = "public_profile/{userId}"
     const val ADDRESS_LIST = "address_list"
     const val ADDRESS_EDIT = "address_edit?addressId={addressId}"
     const val MESSAGE_LIST = "message_list"
@@ -33,6 +35,7 @@ object Routes {
     const val CHECKOUT = "checkout?merchantId={merchantId}&sellerId={sellerId}&entryIds={entryIds}&deliveryMethod={deliveryMethod}"
 
     fun merchant(id: String) = "merchant/$id"
+    fun publicProfile(userId: String) = "public_profile/$userId"
     fun postDetail(id: String) = "post_detail/$id"
     fun orderTrack(id: String) = "order_track/$id"
     fun addressEdit(addressId: String? = null) =

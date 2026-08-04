@@ -22,6 +22,7 @@ data class ProfileUiState(
     val message: String? = null,
     val loggedOut: Boolean = false,
     val realNameSubmitting: Boolean = false,
+    val merchantCertStatus: String? = null,
 )
 
 @HiltViewModel
@@ -41,6 +42,9 @@ class ProfileViewModel @Inject constructor(
                 .onFailure { e -> _state.update { it.copy(loading = false, message = "获取用户信息失败") } }
             repo.plans().onSuccess { p -> _state.update { it.copy(plans = p) } }
             repo.notifications().onSuccess { n -> _state.update { it.copy(unread = n.unread) } }
+            repo.getMerchantCertifyStatus().onSuccess { cert -> 
+                _state.update { it.copy(merchantCertStatus = cert?.status) }
+            }
         }
     }
 
