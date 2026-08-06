@@ -42,6 +42,7 @@ model User {
   cartItems      CartItem[]
   soldCartItems  CartItem[]          @relation("CartSeller")
   posts          Post[]
+  favorites      Favorite[]
   notifications  Notification[]
   subscriptions  Subscription[]
   transactions   WalletTransaction[]
@@ -49,7 +50,9 @@ model User {
   merchantCertification MerchantCertification?
   wallet         UserWallet?
   walletLogs     WalletLog[]
+  signInRecord   UserSignInRecord?
 }
+
 
 model MerchantCertification {
   id                 String   @id @default(cuid())
@@ -307,35 +310,41 @@ model Category {
 
 // ================= 同城发布 =================
 model Post {
-  id            String   @id @default(cuid())
-  userId        String
-  publisherType String   @default("INDIVIDUAL") // INDIVIDUAL | MERCHANT
-  merchantId    String?
-  listingType   String   @default("GOODS") // GOODS | SERVICE
-  tradeMode     String   @default("INFO") // 新增：数据归属流向 (INFO / COMMERCE)
-  category      String
-  categoryId    String?
-  title         String
-  description   String
-  price         Float?
-  originalPrice Float?   // 新增：划线原价
-  contactPhone  String?  // 新增：信息直连电话
-  stock         Int      @default(0)   // 新增：真实电商库存
-  deliveryType  String   @default("SELF_PICKUP") // 新增：配送方式
-  images        String   @default("[]") // JSON 字符串数组
-  latitude      Float?
-  longitude     Float?
-  locationName  String?
-  attributes    String   @default("{}") // JSON 动态属性
-  status        String   @default("published") // pending_review | published | rejected | removed
-  reviewNote    String?
-  createdAt     DateTime @default(now())
+  id               String   @id @default(cuid())
+  userId           String
+  publisherType    String   @default("INDIVIDUAL") // INDIVIDUAL | MERCHANT
+  merchantId       String?
+  listingType      String   @default("GOODS") // GOODS | SERVICE
+  tradeMode        String   @default("INFO") // 新增：数据归属流向 (INFO / COMMERCE)
+  postType         PostType @default(COMMERCE) // 新增：意图分流
+  likeCount        Int      @default(0)
+  isSponsored      Boolean  @default(false)
+  category         String
+  categoryId       String?
+  title            String
+  description      String
+  price            Float?
+  originalPrice    Float?   // 新增：划线原价
+  contactPhone     String?  // 新增：信息直连电话
+  stock            Int      @default(0)   // 新增：真实电商库存
+  deliveryType     String   @default("SELF_PICKUP") // 新增：配送方式
+  images           String   @default("[]") // JSON 字符串数组
+  latitude         Float?
+  longitude        Float?
+  locationName     String?
+  attributes       String   @default("{}") // JSON 动态属性
+  status           String   @default("published") // pending_review | published | rejected | removed
+  reviewNote       String?
+  linkedCommerceId String?  // 新增：动态关联的商品ID (带货锚点)
+  topic            String?  // 新增：参与的同城话题 (如 #连山探店, #周末去哪儿)
+  createdAt        DateTime @default(now())
 
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   merchant    Merchant?   @relation(fields: [merchantId], references: [id], onDelete: Cascade)
   categoryRel Category?   @relation(fields: [categoryId], references: [id])
   cartItems   CartItem[]
   orderItems  OrderItem[]
+  favorites   Favorite[]
 
   @@index([userId])
   @@index([category])
@@ -459,4 +468,35 @@ model RechargePackage {
   coinsAmount Int      // 基础猫币数量
   bonusCoins  Int      @default(0) // 赠送猫币
   isActive    Boolean  @default(true) // 是否上架
+}
+
+// ================= 用户签到 =================
+model UserSignInRecord {
+  userId             String   @id // 关联 User.id
+  continuousDays     Int      @default(0) // 连续签到天数
+  lastSignInDate     DateTime? // 上次签到日期 (只存日期部分或UTC时间)
+  totalSignInDays    Int      @default(0) // 总签到天数
+  updatedAt          DateTime @updatedAt
+  
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ================= 用户收藏 =================
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+}
+
+enum PostType {
+  COMMERCE
+  MOMENT
 }

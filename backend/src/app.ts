@@ -22,6 +22,7 @@ import adminRoutes from './modules/admin.js';
 import uploadRoutes from './modules/upload.js';
 import chatRoutes from './modules/chat.js';
 import walletRoutes from './modules/wallet.js';
+import signinRoutes from './modules/signin.js';
 
 import categoryRoutes from './routes/category.js';
 
@@ -81,6 +82,7 @@ export function createApp() {
   app.use('/api/upload', uploadRoutes);
   app.use('/api/chat', chatRoutes);
   app.use('/api/wallet', walletRoutes);
+  app.use('/api/user/signin', signinRoutes);
 
   app.use(notFound);
   app.use(errorHandler);

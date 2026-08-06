@@ -1,113 +1,53 @@
 package com.lianshan.lslife.feature.category
 
+import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items as lazyItems
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.outlined.Campaign
-import androidx.compose.material.icons.outlined.Security
-import androidx.compose.material3.Badge
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedFilterChip
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.foundation.clickable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.imageLoader
-import coil.request.ImageRequest
-import com.lianshan.lslife.feature.search.AdvancedFilterBottomSheet
-import com.lianshan.lslife.ui.components.CategoryPill
-import com.lianshan.lslife.ui.components.CategoryIconView
+import com.lianshan.lslife.core.model.TradeMode
+import com.lianshan.lslife.ui.components.InfoPublishCard
+import com.lianshan.lslife.ui.components.O2OProductCard
 import com.lianshan.lslife.ui.components.EmptyState
-import com.lianshan.lslife.ui.components.ErrorBox
-import com.lianshan.lslife.ui.components.PostListCard
-import com.lianshan.lslife.ui.components.SkeletonCard
-import com.lianshan.lslife.ui.theme.Dimens
-
-private val sorts = listOf(
-    "default" to "推荐",
-    "latest" to "最新",
-    "price_asc" to "价格最低",
-    "price_desc" to "价格最高",
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryDetailScreen(
-    onBack: () -> Unit,
-    onOpenPost: (String) -> Unit,
+    categoryId: String,
     viewModel: CategoryDetailViewModel = hiltViewModel(),
+    onBack: () -> Unit,
+    onPostClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val listState = rememberLazyStaggeredGridState()
+    val gridState = rememberLazyStaggeredGridState()
+    val context = LocalContext.current
 
-    if (state.showFilterBottomSheet) {
-        AdvancedFilterBottomSheet(
-            schema = state.currentSchema,
-            categoryTree = state.categoryTree,
-            selectedCategory = if (state.selectedSubCategory == "all") state.parentCategoryId else state.selectedSubCategory,
-            publisherType = state.publisherType,
-            listingType = state.listingType,
-            minPrice = state.minPrice,
-            maxPrice = state.maxPrice,
-            attributesFilter = state.attributesFilter,
-            onPublisherTypeChange = viewModel::updatePublisherType,
-            onListingTypeChange = viewModel::updateListingType,
-            onCategoryChange = { c -> viewModel.onSubCategory(c ?: "all") },
-            onPriceChange = viewModel::updatePrice,
-            onAttributeToggle = viewModel::updateAttributeFilter,
-            onReset = viewModel::clearAttributesFilter,
-            onDismiss = { viewModel.setShowFilterBottomSheet(false) },
-            onConfirm = { viewModel.setShowFilterBottomSheet(false) }
-        )
-    }
-
-    LaunchedEffect(listState, state.loading, state.loadingMore, state.hasMore) {
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+    LaunchedEffect(gridState, state.loading, state.loadingMore, state.hasMore) {
+        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .collect { lastIndex ->
                 if (lastIndex != null) {
-                    val totalItems = listState.layoutInfo.totalItemsCount
+                    val totalItems = gridState.layoutInfo.totalItemsCount
                     if (totalItems - lastIndex <= 3 && state.hasMore && !state.loading && !state.loadingMore) {
                         viewModel.loadMore()
                     }
@@ -117,288 +57,112 @@ fun CategoryDetailScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(state.parentCategoryName, fontWeight = FontWeight.Bold, fontSize = 18.sp) },
+            CenterAlignedTopAppBar(
+                title = { Text(text = state.category?.name ?: "分类", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White
                 )
             )
-        }
-    ) { paddingValues ->
+        },
+        containerColor = Color(0xFFF5F6F8)
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(paddingValues)
+                .padding(innerPadding)
         ) {
-            val parentNode = state.categoryTree.find { it.id == state.parentCategoryId }
-            val tradeMode = parentNode?.tradeMode ?: "INFO"
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(if (tradeMode == "COMMERCE") Color(0xFFFFF8E1) else Color(0xFFE3F2FD))
-                    .padding(horizontal = Dimens.lg, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    imageVector = if (tradeMode == "COMMERCE") Icons.Outlined.Security else Icons.Outlined.Campaign,
-                    contentDescription = null,
-                    tint = if (tradeMode == "COMMERCE") Color(0xFFF57F17) else Color(0xFF1565C0),
-                    modifier = Modifier.size(14.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = if (tradeMode == "COMMERCE") "官方担保交易，支持购物车统一结算" else "自由信息对接，请自行辨别交易风险",
-                    fontSize = 11.sp,
-                    color = if (tradeMode == "COMMERCE") Color(0xFFF57F17) else Color(0xFF1565C0)
-                )
-            }
-
+            // Sub-categories capsule tags
             if (state.subCategories.isNotEmpty()) {
-                val displayCategories = remember(state.subCategories) {
-                    listOf(com.lianshan.lslife.core.model.CategoryNode(id = "all", name = "全部", icon = "all")) + state.subCategories
-                }
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(Dimens.sm),
-                    modifier = Modifier.padding(vertical = Dimens.xs)
-                ) {
-                    displayCategories.chunked(4).forEach { categoryRow ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                        ) {
-                            categoryRow.forEach { item ->
-                                val selected = state.selectedSubCategory == item.id
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable { 
-                                            viewModel.onSubCategory(item.id)
-                                        },
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(48.dp)
-                                            .background(
-                                                color = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-                                                shape = MaterialTheme.shapes.medium
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CategoryIconView(
-                                            iconUrl = item.iconUrl,
-                                            iconName = item.icon,
-                                            categoryName = item.name,
-                                            size = 36.dp,
-                                            tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(
-                                        text = item.name,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                            repeat(4 - categoryRow.size) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (state.leafCategories.isNotEmpty()) {
-                val displayLeafCategories = remember(state.leafCategories) {
-                    listOf(com.lianshan.lslife.core.model.CategoryNode(id = "all", name = "全部", icon = "all")) + state.leafCategories
-                }
                 LazyRow(
-                    contentPadding = PaddingValues(horizontal = Dimens.lg),
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = Dimens.sm)
+                        .background(Color.White)
+                        .padding(vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    lazyItems(displayLeafCategories) { item ->
-                        val selected = state.selectedLeafCategory == item.id
-                        FilterChip(
-                            selected = selected,
-                            onClick = { viewModel.onLeafCategory(item.id) },
-                            label = { Text(item.name) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    val displaySubs = listOf(com.lianshan.lslife.core.model.CategoryNode(id = "all", name = "全部", icon = "all")) + state.subCategories
+                    items(displaySubs) { subCat ->
+                        val selected = state.selectedSubCategory == subCat.id
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = if (selected) Color(0xFFE8F5E9) else Color(0xFFF0F0F0),
+                            modifier = Modifier.clickable { viewModel.onSubCategory(subCat.id) }
+                        ) {
+                            Text(
+                                text = subCat.name,
+                                fontSize = 13.sp,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (selected) Color(0xFF4CAF50) else Color.DarkGray,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                             )
-                        )
+                        }
                     }
                 }
             }
 
-            Surface(
-                color = MaterialTheme.colorScheme.background,
-                modifier = Modifier.fillMaxWidth(),
+            PullToRefreshBox(
+                isRefreshing = state.refreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.fillMaxSize()
             ) {
-                Column {
-                    Row(
-                        modifier = Modifier.padding(horizontal = Dimens.lg),
-                        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
-                    ) {
-                        sorts.forEach { (id, name) ->
-                            CategoryPill(
-                                label = name,
-                                selected = state.sort == id,
-                                onClick = { viewModel.onSort(id) },
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        val activeFiltersCount = state.attributesFilter.size + 
-                            (if (state.minPrice != null || state.maxPrice != null) 1 else 0) +
-                            (if (state.publisherType != null) 1 else 0) +
-                            (if (state.listingType != null) 1 else 0)
-                        ElevatedFilterChip(
-                            selected = activeFiltersCount > 0,
-                            onClick = { viewModel.setShowFilterBottomSheet(true) },
-                            label = { 
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("筛选")
-                                    if (activeFiltersCount > 0) {
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Badge(containerColor = MaterialTheme.colorScheme.primary) {
-                                            Text(activeFiltersCount.toString(), color = MaterialTheme.colorScheme.onPrimary)
-                                        }
-                                    }
-                                }
-                            },
-                            leadingIcon = {
-                                Icon(Icons.Filled.FilterList, contentDescription = "筛选", modifier = Modifier.size(16.dp))
-                            },
-                            colors = FilterChipDefaults.elevatedFilterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        )
-                    }
-                    Spacer(Modifier.height(Dimens.sm))
-                }
-            }
-
-            when {
-                state.loading && state.posts.isEmpty() -> {
-                    LazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Fixed(2),
-                        contentPadding = PaddingValues(horizontal = Dimens.lg, vertical = Dimens.md),
-                        horizontalArrangement = Arrangement.spacedBy(Dimens.listGap),
-                        verticalItemSpacing = Dimens.listGap,
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-                        items(6) {
-                            SkeletonCard()
-                        }
-                    }
-                }
-                state.error != null && state.posts.isEmpty() -> {
-                    ErrorBox(state.error!!, onRetry = { viewModel.load() })
-                }
-                else -> {
-                    val currentContext = androidx.compose.ui.platform.LocalContext.current
-                    LaunchedEffect(listState.firstVisibleItemIndex) {
-                        val visibleIndices = listState.layoutInfo.visibleItemsInfo.map { it.index }
-                        val maxVisible = visibleIndices.maxOrNull() ?: 0
-                        val toLoad = state.posts.drop(maxVisible + 1).take(7)
-                        for (post in toLoad) {
-                            val imgUrl = post.images.firstOrNull()
-                            if (imgUrl != null) {
-                                val req = ImageRequest.Builder(currentContext).data(imgUrl).build()
-                                currentContext.imageLoader.enqueue(req)
-                            }
-                        }
-                    }
-                    PullToRefreshBox(
-                        isRefreshing = state.refreshing,
-                        onRefresh = viewModel::refresh,
+                if (!state.loading && state.posts.isEmpty()) {
+                    EmptyState(
+                        title = "暂无内容",
+                        subtitle = "该分类下暂无发布内容",
                         modifier = Modifier.fillMaxSize()
-                    ) {
+                    )
+                } else {
                     LazyVerticalStaggeredGrid(
                         columns = StaggeredGridCells.Fixed(2),
-                        state = listState,
-                        contentPadding = PaddingValues(
-                            start = Dimens.lg,
-                            end = Dimens.lg,
-                            top = Dimens.sm,
-                            bottom = Dimens.xl,
-                        ),
-                        horizontalArrangement = Arrangement.spacedBy(Dimens.listGap),
-                        verticalItemSpacing = Dimens.listGap,
+                        state = gridState,
+                        contentPadding = PaddingValues(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalItemSpacing = 8.dp,
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         items(state.posts, key = { it.id }) { post ->
-                            val context = androidx.compose.ui.platform.LocalContext.current
-                            PostListCard(
-                                post = post,
-                                onClick = { onOpenPost(post.id) },
-                                onAddCartClick = {
-                                    viewModel.addToCart(
-                                        postId = post.id,
-                                        onSuccess = { android.widget.Toast.makeText(context, "已加入购物车", android.widget.Toast.LENGTH_SHORT).show() },
-                                        onError = { msg -> android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show() }
-                                    )
-                                }
-                            )
-                        }
-                        
-                        if (state.posts.isEmpty()) {
-                            item(span = StaggeredGridItemSpan.FullLine) {
-                                EmptyState(
-                                    title = "没有找到相关内容",
-                                    subtitle = "试试看其他分类吧！",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(Dimens.xxl * 6),
+                            if (post.tradeMode == TradeMode.INFO_PUBLISH || post.tradeMode == TradeMode.INFO) {
+                                InfoPublishCard(
+                                    post = post,
+                                    onClick = { onPostClick(post.id) },
+                                    onPhoneClick = { 
+                                        if (post.contactPhone.isNullOrBlank()) {
+                                            Toast.makeText(context, "发布者未留电话", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            Toast.makeText(context, "拨打电话: ${post.contactPhone}", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    onChatClick = {
+                                        Toast.makeText(context, "联系发布者私聊", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            } else {
+                                O2OProductCard(
+                                    post = post, 
+                                    onClick = { onPostClick(post.id) },
+                                    onAddCartClick = { 
+                                        Toast.makeText(context, "加入购物车功能开发中", Toast.LENGTH_SHORT).show()
+                                    }
                                 )
                             }
                         }
-
                         if (state.loadingMore) {
                             item(span = StaggeredGridItemSpan.FullLine) {
                                 Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = Dimens.md),
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                                 }
                             }
-                        } else if (!state.hasMore && state.posts.isNotEmpty()) {
-                            item(span = StaggeredGridItemSpan.FullLine) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = Dimens.lg),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        "—— 到底了 ——",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
                         }
                     }
-                }
                 }
             }
         }

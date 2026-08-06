@@ -1,5 +1,6 @@
 import java.util.Properties
 import java.io.File
+import java.util.Locale
 
 plugins {
     alias(libs.plugins.android.application)
@@ -14,8 +15,8 @@ val versionPropsFile = file("version.properties")
 val versionProps = Properties()
 
 if (!versionPropsFile.exists()) {
-    versionProps["versionCode"] = "9"
-    versionProps["versionName"] = "1.8"
+    versionProps["versionCode"] = "1"
+    versionProps["versionName"] = "0.0"
     versionProps.store(versionPropsFile.writer(), "Auto-generated Version Properties")
 } else {
     versionProps.load(versionPropsFile.reader())
@@ -26,19 +27,19 @@ val isReleaseTask = gradle.startParameter.taskNames.any {
 }
 
 if (isReleaseTask) {
-    val curCode = (versionProps["versionCode"] as? String)?.toIntOrNull() ?: 9
-    val curName = (versionProps["versionName"] as? String) ?: "1.8"
-    val parts = curName.split(".")
-    var major = parts.getOrNull(0)?.toIntOrNull() ?: 1
-    var minor = parts.getOrNull(1)?.toIntOrNull() ?: 8
+    val curCode = (versionProps["versionCode"] as? String)?.toIntOrNull() ?: 1
+    val curName = (versionProps["versionName"] as? String) ?: "2.00"
 
-    minor += 1
-    if (minor > 9) {
-        major += 1
-        minor = 0
+    var nextVersionName = curName
+    try {
+        val verDouble = curName.toDouble()
+        nextVersionName = String.format(Locale.US, "%.2f", verDouble + 0.01)
+    } catch (e: Exception) {
+        nextVersionName = "2.01"
     }
+
     val newCode = curCode + 1
-    val newName = "$major.$minor"
+    val newName = nextVersionName
 
     // Set the properties in memory for the current build
     versionProps["versionCode"] = newCode.toString()
@@ -137,7 +138,7 @@ dependencies {
 }
 
 afterEvaluate {
-    val verName = android.defaultConfig.versionName ?: "1.9"
+    val verName = android.defaultConfig.versionName ?: "0.1"
 
 
 

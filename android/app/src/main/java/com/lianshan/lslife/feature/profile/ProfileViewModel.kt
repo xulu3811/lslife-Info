@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lianshan.lslife.core.data.AuthRepository
 import com.lianshan.lslife.core.data.LsRepository
 import com.lianshan.lslife.core.model.MembershipPlan
+import com.lianshan.lslife.core.model.SignInStatusResponse
 import com.lianshan.lslife.core.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,12 +24,15 @@ data class ProfileUiState(
     val loggedOut: Boolean = false,
     val realNameSubmitting: Boolean = false,
     val merchantCertStatus: String? = null,
+    val signInStatus: SignInStatusResponse? = null,
+    val isSigningIn: Boolean = false,
 )
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val repo: LsRepository,
+    private val signInRepository: SignInRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileUiState())
@@ -44,6 +48,12 @@ class ProfileViewModel @Inject constructor(
             repo.notifications().onSuccess { n -> _state.update { it.copy(unread = n.unread) } }
             repo.getMerchantCertifyStatus().onSuccess { cert -> 
                 _state.update { it.copy(merchantCertStatus = cert?.status) }
+            }
+            try {
+                val status = signInRepository.getStatus()
+                _state.update { it.copy(signInStatus = status) }
+            } catch (e: Exception) {
+                // Ignore error
             }
         }
     }
@@ -112,5 +122,28 @@ class ProfileViewModel @Inject constructor(
             "image/jpeg".toMediaTypeOrNull(), tempFile
         )
         return okhttp3.MultipartBody.Part.createFormData("images", filename, reqFile)
+    }
+
+    fun executeSignIn() {
+        viewModelScope.launch {
+            _state.update { it.copy(isSigningIn = true) }
+            try {
+                val res = signInRepository.executeSignIn()
+                if (res.success) {
+                    _state.update { 
+                        it.copy(
+                            isSigningIn = false, 
+                            message = "签到成功！获得 ${res.rewardCoins} 猫币",
+                            signInStatus = SignInStatusResponse(true, res.currentContinuousDays),
+                            user = it.user?.copy(walletBalance = res.balanceAfter?.toDouble() ?: it.user.walletBalance)
+                        ) 
+                    }
+                } else {
+                    _state.update { it.copy(isSigningIn = false, message = "签到失败") }
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(isSigningIn = false, message = e.message ?: "签到失败") }
+            }
+        }
     }
 }

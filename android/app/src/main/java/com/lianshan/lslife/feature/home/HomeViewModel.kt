@@ -44,6 +44,10 @@ data class HomeUiState(
     val hasMore: Boolean = true,
     val loadingMore: Boolean = false,
     val refreshing: Boolean = false,
+    val momentPosts: List<Post> = emptyList(),
+    val momentPage: Int = 1,
+    val momentHasMore: Boolean = true,
+    val momentLoadingMore: Boolean = false,
 )
 
 @HiltViewModel
@@ -143,6 +147,7 @@ class HomeViewModel @Inject constructor(
     fun refresh() {
         _state.update { it.copy(refreshing = true) }
         load(showFullLoading = false, page = 1)
+        loadMoments(page = 1)
     }
 
     fun loadMore() {
@@ -158,7 +163,8 @@ class HomeViewModel @Inject constructor(
             if (showFullLoading) _state.update { it.copy(loading = true, error = null, isUgcMode = true) }
             
             if (page == 1 && showFullLoading) {
-                _state.update { it.copy(merchants = emptyList(), posts = emptyList()) }
+                _state.update { it.copy(merchants = emptyList(), posts = emptyList(), momentPosts = emptyList()) }
+                loadMoments(page = 1)
             }
 
             val catParam = if (s.category == "all" || s.category.isBlank()) null else s.category
@@ -175,6 +181,7 @@ class HomeViewModel @Inject constructor(
                 minPrice = s.minPrice,
                 maxPrice = s.maxPrice,
                 attrFilter = s.attributesFilter.takeIf { it.isNotEmpty() }?.mapValues { it.value.joinToString("||") },
+                postType = "COMMERCE", // Only fetch Commerce for the first tab
                 page = page, 
                 pageSize = 20
             )
@@ -209,6 +216,37 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             repo.upsertCart(postId = postId, quantity = 1)
             onSuccess()
+        }
+    }
+
+    fun loadMoreMoments() {
+        val s = _state.value
+        if (s.momentLoadingMore || !s.momentHasMore) return
+        _state.update { it.copy(momentLoadingMore = true) }
+        loadMoments(page = s.momentPage + 1)
+    }
+
+    private fun loadMoments(page: Int = 1) {
+        viewModelScope.launch {
+            repo.posts(
+                postType = "MOMENT",
+                page = page,
+                pageSize = 20
+            ).onSuccess { resPage ->
+                val list = resPage.list
+                _state.update {
+                    val newPosts = if (page == 1) list else it.momentPosts + list
+                    val hasMore = resPage.page * resPage.pageSize < resPage.total
+                    it.copy(
+                        momentPosts = newPosts,
+                        momentPage = page, 
+                        momentHasMore = hasMore,
+                        momentLoadingMore = false
+                    )
+                }
+            }.onFailure {
+                _state.update { it.copy(momentLoadingMore = false) }
+            }
         }
     }
 }

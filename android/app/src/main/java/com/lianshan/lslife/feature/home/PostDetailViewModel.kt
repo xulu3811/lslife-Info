@@ -47,4 +47,27 @@ class PostDetailViewModel @Inject constructor(
             onSuccess()
         }
     }
+
+    fun toggleFavorite(onResult: (String) -> Unit) {
+        val post = _state.value.post ?: return
+        viewModelScope.launch {
+            val res = repository.toggleFavorite(post.id)
+            if (res.isSuccess) {
+                val data = res.getOrNull()
+                if (data != null) {
+                    _state.update {
+                        it.copy(
+                            post = it.post?.copy(
+                                isFavorite = data.isFavorite,
+                                likeCount = data.likeCount
+                            )
+                        )
+                    }
+                    onResult(if (data.isFavorite) "已收藏" else "已取消收藏")
+                }
+            } else {
+                onResult(res.exceptionOrNull()?.message ?: "操作失败")
+            }
+        }
+    }
 }

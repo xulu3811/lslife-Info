@@ -138,6 +138,7 @@ interface ApiService {
         @Query("maxPrice") maxPrice: Double? = null,
         @Query("sortBy") sortBy: String? = null,
         @Query("attrFilter") attrFilter: String? = null,
+        @Query("postType") postType: String? = null,
         @Query("page") page: Int = 1,
         @Query("pageSize") pageSize: Int = 20,
     ): ApiEnvelope<PostPage>
@@ -150,6 +151,9 @@ interface ApiService {
 
     @GET("posts/{id}")
     suspend fun post(@Path("id") id: String): ApiEnvelope<Post>
+
+    @POST("posts/{id}/favorite")
+    suspend fun toggleFavorite(@Path("id") id: String): ApiEnvelope<FavoriteToggleResponse>
 
     @PUT("posts/{id}")
     suspend fun updatePost(@Path("id") id: String, @Body body: CreatePostRequest): ApiEnvelope<Post>
@@ -213,4 +217,11 @@ interface ApiService {
 
     @GET("users/{userId}/public")
     suspend fun getUserPublicProfile(@Path("userId") userId: String): ApiEnvelope<PublicUserResponse>
+
+    // 签到相关
+    @GET("user/signin/status")
+    suspend fun getSignInStatus(): ApiEnvelope<SignInStatusResponse>
+
+    @POST("user/signin/execute")
+    suspend fun executeSignIn(): ApiEnvelope<SignInExecuteResponse>
 }

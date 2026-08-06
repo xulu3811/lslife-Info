@@ -40,7 +40,6 @@ import kotlin.math.min
 fun MerchantDetailScreen(
     merchantId: String,
     onBack: () -> Unit,
-    onCheckedOut: (String) -> Unit,
     onChatClick: (String, String) -> Unit,
     viewModel: MerchantDetailViewModel = hiltViewModel(),
 ) {
@@ -50,7 +49,6 @@ fun MerchantDetailScreen(
     val listState = rememberLazyListState()
 
     LaunchedEffect(merchantId) { viewModel.load(merchantId) }
-    LaunchedEffect(state.checkedOutOrderId) { state.checkedOutOrderId?.let(onCheckedOut) }
     LaunchedEffect(state.message) {
         state.message?.let {
             snackbar.showSnackbar(it)
@@ -74,8 +72,7 @@ fun MerchantDetailScreen(
                     val m = state.merchant!!
                     LazyColumn(
                         state = listState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 100.dp) // padding for cart
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         item {
                             Box(modifier = Modifier.fillMaxWidth()) {
@@ -171,10 +168,7 @@ fun MerchantDetailScreen(
                         // Products
                         items(m.items, key = { it.id }) { p ->
                             ProductRow(
-                                product = p,
-                                qty = state.quantities[p.id] ?: 0,
-                                onAdd = { viewModel.changeQty(p.id, 1) },
-                                onRemove = { viewModel.changeQty(p.id, -1) },
+                                product = p
                             )
                         }
                     }
@@ -205,30 +199,12 @@ fun MerchantDetailScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = topBarColor)
             )
-
-            // Floating Cart Pill
-            if (state.merchant != null && com.lianshan.lslife.core.config.AppConfig.ENABLE_COMMERCE_CART) {
-                AnimatedVisibility(
-                    visible = true,
-                    enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-                    exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = Dimens.lg)
-                ) {
-                    FloatingCartPill(
-                        totalCount = state.totalCount,
-                        payable = state.payable,
-                        deliveryFee = state.merchant!!.deliveryFee,
-                        checkingOut = state.checkingOut,
-                        onCheckout = viewModel::checkout
-                    )
-                }
-            }
         }
     }
 }
 
 @Composable
-private fun ProductRow(product: Product, qty: Int, onAdd: () -> Unit, onRemove: () -> Unit) {
+private fun ProductRow(product: Product) {
     val scheme = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
@@ -254,108 +230,6 @@ private fun ProductRow(product: Product, qty: Int, onAdd: () -> Unit, onRemove: 
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Text("¥", style = MaterialTheme.typography.labelMedium, color = scheme.error, fontWeight = FontWeight.Bold)
                 Text("${product.price}", style = MaterialTheme.typography.titleMedium, color = scheme.error, fontWeight = FontWeight.ExtraBold)
-                Spacer(Modifier.weight(1f))
-                QuantityControl(qty, onAdd, onRemove)
-            }
-        }
-    }
-}
-
-@Composable
-private fun QuantityControl(qty: Int, onAdd: () -> Unit, onRemove: () -> Unit) {
-    val scheme = MaterialTheme.colorScheme
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        if (qty > 0) {
-            IconButton(
-                onClick = onRemove,
-                modifier = Modifier.size(28.dp).background(scheme.surfaceVariant, CircleShape),
-            ) {
-                Icon(Icons.Filled.Remove, "减", Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
-            }
-            Text(
-                text = "$qty",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = Dimens.md)
-            )
-        }
-        IconButton(
-            onClick = onAdd,
-            modifier = Modifier.size(28.dp).background(scheme.primary, CircleShape),
-        ) {
-            Icon(Icons.Filled.Add, "加", Modifier.size(16.dp), tint = scheme.onPrimary)
-        }
-    }
-}
-
-@Composable
-private fun FloatingCartPill(
-    totalCount: Int,
-    payable: Double,
-    deliveryFee: Double,
-    checkingOut: Boolean,
-    onCheckout: () -> Unit
-) {
-    val scheme = MaterialTheme.colorScheme
-    val isEnabled = totalCount > 0 && !checkingOut
-
-    Surface(
-        color = Color(0xFF1E1E1E), // Dark pill
-        shape = RoundedCornerShape(50),
-        shadowElevation = 8.dp,
-        modifier = Modifier.padding(horizontal = Dimens.md).fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier.padding(start = 16.dp, end = 6.dp, top = 6.dp, bottom = 6.dp).height(50.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Cart Icon with Badge
-            Box(modifier = Modifier.padding(end = Dimens.md)) {
-                Icon(
-                    imageVector = Icons.Filled.ShoppingCart,
-                    contentDescription = "购物车",
-                    tint = if (totalCount > 0) scheme.primary else Color.Gray,
-                    modifier = Modifier.size(28.dp)
-                )
-                if (totalCount > 0) {
-                    Badge(
-                        containerColor = scheme.error,
-                        modifier = Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-8).dp)
-                    ) {
-                        Text("$totalCount", color = scheme.onError)
-                    }
-                }
-            }
-
-            // Price Info
-            Column(modifier = Modifier.weight(1f)) {
-                if (totalCount > 0) {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text("¥", color = Color.White, style = MaterialTheme.typography.labelMedium)
-                        Text("$payable", color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    }
-                    Text("预估另需配送费 ¥$deliveryFee", color = Color.Gray, style = MaterialTheme.typography.labelSmall)
-                } else {
-                    Text("未选购商品", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-
-            // Checkout Button
-            Button(
-                onClick = onCheckout,
-                enabled = isEnabled,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = scheme.primary,
-                    disabledContainerColor = Color.DarkGray
-                ),
-                shape = RoundedCornerShape(50),
-                modifier = Modifier.fillMaxHeight().padding(vertical = 2.dp)
-            ) {
-                if (checkingOut) {
-                    CircularProgressIndicator(color = scheme.onPrimary, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                } else {
-                    Text("去结算", fontWeight = FontWeight.Bold, color = if(isEnabled) scheme.onPrimary else Color.Gray)
-                }
             }
         }
     }

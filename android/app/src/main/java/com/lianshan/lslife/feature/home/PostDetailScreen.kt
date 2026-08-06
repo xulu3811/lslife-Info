@@ -12,9 +12,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.ShoppingCartCheckout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,7 +40,6 @@ fun PostDetailScreen(
     postId: String,
     onBack: () -> Unit,
     onChatClick: (String, String) -> Unit, // targetUserId, targetName
-    onBuyClick: (String) -> Unit, // postId
     onPhoneClick: (String) -> Unit = {}, // phone number
     onPublisherClick: (String, Boolean) -> Unit = { _, _ -> },
     viewModel: PostDetailViewModel = hiltViewModel()
@@ -81,83 +80,54 @@ fun PostDetailScreen(
                         horizontalArrangement = Arrangement.spacedBy(Dimens.md),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (!com.lianshan.lslife.core.config.AppConfig.ENABLE_COMMERCE_CART || state.post?.tradeMode == com.lianshan.lslife.core.model.TradeMode.INFO_PUBLISH || state.post?.tradeMode == com.lianshan.lslife.core.model.TradeMode.INFO) {
-                            // Light Info/IM Contact Mode: 收藏, 在线私聊, 拨打电话
-                            OutlinedButton(
-                                onClick = { /* TODO: 收藏功能 */ },
-                                modifier = Modifier.height(48.dp),
-                                shape = RoundedCornerShape(24.dp)
-                            ) {
-                                Icon(Icons.Filled.FavoriteBorder, null, modifier = Modifier.size(18.dp))
-                            }
-                            Button(
-                                onClick = {
-                                    val targetId = state.post?.user?.id
-                                    if (targetId != null) {
-                                        onChatClick(targetId, state.post?.user?.nickname ?: "发布者")
-                                    }
-                                },
-                                modifier = Modifier.weight(1f).height(48.dp),
-                                shape = RoundedCornerShape(24.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5000)),
-                                contentPadding = PaddingValues(horizontal = 4.dp)
-                            ) {
-                                Icon(Icons.Filled.Chat, null, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text("私聊/联系TA", fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
-                            }
-                            Button(
-                                onClick = {
-                                    val phone = state.post?.contactPhone
-                                    if (!phone.isNullOrBlank()) {
-                                        onPhoneClick(phone)
-                                    } else {
-                                        android.widget.Toast.makeText(context, "暂无电话联系方式", android.widget.Toast.LENGTH_SHORT).show()
-                                    }
-                                },
-                                modifier = Modifier.weight(1f).height(48.dp),
-                                shape = RoundedCornerShape(24.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF07C160)),
-                                contentPadding = PaddingValues(horizontal = 4.dp)
-                            ) {
-                                Icon(Icons.Filled.Phone, null, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text("拨打电话", fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
-                            }
-                        } else {
-                            // COMMERCE BottomBar: 联系卖家, 加入购物车
-                            OutlinedButton(
-                                onClick = {
-                                    val targetId = state.post?.user?.id
-                                    if (targetId != null) {
-                                        onChatClick(targetId, state.post?.user?.nickname ?: "卖家")
-                                    }
-                                },
-                                modifier = Modifier.weight(1f).height(48.dp),
-                                shape = RoundedCornerShape(24.dp),
-                                contentPadding = PaddingValues(horizontal = 4.dp)
-                            ) {
-                                Icon(Icons.Filled.Chat, null, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text("联系卖家", fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
-                            }
-                            
-                            Button(
-                                onClick = { 
-                                    viewModel.addToCart(
-                                        onSuccess = { onBuyClick(state.post!!.id) },
-                                        onError = { msg -> android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show() }
-                                    )
-                                },
-                                modifier = Modifier.weight(1f).height(48.dp),
-                                shape = RoundedCornerShape(24.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = scheme.error),
-                                contentPadding = PaddingValues(horizontal = 4.dp)
-                            ) {
-                                Icon(Icons.Filled.ShoppingCartCheckout, null, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text("加入购物车", fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
-                            }
+                        // Light Info/IM Contact Mode: 收藏, 在线私聊, 拨打电话
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.toggleFavorite { msg ->
+                                    android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            modifier = Modifier.height(48.dp),
+                            shape = RoundedCornerShape(24.dp)
+                        ) {
+                            val isFav = state.post?.isFavorite == true
+                            val icon = if (isFav) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder
+                            val tint = if (isFav) Color.Red else scheme.onSurface
+                            Icon(icon, null, modifier = Modifier.size(18.dp), tint = tint)
+                        }
+                        Button(
+                            onClick = {
+                                val targetId = state.post?.user?.id
+                                if (targetId != null) {
+                                    onChatClick(targetId, state.post?.user?.nickname ?: "发布者")
+                                }
+                            },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5000)),
+                            contentPadding = PaddingValues(horizontal = 4.dp)
+                        ) {
+                            Icon(Icons.Filled.Chat, null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("私聊/联系TA", fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
+                        }
+                        Button(
+                            onClick = {
+                                val phone = state.post?.contactPhone
+                                if (!phone.isNullOrBlank()) {
+                                    onPhoneClick(phone)
+                                } else {
+                                    android.widget.Toast.makeText(context, "暂无电话联系方式", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF07C160)),
+                            contentPadding = PaddingValues(horizontal = 4.dp)
+                        ) {
+                            Icon(Icons.Filled.Phone, null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("拨打电话", fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
                         }
                     }
                 }

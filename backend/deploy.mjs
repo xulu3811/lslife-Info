@@ -17,16 +17,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ssh = new NodeSSH();
 
 const host = process.env.SSH_HOST || '115.191.6.95';
-const username = process.env.SSH_USER || 'lslife';
-const privateKeyPath =
-  process.env.SSH_PRIVATE_KEY || path.join(process.env.USERPROFILE || process.env.HOME || '', '.ssh', 'id_ed25519');
+const username = process.env.SSH_USER || 'root';
+const password = process.env.SSH_PASSWORD || 'Maxence2468;';
 
 async function main() {
-  console.log(`Connecting ${username}@${host} via key...`);
+  console.log(`Connecting ${username}@${host} via password...`);
   await ssh.connect({
     host,
     username,
-    privateKeyPath,
+    password,
   });
 
   const targetDir = '/home/lslife/lslife-backend';
@@ -45,7 +44,7 @@ async function main() {
   const result = await ssh.execCommand(
     [
       `cd ${targetDir}`,
-      'export PATH=$HOME/.local/nodejs/bin:$PATH',
+      'export PATH=/home/lslife/.local/nodejs/bin:/usr/local/bin:/usr/bin:$PATH',
       'npx prisma db push --accept-data-loss',
       'npx prisma generate',
       'npm run build',

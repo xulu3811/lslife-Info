@@ -88,6 +88,7 @@ class LsRepository @Inject constructor(
         maxPrice: Double? = null,
         sortBy: String? = null,
         attrFilter: Map<String, String>? = null,
+        postType: String? = null,
         page: Int = 1,
         pageSize: Int = 20
     ) = safeCall { 
@@ -96,12 +97,13 @@ class LsRepository @Inject constructor(
                 map.forEach { (k, v) -> put(k, kotlinx.serialization.json.JsonPrimitive(v)) }
             }.toString()
         }
-        api.posts(category, publisherType, listingType, publisherId, mine, q, minPrice, maxPrice, sortBy, attrJson, page, pageSize) 
+        api.posts(category, publisherType, listingType, publisherId, mine, q, minPrice, maxPrice, sortBy, attrJson, postType, page, pageSize) 
     }
 
     suspend fun quota() = safeCall { api.quota() }
     suspend fun getDiscoverPosts(categoryId: String?) = safeCall { api.getDiscoverPosts(categoryId) }
     suspend fun post(id: String) = safeCall { api.post(id) }
+    suspend fun toggleFavorite(id: String) = safeCall { api.toggleFavorite(id) }
     suspend fun updatePost(id: String, req: CreatePostRequest) = safeCall { api.updatePost(id, req) }
     suspend fun updatePostStatus(id: String, status: String) = safeCall { api.updatePostStatus(id, mapOf("status" to status)) }
     suspend fun deletePost(id: String) = safeCall { api.deletePost(id) }

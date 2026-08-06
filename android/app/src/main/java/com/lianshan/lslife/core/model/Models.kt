@@ -2,6 +2,7 @@ package com.lianshan.lslife.core.model
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -23,6 +24,12 @@ enum class TradeMode {
     // 兼容历史老数据
     INFO,
     COMMERCE
+}
+
+@Serializable
+enum class PostType {
+    COMMERCE,
+    MOMENT
 }
 
 @Serializable
@@ -192,18 +199,33 @@ data class Post(
     val deliveryType: String = "SELF_PICKUP",
     @kotlinx.serialization.SerialName("tradeMode")
     val _tradeMode: TradeMode = TradeMode.COMMERCE, // Default to COMMERCE for backward compatibility with old backend data
+    val postType: PostType = PostType.COMMERCE,
+    val likeCount: Int = 0,
+    val isSponsored: Boolean = false,
+    val isFavorite: Boolean = false,
     val images: List<String> = emptyList(),
     val status: String,
     val locationName: String? = null,
     val attributes: @Serializable(with = FlexibleJsonObjectSerializer::class) JsonObject = JsonObject(emptyMap()),
     val reviewNote: String? = null,
     val createdAt: String,
+    val linkedCommerceId: String? = null,
+    val topic: String? = null,
     val user: PostUser? = null,
     val merchant: PostMerchant? = null,
+    val linkedCommerce: LinkedCommerce? = null,
 ) {
     val tradeMode: TradeMode
         get() = com.lianshan.lslife.feature.publish.getEffectiveTradeMode(_tradeMode, category)
 }
+
+@Serializable
+data class LinkedCommerce(
+    val id: String,
+    val title: String,
+    val price: Double? = null,
+    val image: String
+)
 
 @Serializable
 data class PostMerchant(
@@ -230,6 +252,12 @@ data class PostPage(
     val pageSize: Int,
     val list: List<Post>,
     val aggregations: Map<String, Map<String, Int>> = emptyMap(),
+)
+
+@Serializable
+data class FavoriteToggleResponse(
+    val isFavorite: Boolean,
+    val likeCount: Int
 )
 
 @Serializable
@@ -426,4 +454,19 @@ object FlexibleJsonObjectSerializer : KSerializer<JsonObject> {
         }
     }
 }
+
+
+@Serializable
+data class SignInStatusResponse(
+    @SerialName("is_signed_today") val isSignedToday: Boolean,
+    @SerialName("continuous_days") val continuousDays: Int
+)
+
+@Serializable
+data class SignInExecuteResponse(
+    val success: Boolean,
+    @SerialName("reward_coins") val rewardCoins: Int,
+    @SerialName("current_continuous_days") val currentContinuousDays: Int,
+    @SerialName("balance_after") val balanceAfter: Int? = null
+)
 

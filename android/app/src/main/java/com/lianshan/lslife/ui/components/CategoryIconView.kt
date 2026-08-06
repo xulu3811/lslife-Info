@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 
 @Composable
@@ -76,7 +77,22 @@ fun CategoryIconView(
                 contentDescription = contentDescription,
                 contentScale = ContentScale.Fit,
                 colorFilter = null, // Ensure NO monochrome tint is ever applied to 3D flat colored icons
-                modifier = Modifier.size(size),
+                modifier = Modifier
+                    .size(size)
+                    .then(
+                        run {
+                            val scaleFactor = when (categoryName) {
+                                "二手房源" -> 0.85f
+                                "租房" -> 0.85f
+                                "餐饮娱乐" -> 1.45f
+                                "拼车/租车" -> 1.15f
+                                "家政保洁" -> 1.15f
+                                "水电维修" -> 1.2f
+                                else -> 1.0f
+                            }
+                            if (scaleFactor != 1.0f) Modifier.scale(scaleFactor) else Modifier
+                        }
+                    ),
                 loading = {
                     Box(modifier = Modifier.size(size), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(

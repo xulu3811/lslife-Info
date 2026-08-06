@@ -47,7 +47,7 @@ val publishCategoryConfigs = listOf(
     ),
     CategoryConfig(
         id = "cat_house_sale",
-        name = "二手房",
+        name = "二手房源",
         attr1Label = "类型",
         attr1Options = listOf("住宅", "别墅", "商铺", "厂房"),
         attr2Label = "户型",

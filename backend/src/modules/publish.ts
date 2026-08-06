@@ -97,7 +97,10 @@ router.post(
         publisherType: z.enum(['INDIVIDUAL', 'MERCHANT']).default('INDIVIDUAL'),
         merchantId: z.string().nullable().optional(),
         listingType: z.enum(['GOODS', 'SERVICE']).default('GOODS'),
+        postType: z.enum(['COMMERCE', 'MOMENT']).default('COMMERCE'),
         attributes: z.record(z.string(), z.string()).optional().default({}),
+        linkedCommerceId: z.string().nullable().optional(),
+        topic: z.string().max(30).nullable().optional(),
       })
       .parse(req.body);
 
@@ -142,6 +145,7 @@ router.post(
         publisherType: body.publisherType,
         merchantId: body.publisherType === 'MERCHANT' ? body.merchantId : null,
         listingType: body.listingType,
+        postType: body.postType,
         category: body.category,
         title,
         description: body.description.trim(),
@@ -153,6 +157,8 @@ router.post(
         attributes: JSON.stringify(body.attributes),
         status: moderation.status,
         reviewNote: moderation.note,
+        linkedCommerceId: body.linkedCommerceId ?? null,
+        topic: body.topic ?? null,
       },
     });
 
@@ -180,7 +186,7 @@ router.get(
   '/',
   optionalAuth,
   asyncHandler(async (req, res) => {
-    const { category, publisherId, publisherType, listingType, mine, page, pageSize, q, minPrice, maxPrice, sortBy, attrFilter } = z
+    const { category, publisherId, publisherType, listingType, mine, page, pageSize, q, minPrice, maxPrice, sortBy, attrFilter, postType } = z
       .object({
         category: z.string().optional(),
         publisherId: z.string().optional(),
@@ -192,8 +198,9 @@ router.get(
         q: z.string().optional(),
         minPrice: z.coerce.number().nonnegative().optional(),
         maxPrice: z.coerce.number().nonnegative().optional(),
-        sortBy: z.enum(['latest', 'price_asc', 'price_desc']).default('latest'),
+        sortBy: z.enum(['latest', 'price_asc', 'price_desc', 'recommend']).default('latest'),
         attrFilter: z.string().optional(),
+        postType: z.enum(['COMMERCE', 'MOMENT']).optional(),
       })
       .parse(req.query);
 
@@ -230,6 +237,7 @@ router.get(
     }
     if (publisherType) where.publisherType = publisherType;
     if (listingType) where.listingType = listingType;
+    if (postType) where.postType = postType;
     if (mine) {
       if (!req.userId) throw new ApiError(401, '未登录');
       where.userId = req.userId;
@@ -303,6 +311,14 @@ router.get(
       orderBy = { price: 'asc' };
     } else if (sortBy === 'price_desc') {
       orderBy = { price: 'desc' };
+    } else if (sortBy === 'recommend') {
+      // TODO: 混合推荐算法预留 (Algorithm Stub)
+      // 1. 混合权重机制：综合考虑 createdAt (40%) + 基于 LBS 经纬度的距离衰减 (40%) + likeCount (20%)
+      // 2. 强制插桩 (Sponsored Injection)：
+      //    如果拉取到的数据中 isSponsored == true，需在返回给前端的 List 中将其强制安插在特定的索引位
+      //    （例如每隔 4 位 或 10 位插入），保证广告曝光率且避免连片出现。
+      // 当前暂时以点赞数结合时间倒序代替
+      orderBy = [{ isSponsored: 'desc' }, { likeCount: 'desc' }, { createdAt: 'desc' }];
     }
 
     const [total, posts] = await Promise.all([
@@ -373,6 +389,29 @@ router.get(
       }
     }
 
+    // 注入种草闭环关联商品简略信息
+    const linkedIds = posts.map(p => p.linkedCommerceId).filter(Boolean) as string[];
+    const linkedCommerceMap = new Map<string, any>();
+    if (linkedIds.length > 0) {
+      const linkedPosts = await prisma.post.findMany({
+        where: { id: { in: linkedIds } },
+        select: { id: true, title: true, price: true, images: true }
+      });
+      linkedPosts.forEach(lp => {
+        let firstImage = '';
+        try {
+          const imgs = JSON.parse(lp.images) as string[];
+          if (imgs.length > 0) firstImage = imgs[0];
+        } catch (e) {}
+        linkedCommerceMap.set(lp.id, {
+          id: lp.id,
+          title: lp.title,
+          price: lp.price,
+          image: firstImage
+        });
+      });
+    }
+
     return ok(res, {
       total,
       page,
@@ -383,6 +422,7 @@ router.get(
         user: mapPostUser(p.user),
         images: JSON.parse(p.images) as string[],
         attributes: JSON.parse(p.attributes) as Record<string, string>,
+        linkedCommerce: p.linkedCommerceId ? linkedCommerceMap.get(p.linkedCommerceId) : undefined
       })),
     });
   }),
@@ -429,7 +469,8 @@ router.get(
       const posts = await prisma.post.findMany({
         where: {
           category: { in: targetIds },
-          status: 'published'
+          status: 'published',
+          postType: 'COMMERCE' // 仅显示商业帖子
         },
         orderBy: { createdAt: 'desc' },
         take: 10,
@@ -497,12 +538,59 @@ router.get(
     if (post.status !== 'published' && post.userId !== req.userId) {
       throw new ApiError(404, '帖子不存在');
     }
+    let isFavorite = false;
+    if (req.userId) {
+      const fav = await prisma.favorite.findUnique({
+        where: { userId_postId: { userId: req.userId, postId: post.id } }
+      });
+      isFavorite = !!fav;
+    }
+
     return ok(res, {
       ...post,
+      isFavorite,
       images: JSON.parse(post.images) as string[],
       attributes: JSON.parse(post.attributes) as Record<string, string>,
     });
   }),
+);
+
+router.post(
+  '/:id/favorite',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const postId = req.params.id;
+    const userId = req.userId!;
+    
+    const post = await prisma.post.findUnique({ where: { id: postId } });
+    if (!post) throw new ApiError(404, '帖子不存在');
+
+    const existingFav = await prisma.favorite.findUnique({
+      where: { userId_postId: { userId, postId } }
+    });
+
+    let newLikeCount = post.likeCount;
+    let isFavorite = false;
+
+    if (existingFav) {
+      await prisma.$transaction([
+        prisma.favorite.delete({ where: { id: existingFav.id } }),
+        prisma.post.update({ where: { id: postId }, data: { likeCount: { decrement: 1 } } }),
+        prisma.user.update({ where: { id: userId }, data: { favoritesCount: { decrement: 1 } } })
+      ]);
+      newLikeCount = Math.max(0, post.likeCount - 1);
+    } else {
+      await prisma.$transaction([
+        prisma.favorite.create({ data: { userId, postId } }),
+        prisma.post.update({ where: { id: postId }, data: { likeCount: { increment: 1 } } }),
+        prisma.user.update({ where: { id: userId }, data: { favoritesCount: { increment: 1 } } })
+      ]);
+      newLikeCount = post.likeCount + 1;
+      isFavorite = true;
+    }
+
+    return ok(res, { isFavorite, likeCount: newLikeCount }, isFavorite ? '收藏成功' : '已取消收藏');
+  })
 );
 
 router.put(

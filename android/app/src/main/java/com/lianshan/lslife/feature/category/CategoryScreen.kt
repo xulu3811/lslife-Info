@@ -1,5 +1,6 @@
 package com.lianshan.lslife.feature.category
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -7,10 +8,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,22 +24,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.model.Post
-import com.lianshan.lslife.ui.components.CategoryIconView
-import com.lianshan.lslife.ui.components.EmptyState
+import com.lianshan.lslife.core.model.CategoryNode
 import com.lianshan.lslife.ui.theme.Dimens
-import com.lianshan.lslife.ui.components.PriceText
 
-@OptIn(ExperimentalMaterial3Api::class)
+import com.lianshan.lslife.core.model.Post
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CategoryScreen(
     viewModel: DiscoverViewModel = hiltViewModel(),
-    onNavigateToCategory: (String, String) -> Unit, // Kept for signature, but we navigate to post
     onSearchClick: () -> Unit,
     onOpenPost: (String) -> Unit
 ) {
@@ -46,12 +48,13 @@ fun CategoryScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .statusBarsPadding()
     ) {
         // Top Search Bar
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = Dimens.md, start = Dimens.md, end = Dimens.md, bottom = Dimens.xs)
+                .padding(horizontal = Dimens.md, vertical = Dimens.xs)
                 .height(36.dp)
                 .clickable { onSearchClick() },
             shape = RoundedCornerShape(18.dp),
@@ -61,182 +64,134 @@ fun CategoryScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = Dimens.md)
             ) {
-                Icon(
-                    Icons.Filled.Search,
-                    contentDescription = "Search",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(18.dp)
-                )
+                Icon(Icons.Filled.Search, contentDescription = "Search", tint = Color.Gray, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "搜索本地商户、商品、服务",
-                    color = Color.Gray,
-                    fontSize = 13.sp,
-                    modifier = Modifier.weight(1f)
-                )
+                Text(text = "搜索本地商户、商品、服务", color = Color.Gray, fontSize = 13.sp, modifier = Modifier.weight(1f))
             }
         }
-
-        // Top Horizontal Categories (Level 1)
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = Dimens.sm),
-            contentPadding = PaddingValues(horizontal = Dimens.md),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.md)
-        ) {
-            itemsIndexed(state.topCategories) { index, category ->
-                val selected = state.selectedTabIndex == index
-                Column(
-                    modifier = Modifier
-                        .width(60.dp)
-                        .clickable { viewModel.onTabSelected(index) },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(
-                                color = if (selected) Color(0xFFE8F5E9) else Color.Transparent, // Light green hint
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(4.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CategoryIconView(
-                            iconUrl = category.iconUrl,
-                            iconName = category.icon,
-                            categoryName = category.name,
-                            size = 22.dp,
-                            tint = if (selected) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = category.name,
-                        fontSize = 11.sp,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (selected) Color.Black else Color.DarkGray,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-        }
-
-        HorizontalDivider(color = Color(0xFFF5F6F8), thickness = 1.dp)
 
         Row(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
         ) {
-            // Left Vertical Menu (Level 2)
+            // 1. 左侧：极简微章导航 (CompactNav)
             LazyColumn(
                 modifier = Modifier
                     .width(86.dp)
+                    .background(Color(0xFFF7F8FA))
                     .fillMaxHeight()
-                    .background(Color(0xFFF5F6F8))
             ) {
-                val displaySubs = listOf(com.lianshan.lslife.core.model.CategoryNode(id = "all", name = "全部", icon = "all")) + state.subCategories
-                items(displaySubs) { subCat ->
-                    val selected = state.selectedSubCategory == subCat.id
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .background(if (selected) Color.White else Color.Transparent)
-                            .clickable { viewModel.onSubCategory(subCat.id) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (selected) {
-                            Box(
-                                modifier = Modifier
-                                    .width(4.dp)
-                                    .height(16.dp)
-                                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp))
-                                    .align(Alignment.CenterStart)
-                            )
-                        }
-                        Text(
-                            text = subCat.name,
-                            fontSize = 13.sp,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (selected) Color.Black else Color.DarkGray
-                        )
-                    }
+                itemsIndexed(state.topCategories.ifEmpty { listOf(CategoryNode("1", "二手", null), CategoryNode("2", "服务", null)) }) { index, category ->
+                    val isSelected = state.selectedTabIndex == index
+                    CompactPrimaryTab(
+                        text = category.name,
+                        isSelected = isSelected,
+                        onClick = { viewModel.onTabSelected(index) }
+                    )
                 }
             }
 
-            // Right Vertical List (Posts)
-            LazyColumn(
+            // 2. 右侧：紧凑型商品大厅
+            val subCategories = if (state.subCategories.isEmpty()) emptyList() else listOf(CategoryNode("all", "全部", null)) + state.subCategories
+            
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Fixed(2),
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
                     .background(Color.White),
-                contentPadding = PaddingValues(start = Dimens.sm, end = Dimens.sm, top = Dimens.sm, bottom = Dimens.xxl * 2)
+                contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = 100.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalItemSpacing = 8.dp
             ) {
-                // Sorting Filters
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = Dimens.sm),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        FilterText(text = "推荐", selected = state.sort == "default") { viewModel.onSort("default") }
-                        Spacer(modifier = Modifier.width(Dimens.md))
-                        FilterText(text = "最新", selected = state.sort == "newest") { viewModel.onSort("newest") }
-                        Spacer(modifier = Modifier.width(Dimens.md))
-                        FilterText(text = "价格", selected = state.sort == "price_asc") { viewModel.onSort("price_asc") }
-                    }
-                }
-
-                // Posts List
-                if (state.loading && state.page == 1) {
-                    item {
-                        Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                } else if (state.posts.isEmpty()) {
-                    item {
-                        EmptyState(
-                            title = "暂无相关商品或服务",
-                            modifier = Modifier.fillMaxWidth().height(200.dp)
-                        )
-                    }
-                } else {
-                    items(state.posts) { post ->
-                        O2OPostCard(post = post, onClick = { onOpenPost(post.id) })
-                        HorizontalDivider(color = Color(0xFFF0F0F0), thickness = 0.5.dp, modifier = Modifier.padding(vertical = Dimens.xs))
-                    }
-                    
-                    if (state.hasMore) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(Dimens.md),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                TextButton(onClick = { viewModel.loadMore() }) {
-                                    Text(if (state.loadingMore) "加载中..." else "加载更多")
+                // 吸顶：横向滚动的胶囊标签 + 筛选器
+                item(span = StaggeredGridItemSpan.FullLine) {
+                    Column {
+                        // 胶囊二级分类
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(subCategories) { subCat ->
+                                val selected = state.selectedSubCategory == subCat.id || (state.selectedSubCategory.isEmpty() && subCat.id == "all")
+                                Box(
+                                    modifier = Modifier
+                                        .height(28.dp)
+                                        .background(
+                                            color = if (selected) Color(0xFFFFEBEE) else Color(0xFFF5F6F8),
+                                            shape = RoundedCornerShape(14.dp)
+                                        )
+                                        .clickable { viewModel.onSubCategory(subCat.id) }
+                                        .padding(horizontal = 12.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = subCat.name,
+                                        fontSize = 12.sp,
+                                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (selected) Color(0xFFE53935) else Color(0xFF555555)
+                                    )
                                 }
                             }
                         }
-                    } else if (state.posts.isNotEmpty()) {
-                        item {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().padding(Dimens.md),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("—— 到底了 ——", color = Color.Gray, fontSize = 12.sp)
-                            }
+
+                        // 筛选栏 (在真实环境中通常使用 stickyHeader, 但 StaggeredGrid 暂不支持 stickyHeader, 故放置于顶部 item)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp, horizontal = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            FilterText(text = "推荐", selected = state.sort == "default" || state.sort.isEmpty()) { viewModel.onSort("default") }
+                            FilterText(text = "最新", selected = state.sort == "newest") { viewModel.onSort("newest") }
+                            FilterText(text = "价格", selected = state.sort == "price_asc") { viewModel.onSort("price_asc") }
                         }
+                        Spacer(modifier = Modifier.height(4.dp))
                     }
+                }
+
+                // 微缩商品瀑布流
+                items(state.posts, key = { it.id }) { product ->
+                    CompactProductCard(product = product, onClick = { onOpenPost(product.id) })
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CompactPrimaryTab(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .background(if (isSelected) Color.White else Color.Transparent)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .width(3.dp)
+                    .height(18.dp)
+                    .background(Color(0xFFE53935), RoundedCornerShape(topEnd = 2.dp, bottomEnd = 2.dp))
+                    .align(Alignment.CenterStart)
+            )
+        }
+        Text(
+            text = text,
+            fontSize = if (isSelected) 14.sp else 13.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            color = if (isSelected) Color.Black else Color(0xFF666666)
+        )
     }
 }
 
@@ -244,95 +199,78 @@ fun CategoryScreen(
 private fun FilterText(text: String, selected: Boolean, onClick: () -> Unit) {
     Text(
         text = text,
-        fontSize = 12.sp,
-        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-        color = if (selected) MaterialTheme.colorScheme.primary else Color.Gray,
+        fontSize = 13.sp,
+        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+        color = if (selected) Color(0xFFE53935) else Color(0xFF777777),
         modifier = Modifier.clickable { onClick() }
     )
 }
 
 @Composable
-fun O2OPostCard(post: Post, onClick: () -> Unit) {
-    Row(
+fun CompactProductCard(product: Post, onClick: () -> Unit) {
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = Dimens.xs),
-        verticalAlignment = Alignment.CenterVertically
+            .clickable { onClick() },
+        shape = RoundedCornerShape(8.dp),
+        color = Color.White,
+        shadowElevation = 0.5.dp
     ) {
-        // Image Left
-        val imageUrl = post.images.firstOrNull()
-        if (imageUrl != null) {
+        Column {
+            val imageUrl = product.images.firstOrNull() ?: ""
             AsyncImage(
-                model = imageUrl,
+                model = if (imageUrl.isNotEmpty()) imageUrl + "?x-oss-process=image/resize,w_300" else "",
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .fillMaxWidth()
+                    .aspectRatio(4f/3f)
                     .background(Color(0xFFF5F6F8))
             )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFF5F6F8)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Filled.Search, contentDescription = null, tint = Color.LightGray)
-            }
-        }
-
-        Spacer(modifier = Modifier.width(Dimens.sm))
-
-        // Content Right
-        Column(
-            modifier = Modifier.weight(1f).heightIn(min = 80.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text(
-                    text = post.title,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                // Publisher Info or simple tag
-                Text(
-                    text = post.user?.nickname ?: post.merchant?.name ?: "同城服务",
-                    fontSize = 11.sp,
-                    color = Color.Gray,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
             
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                PriceText(amount = post.price ?: 0.0)
+            Column(modifier = Modifier.padding(8.dp)) {
+                Text(
+                    text = product.title,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF222222),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 18.sp
+                )
                 
-                // + Button (O2O style)
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Filled.Add,
-                        contentDescription = "Add",
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                val priceText = if (product.price != null && product.price > 0.0) "¥ ${product.price}" else "面议"
+                var tag = product.attributes.keys.firstOrNull()?.let { product.attributes[it].toString().replace("\"", "") } ?: product.category
+                if (tag == "面议") tag = product.category
+                
+                if (tag.isNotBlank() && tag != priceText) {
+                    Box(
+                        modifier = Modifier
+                            .background(Color(0xFFFFF0F0), RoundedCornerShape(2.dp))
+                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                    ) {
+                        Text(text = tag, fontSize = 10.sp, color = Color(0xFFE53935))
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(2.dp))
                 }
+                
+                Text(
+                    text = priceText,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFE53935)
+                )
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewCategoryScreen() {
+    CategoryScreen(onSearchClick = {}, onOpenPost = {})
 }

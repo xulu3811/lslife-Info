@@ -55,12 +55,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -88,6 +91,7 @@ fun ProfileScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val scheme = MaterialTheme.colorScheme
+    var showSignIn by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.load() }
     LaunchedEffect(state.loggedOut) { if (state.loggedOut) onLoggedOut() }
@@ -108,17 +112,28 @@ fun ProfileScreen(
             return@Scaffold
         }
         val user = state.user
+        
+        if (showSignIn && state.signInStatus != null) {
+            SignInBottomSheet(
+                status = state.signInStatus!!,
+                isSigningIn = state.isSigningIn,
+                onDismiss = { showSignIn = false },
+                onExecuteSignIn = { viewModel.executeSignIn() }
+            )
+        }
+        
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            // Joybuy Style Header
+            // Joybuy Style Header (Refactored)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = Dimens.lg, vertical = Dimens.xl)
+                    .padding(horizontal = Dimens.lg)
+                    .padding(top = Dimens.xl, bottom = Dimens.sm) // Reduced bottom padding
                     .statusBarsPadding(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -147,25 +162,70 @@ fun ProfileScreen(
                     )
                 }
                 
-                // Top Right Notification Icon
-                if (state.unread > 0) {
-                    BadgedBox(
-                        badge = { Badge { Text(state.unread.toString()) } }
+                // Top Right Action Area: SignIn + Notification
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Sign In Icon
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .clickable { showSignIn = true }
+                            .padding(horizontal = Dimens.sm)
                     ) {
-                        Icon(
-                            Icons.Outlined.Notifications,
-                            contentDescription = "消息",
-                            tint = scheme.onBackground,
-                            modifier = Modifier.size(24.dp).clickable(onClick = onOpenMessage)
+                        BadgedBox(
+                            badge = { 
+                                if (state.signInStatus?.isSignedToday == false) {
+                                    Badge(modifier = Modifier.size(8.dp)) 
+                                }
+                            }
+                        ) {
+                            Icon(
+                                Icons.Outlined.CheckCircleOutline, // Representing SignIn
+                                contentDescription = "签到",
+                                tint = if (state.signInStatus?.isSignedToday == true) Color.Gray else scheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Text(
+                            text = "签到", 
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                            color = if (state.signInStatus?.isSignedToday == true) Color.Gray else scheme.onBackground
                         )
                     }
-                } else {
-                    Icon(
-                        Icons.Outlined.Notifications,
-                        contentDescription = "消息",
-                        tint = scheme.onBackground,
-                        modifier = Modifier.size(24.dp).clickable(onClick = onOpenMessage)
-                    )
+                    
+                    Spacer(modifier = Modifier.width(Dimens.sm))
+                    
+                    // Notification Icon
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .clickable(onClick = onOpenMessage)
+                            .padding(horizontal = Dimens.sm)
+                    ) {
+                        if (state.unread > 0) {
+                            BadgedBox(
+                                badge = { Badge { Text(state.unread.toString()) } }
+                            ) {
+                                Icon(
+                                    Icons.Outlined.Notifications,
+                                    contentDescription = "消息",
+                                    tint = scheme.onBackground,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        } else {
+                            Icon(
+                                Icons.Outlined.Notifications,
+                                contentDescription = "消息",
+                                tint = scheme.onBackground,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Text(
+                            text = "消息", 
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                            color = scheme.onBackground
+                        )
+                    }
                 }
             }
 
@@ -173,7 +233,8 @@ fun ProfileScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = Dimens.lg, vertical = Dimens.md),
+                    .padding(horizontal = Dimens.lg)
+                    .padding(bottom = Dimens.md), // Reduced padding
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -382,9 +443,21 @@ private fun tierLabel(tier: String?) = when (tier) {
 
 @Composable
 private fun DataBoardItem(label: String, count: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = count, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(text = label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(horizontal = Dimens.sm)
+    ) {
+        Text(
+            text = count, 
+            style = MaterialTheme.typography.titleLarge.copy(fontSize = 22.sp), 
+            fontWeight = FontWeight.Bold, 
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = label, 
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp), 
+            color = Color(0xFF888888)
+        )
     }
 }

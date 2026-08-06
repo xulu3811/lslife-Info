@@ -62,4 +62,61 @@ export class UserWalletService {
       return { success: true, balanceAfter };
     });
   }
+
+  /**
+   * 增加猫币核心逻辑（带乐观锁防并发控制）
+   * @param userId 用户 ID
+   * @param amount 增加的猫币数量 (必须大于0)
+   * @param tradeType 交易类型 (如 'SIGN_IN_REWARD')
+   * @param relatedBizId 关联的业务ID
+   */
+  async rewardCoins(userId: string, amount: number, tradeType: string, relatedBizId?: string) {
+    if (amount <= 0) throw new Error('Amount must be strictly positive');
+
+    return await prisma.$transaction(async (tx) => {
+      let wallet = await tx.userWallet.findUnique({
+        where: { userId }
+      });
+
+      // 如果钱包不存在，可能需要初始化
+      if (!wallet) {
+        wallet = await tx.userWallet.create({
+          data: {
+            userId: userId,
+            coinBalance: 0,
+            version: 0
+          }
+        });
+      }
+
+      const updateResult = await tx.userWallet.updateMany({
+        where: {
+          userId: userId,
+          version: wallet.version
+        },
+        data: {
+          coinBalance: wallet.coinBalance + amount,
+          version: wallet.version + 1
+        }
+      });
+
+      if (updateResult.count === 0) {
+        throw new Error('CONCURRENT_CONFLICT');
+      }
+
+      const balanceAfter = wallet.coinBalance + amount;
+
+      await tx.walletLog.create({
+        data: {
+          userId,
+          amount: amount,
+          balanceAfter: balanceAfter,
+          tradeType,
+          relatedBizId
+        }
+      });
+
+      return { success: true, balanceAfter };
+    });
+  }
 }

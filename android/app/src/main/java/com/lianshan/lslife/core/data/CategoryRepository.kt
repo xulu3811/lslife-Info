@@ -54,9 +54,9 @@ class CategoryRepository @Inject constructor(
                         newNodes.add(
                             CategoryNode(
                                 id = "cat_house_sale",
-                                name = "二手房",
+                                name = "二手房源",
                                 icon = "home",
-                                iconUrl = "/assets/icons/3d_flat_housing.png",
+                                iconUrl = "/assets/icons/3d_flat_house_sale.png?v=8",
                                 sortOrder = 2,
                                 isLeaf = false,
                                 isActive = true,
@@ -69,7 +69,7 @@ class CategoryRepository @Inject constructor(
                                 id = "cat_house_rent",
                                 name = "租房",
                                 icon = "home",
-                                iconUrl = "/assets/icons/3d_flat_house_short.png",
+                                iconUrl = "/assets/icons/3d_flat_house_rent.png?v=8",
                                 sortOrder = 3,
                                 isLeaf = false,
                                 isActive = true,

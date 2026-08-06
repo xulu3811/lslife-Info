@@ -1,5 +1,6 @@
 package com.lianshan.lslife.feature.category
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lianshan.lslife.core.data.CategoryRepository
@@ -34,6 +35,7 @@ data class DiscoverUiState(
 class DiscoverViewModel @Inject constructor(
     private val repo: LsRepository,
     private val categoryRepo: CategoryRepository,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DiscoverUiState())
@@ -49,14 +51,28 @@ class DiscoverViewModel @Inject constructor(
         }
         viewModelScope.launch {
             categoryRepo.categoryTree.collect { tree ->
-                val topLevel = tree.filter { it.parentId == null }.take(8)
+                val primaryId = savedStateHandle.get<String>("primaryId")
+                val topLevel = tree.filter { it.parentId == null }
                 _state.update { it.copy(categoryTree = tree, topCategories = topLevel) }
+                
+                val initialIndex = if (primaryId != null) {
+                    val idx = topLevel.indexOfFirst { it.id == primaryId }
+                    if (idx >= 0) idx else 0
+                } else {
+                    0
+                }
+
                 if (topLevel.isNotEmpty() && _state.value.parentCategoryId.isEmpty()) {
-                    onTabSelected(0)
+                    onTabSelected(initialIndex)
+                    savedStateHandle["primaryId"] = null
                 } else if (_state.value.parentCategoryId.isNotEmpty()) {
-                    // Update subcategories if tree changes
-                    val subs = tree.find { it.id == _state.value.parentCategoryId }?.children ?: emptyList()
-                    _state.update { it.copy(subCategories = subs) }
+                    if (primaryId != null && primaryId != _state.value.parentCategoryId) {
+                        onTabSelected(initialIndex)
+                        savedStateHandle["primaryId"] = null
+                    } else {
+                        val subs = tree.find { it.id == _state.value.parentCategoryId }?.children ?: emptyList()
+                        _state.update { it.copy(subCategories = subs) }
+                    }
                 }
             }
         }

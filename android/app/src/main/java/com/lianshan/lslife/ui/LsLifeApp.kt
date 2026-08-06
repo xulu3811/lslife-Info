@@ -54,6 +54,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -62,14 +63,10 @@ import androidx.navigation.navArgument
 import com.lianshan.lslife.R
 import com.lianshan.lslife.feature.auth.ForgotPasswordScreen
 import com.lianshan.lslife.feature.auth.LoginScreen
-import com.lianshan.lslife.feature.cart.CartScreen
-import com.lianshan.lslife.feature.cart.CheckoutScreen
 import com.lianshan.lslife.feature.home.HomeScreen
 import com.lianshan.lslife.feature.category.CategoryScreen
 import com.lianshan.lslife.feature.search.SearchScreen
 import com.lianshan.lslife.feature.merchant.MerchantDetailScreen
-import com.lianshan.lslife.feature.orders.OrderListScreen
-import com.lianshan.lslife.feature.orders.OrderTrackScreen
 import com.lianshan.lslife.feature.profile.AddressScreen
 import com.lianshan.lslife.feature.profile.CropScreen
 import com.lianshan.lslife.feature.profile.EditProfileScreen
@@ -148,7 +145,8 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                                     if (isPublish) {
                                         showPublishMenu = true
                                     } else {
-                                        navController.navigate(tab.route) {
+                                        val navigateRoute = tab.route.substringBefore("?")
+                                        navController.navigate(navigateRoute) {
                                             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                                             launchSingleTop = true
                                             restoreState = true
@@ -252,12 +250,27 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                     onOpenPost = { navController.navigate(Routes.postDetail(it)) },
                     onSearchClick = { navController.navigate(Routes.SEARCH) },
                     onMessageClick = { navController.navigate(Routes.MESSAGE_LIST) },
-                    onNavigateToCategory = { id, name -> navController.navigate(Routes.categoryDetail(id, name)) }
+                    onNavigateToCategory = { id -> 
+                        navController.navigate(Routes.categoryDetail(id))
+                    }
                 )
             }
-            composable(Routes.CATEGORY) {
+            composable(
+                route = Routes.CATEGORY_DETAIL,
+                arguments = listOf(navArgument("categoryId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val categoryId = backStackEntry.arguments?.getString("categoryId") ?: ""
+                com.lianshan.lslife.feature.category.CategoryDetailScreen(
+                    categoryId = categoryId,
+                    onBack = { navController.popBackStack() },
+                    onPostClick = { postId -> navController.navigate(Routes.postDetail(postId)) }
+                )
+            }
+            composable(
+                route = Routes.CATEGORY,
+                arguments = listOf(navArgument("primaryId") { nullable = true })
+            ) {
                 CategoryScreen(
-                    onNavigateToCategory = { id, name -> navController.navigate(Routes.categoryDetail(id, name)) },
                     onSearchClick = { navController.navigate(Routes.SEARCH) },
                     onOpenPost = { postId -> navController.navigate(Routes.postDetail(postId)) }
                 )
@@ -267,21 +280,6 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                     onBack = { navController.popBackStack() },
                     onPostClick = { navController.navigate(Routes.postDetail(it)) }
                 )
-            }
-            composable(
-                route = Routes.CATEGORY_DETAIL,
-                arguments = listOf(
-                    navArgument("categoryId") { nullable = false },
-                    navArgument("categoryName") { nullable = false }
-                )
-            ) {
-                com.lianshan.lslife.feature.category.CategoryDetailScreen(
-                    onBack = { navController.popBackStack() },
-                    onOpenPost = { navController.navigate(Routes.postDetail(it)) }
-                )
-            }
-            composable(Routes.ORDERS) {
-                OrderListScreen(onTrack = { navController.navigate(Routes.orderTrack(it)) })
             }
             composable(Routes.MESSAGE_LIST) {
                 ChatSessionListScreen(
@@ -310,6 +308,32 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                     }
                 ) 
             }
+            composable(
+                route = Routes.MOMENT_PUBLISH,
+                arguments = listOf(
+                    androidx.navigation.navArgument("topic") {
+                        type = androidx.navigation.NavType.StringType
+                        nullable = true
+                    },
+                    androidx.navigation.navArgument("momentType") {
+                        type = androidx.navigation.NavType.StringType
+                        nullable = true
+                    }
+                )
+            ) { backStackEntry ->
+                val topic = backStackEntry.arguments?.getString("topic")
+                val momentType = backStackEntry.arguments?.getString("momentType")
+                com.lianshan.lslife.feature.publish.MomentPublishScreen(
+                    initialTopic = topic,
+                    momentType = momentType,
+                    onClose = { navController.popBackStack() },
+                    onBackHome = {
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.HOME) { inclusive = true }
+                        }
+                    }
+                )
+            }
             composable(Routes.MY_POSTS) {
                 MyPostsScreen(
                     onBack = { navController.popBackStack() },
@@ -324,9 +348,6 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                     onBack = { navController.popBackStack() },
                     onChatClick = { targetId, targetName ->
                         navController.navigate(Routes.chat("new", targetId, targetName, initPostId = postId))
-                    },
-                    onBuyClick = { id ->
-                        navController.navigate(Routes.CART)
                     },
                     onPhoneClick = { phone ->
                         val intent = android.content.Intent(android.content.Intent.ACTION_DIAL).apply {
@@ -345,30 +366,6 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                             navController.navigate(Routes.publicProfile(publisherId))
                         }
                     }
-                )
-            }
-            composable(Routes.CART) {
-                CartScreen(
-                    onOpenMerchant = { navController.navigate(Routes.merchant(it)) },
-                    onOpenPost = { navController.navigate(Routes.postDetail(it)) },
-                    onCheckout = { mId, sId, eIds, dMethod -> navController.navigate(Routes.checkout(mId, sId, eIds, dMethod)) }
-                )
-            }
-            composable(
-                route = Routes.CHECKOUT,
-                arguments = listOf(
-                    navArgument("merchantId") { nullable = true },
-                    navArgument("sellerId") { nullable = true },
-                    navArgument("entryIds") { nullable = true },
-                    navArgument("deliveryMethod") { nullable = true }
-                )
-            ) { entry ->
-                CheckoutScreen(
-                    merchantId = entry.arguments?.getString("merchantId"),
-                    sellerId = entry.arguments?.getString("sellerId"),
-                    onBack = { navController.popBackStack() },
-                    onOrderCreated = { orderId -> navController.navigate(Routes.orderTrack(orderId)) { popUpTo(Routes.CART) } },
-                    onAddressClick = { navController.navigate(Routes.ADDRESS_LIST) }
                 )
             }
             composable(Routes.PROFILE) {
@@ -480,16 +477,9 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 MerchantDetailScreen(
                     merchantId = entry.arguments?.getString("merchantId").orEmpty(),
                     onBack = { navController.popBackStack() },
-                    onCheckedOut = { orderId -> navController.navigate(Routes.orderTrack(orderId)) },
                     onChatClick = { targetId, targetName ->
                         navController.navigate(Routes.chat("new", targetId, targetName))
                     }
-                )
-            }
-            composable(Routes.ORDER_TRACK) { entry ->
-                OrderTrackScreen(
-                    orderId = entry.arguments?.getString("orderId").orEmpty(),
-                    onBack = { navController.popBackStack() },
                 )
             }
         }
@@ -497,7 +487,13 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
         if (showPublishMenu) {
             PublishMenuBottomSheet(
                 onDismiss = { showPublishMenu = false },
-                onNavigateToPublish = { categoryId -> navController.navigate(Routes.publish(null, categoryId)) }
+                onNavigateToPublish = { routeId -> 
+                    if (routeId.startsWith("moment_publish")) {
+                        navController.navigate(routeId)
+                    } else {
+                        navController.navigate(Routes.publish(null, routeId)) 
+                    }
+                }
             )
         }
     }
