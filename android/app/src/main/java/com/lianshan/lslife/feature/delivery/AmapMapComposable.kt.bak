@@ -1,0 +1,86 @@
+package com.lianshan.lslife.feature.delivery
+
+import android.os.Bundle
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import com.amap.api.maps.MapView
+import com.amap.api.maps.AMap
+import com.amap.api.maps.model.LatLng
+import com.amap.api.maps.model.MarkerOptions
+import com.amap.api.maps.CameraUpdateFactory
+
+@Composable
+fun AmapMapComposable(
+    modifier: Modifier = Modifier,
+    riderLat: Float,
+    riderLng: Float,
+    userLat: Float? = null,
+    userLng: Float? = null,
+    progress: Float
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    val mapView = remember {
+        MapView(context).apply {
+            // AMap SDK requires privacy compliance before init in real app
+            com.amap.api.maps.MapsInitializer.updatePrivacyShow(context, true, true)
+            com.amap.api.maps.MapsInitializer.updatePrivacyAgree(context, true)
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_CREATE -> mapView.onCreate(Bundle())
+                Lifecycle.Event.ON_RESUME -> mapView.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapView.onPause()
+                Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            mapView.onDestroy()
+        }
+    }
+
+    AndroidView(
+        factory = { mapView },
+        modifier = modifier.fillMaxSize(),
+        update = { view ->
+            val amap = view.map
+            amap.clear() // Clear old markers
+
+            val riderLatLng = LatLng(riderLat.toDouble(), riderLng.toDouble())
+            amap.addMarker(
+                MarkerOptions()
+                    .position(riderLatLng)
+                    .title("骑手当前位置")
+                    .snippet("正全速向您奔来")
+            )
+
+            if (userLat != null && userLng != null) {
+                val userLatLng = LatLng(userLat.toDouble(), userLng.toDouble())
+                amap.addMarker(
+                    MarkerOptions()
+                        .position(userLatLng)
+                        .title("收货地址")
+                )
+            }
+
+            // Move camera to rider
+            amap.moveCamera(CameraUpdateFactory.newLatLngZoom(riderLatLng, 15f))
+        }
+    )
+}

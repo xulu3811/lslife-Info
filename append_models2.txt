@@ -1,0 +1,35 @@
+
+// ================= App Version =================
+model AppVersion {
+  id           String   @id @default(cuid())
+  versionName  String
+  versionCode  Int
+  downloadUrl  String
+  releaseNotes String
+  isForced     Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  fileSize     Int?
+  md5          String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ================= Friends =================
+model FriendRequest {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  message    String?
+  status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Friendship {
+  id        String   @id @default(cuid())
+  userId    String
+  friendId  String
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, friendId])
+}

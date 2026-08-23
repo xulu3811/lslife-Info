@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -40;
+  }
+}
+
+.animate-dash-slow {
+  animation: dash 5s linear infinite;
+}
+
+/* Custom scrollbar for premium feel */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+/* Mobile & Android WebView Enhancements */
+* {
+  -webkit-tap-highlight-color: transparent; /* Remove annoying blue tap flash on Android clicks */
+  -webkit-touch-callout: none;              /* Disable long-press context menu on images/links */
+}
+
+body {
+  overflow-x: hidden;
+  overscroll-behavior-y: none;             /* Prevent pull-to-refresh reload bounce issues in webviews */
+  user-select: none;                       /* Prevent accidental text highlight selections during fast taps */
+}
+
+input, textarea {
+  user-select: text !important;            /* Allow user to select text ONLY inside input fields */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-pb {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+  }
+}
+

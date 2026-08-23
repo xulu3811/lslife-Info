@@ -1,0 +1,512 @@
+// 连山同城 LsLife 数据模型
+// 本地开发使用 SQLite (零配置可运行); 生产切换 provider = "postgresql"
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================= 账户与鉴权 =================
+model User {
+  id                  String    @id @default(cuid())
+  phone               String    @unique
+  email               String?   @unique
+  passwordHash        String? // 手机号+密码登录；bcrypt 哈希，可空兼容历史短信用户
+  nickname            String
+  avatar              String?
+  membershipTier      String    @default("free") // free | vip | premium
+  membershipUntil     DateTime?
+  status              String    @default("active") // active | banned
+  realNameStatus      String    @default("none") // none | pending | verified
+  realName            String?
+  idCardHash          String? // 实名身份证仅存哈希
+  idCardFrontImage    String? // 身份证正面照
+  idCardBackImage     String? // 身份证反面照
+  idCardHandheldImage String? // 手持身份证照
+  walletBalance       Float     @default(0)
+  points              Int       @default(0)
+  followersCount      Int       @default(0) // 新增：我的关注/粉丝数
+  favoritesCount      Int       @default(0) // 新增：我的收藏数
+  footprintsCount     Int       @default(0) // 新增：浏览足迹数
+  identityType        String    @default("NORMAL") // 新增：身份认证类型 (NORMAL, LANDLORD, HR, etc.)
+  creditScore         Int       @default(100) // 新增：信用评价分
+  role                String    @default("USER") // USER | ADMIN
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  addresses      Address[]
+  posts          Post[]
+  favorites      Favorite[]
+  notifications  Notification[]
+  subscriptions  Subscription[]
+  transactions   WalletTransaction[]
+
+  ownedMerchants  Merchant[] @relation("MerchantOwner")
+  merchantInfo    MerchantInfo?
+  quotaLogs       QuotaLedger[]
+  billingOrders   BillingOrder[]
+  valueAddedLogs  ValueAddedLog[]
+
+  merchantCertification MerchantCertification?
+  wallet         UserWallet?
+  walletLogs     WalletLog[]
+  signInRecord   UserSignInRecord?
+  reports        Report[]
+
+  personIdentityId String?
+  personIdentity   PersonIdentity? @relation(fields: [personIdentityId], references: [idCardNumber])
+  devices          UserDeviceLogin[]
+}
+
+model PersonIdentity {
+  idCardNumber String @id
+  realName     String
+  isBlacklisted Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  users        User[]
+}
+
+model DeviceFingerprint {
+  deviceId     String @id
+  isBanned     Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  logins       UserDeviceLogin[]
+}
+
+model UserDeviceLogin {
+  id           String @id @default(cuid())
+  userId       String
+  deviceId     String
+  lastLoginAt  DateTime @default(now())
+  
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device       DeviceFingerprint @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  
+  @@unique([userId, deviceId])
+}
+
+
+model MerchantCertification {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  status             String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  certType           String   @default("ENTERPRISE") // ENTERPRISE | INDIVIDUAL
+  storeName          String
+  categoryId         String
+  contactName        String
+  contactPhone       String
+  businessLicenseUrl String?
+  storePhotos        String   @default("[]") // JSON string array of URLs
+  rejectReason       String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  purpose   String   @default("login") // login | bind
+  expiresAt DateTime
+  consumed  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([phone, purpose])
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  phone     String
+  tag       String   @default("家")
+  address   String
+  latitude  Float?
+  longitude Float?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ================= 商家与商品 =================
+model Merchant {
+  id            String   @id @default(cuid())
+  externalId    String?  @unique // 兼容原型中的 m1/m2...
+  name          String
+  rating        Float    @default(5)
+  distance      Float    @default(0)
+  sales         Int      @default(0)
+  avgPrice      Float    @default(0)
+  tags          String   @default("[]") // JSON 字符串数组
+  logo          String
+  banner        String
+  category      String?
+  latitude      Float
+  longitude     Float
+  description   String
+  address       String
+  phone         String
+  status        String   @default("active") // active | offline | pending
+  walletBalance Float    @default(0) // 商户可提现余额
+  ownerId       String? // 店铺归属用户
+  createdAt     DateTime @default(now())
+
+  posts        Post[]
+  transactions WalletTransaction[]
+  owner        User?               @relation("MerchantOwner", fields: [ownerId], references: [id])
+}
+
+
+// ================= 资金流水 =================
+model WalletTransaction {
+  id            String   @id @default(cuid())
+  userId        String
+  merchantId    String?
+  type          String // points | cash
+  amount        Float // 正数表示收入，负数表示支出
+  balanceBefore Float
+  balanceAfter  Float
+  bizType       String // recharge | settlement
+  description   String?
+  createdAt     DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchant Merchant? @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([merchantId])
+}
+
+
+// ================= 分类与动态表单 =================
+model Category {
+  id              String  @id @default(cuid())
+  name            String
+  icon            String? // 兼容客户端旧的 icon 字段
+  iconUrl         String? // 新增：层级目录图标 URL
+  parentId        String? // 引用父级 ID (nullable, referencing Category.id)
+  sortOrder       Int     @default(0)
+  isLeaf          Boolean @default(false)
+  isActive        Boolean @default(true) // 新增：是否启用
+  isHot           Boolean @default(false) // 新增：是否为热门推荐
+  attributeSchema String? @default("[]") // JSON 字符串数组 DynamicField[]
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[] @relation("CategoryHierarchy")
+  posts    Post[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+  @@index([isActive])
+  @@index([isHot])
+}
+
+// ================= 同城发布 =================
+model Post {
+  id               String   @id @default(cuid())
+  userId           String
+  publisherType    String   @default("INDIVIDUAL") // INDIVIDUAL | MERCHANT
+  merchantId       String?
+  listingType      String   @default("GOODS") // GOODS | SERVICE
+  postType         PostType @default(CLASSIFIED) // 新增：意图分流
+  likeCount        Int      @default(0)
+  isSponsored      Boolean  @default(false)
+  category         String
+  categoryId       String?
+  title            String
+  description      String
+  price            Float?
+  contactPhone     String?  // 新增：信息直连电话
+  images           String   @default("[]") // JSON 字符串数组
+  latitude         Float?
+  longitude        Float?
+  locationName     String?
+  attributes       String   @default("{}") // JSON 动态属性
+  status           String   @default("published") // pending_review | published | rejected | removed
+  reviewNote       String?
+  sellerType       String   @default("INDIVIDUAL") // INDIVIDUAL | MERCHANT
+  marketingHook    String?  // 营销钩子文案
+  isFeatured       Boolean  @default(false) // 是否入选同城严选/品牌好店
+
+  topic            String?  // 新增：参与的同城话题 (如 #连山探店, #周末去哪儿)
+  isTop            Boolean  @default(false)
+  topExpireAt      DateTime?
+  refreshedAt      DateTime?
+  linkedCommerceId String?
+
+  textHash         String?  // 新增：用于文本去重
+  imageHashes      String   @default("[]") // 新增：图片哈希数组，用于去重
+  isShadowBanned   Boolean  @default(false) // 新增：是否被影子封禁 (不展示在 Feeds 中)
+
+  createdAt        DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchant    Merchant?   @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  categoryRel Category?   @relation(fields: [categoryId], references: [id])
+  favorites   Favorite[]
+  valueAddedLogs ValueAddedLog[]
+
+
+  @@index([userId])
+  @@index([category])
+  @@index([categoryId])
+  @@index([status, category]) // 新增复合索引加速搜索
+  @@index([status, price])    // 新增复合索引加速价格过滤
+}
+
+// ================= 会员订阅 =================
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  tier      String // vip | premium
+  amount    Float
+  startAt   DateTime @default(now())
+  endAt     DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ================= 消息通知 =================
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // system | review | alert
+  title     String
+  content   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ================= 实时聊天 =================
+model ChatSession {
+  id          String   @id @default(cuid())
+  user1Id     String
+  user2Id     String
+  lastMessage String?
+  unread1     Int      @default(0) // user1 的未读数
+  unread2     Int      @default(0) // user2 的未读数
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  deletedBy   String[] @default([]) // 新增：软删除标记
+
+  messages ChatMessage[]
+
+  @@unique([user1Id, user2Id]) // 确保两人间只有一个会话
+}
+
+model ChatMessage {
+  id           String   @id @default(cuid())
+  sessionId    String
+  senderId     String
+  type         String   @default("text") // text | image | recalled | system
+  content      String
+  isRecalled   Boolean  @default(false)
+  isEncrypted  Boolean  @default(true)
+  evidenceHash String? // SHA-256 密码学防篡改存证链哈希
+  mediaHash    String? // 独立计算的媒体防篡改哈希
+  createdAt    DateTime @default(now())
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+// ================= 管理后台 =================
+model AdminUser {
+  id        String    @id @default(cuid())
+  username  String    @unique
+  password  String // Hash
+  role      String    @default("admin") // superadmin | admin | editor | auditor
+  lastLogin DateTime?
+  lastIp    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// ================= 举报投诉 =================
+model Report {
+  id          String   @id @default(cuid())
+  reporterId  String
+  targetType  String   // POST, USER
+  targetId    String
+  reason      String
+  status      String   @default("PENDING") // PENDING, RESOLVED, INVALID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([reporterId])
+  @@index([targetType, targetId])
+  @@index([status])
+}
+
+// ================= 系统配置 =================
+model SystemConfig {
+  key       String   @id // e.g., "merchant_require_approval"
+  value     String // e.g., "true" or "false"
+  updatedAt DateTime @updatedAt
+}
+
+// ================= 虚拟货币钱包系统 =================
+model UserWallet {
+  userId        String   @id // 引用自 User.id
+  coinBalance   Int      @default(0) // 猫币余额
+  totalRecharged Float   @default(0.00) // 累计充值 (RMB)
+  version       Int      @default(0) // 乐观锁版本号
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WalletLog {
+  id            String   @id @default(cuid())
+  userId        String
+  amount        Int      // 变动数量 (正负值)
+  balanceAfter  Int      // 变动后余额快照
+  tradeType     String   // RECHARGE, REWARD, CONSUME_TOP, CONSUME_POST 等
+  relatedBizId  String?  // 关联业务 ID
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model RechargePackage {
+  id          Int      @id @default(autoincrement())
+  price       Float    // RMB 售价
+  coinsAmount Int      // 基础猫币数量
+  bonusCoins  Int      @default(0) // 赠送猫币
+  isActive    Boolean  @default(true) // 是否上架
+}
+
+// ================= 用户签到 =================
+model UserSignInRecord {
+  userId             String   @id // 关联 User.id
+  continuousDays     Int      @default(0) // 连续签到天数
+  lastSignInDate     DateTime? // 上次签到日期 (只存日期部分或UTC时间)
+  totalSignInDays    Int      @default(0) // 总签到天数
+  updatedAt          DateTime @updatedAt
+  
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ================= 用户收藏 =================
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+}
+
+enum PostType {
+  CLASSIFIED
+  MOMENT
+}
+
+// ================= 首页 Banner 轮播 =================
+model Banner {
+  id        String   @id @default(cuid())
+  title     String
+  imageUrl  String
+  linkUrl   String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+
+
+// ================= 商业化与配额体系 =================
+model MerchantInfo {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  shopName      String
+  shopLogo      String?
+  shopBanner    String?
+  address       String
+  latitude      Float?
+  longitude     Float?
+  contactPhone  String
+  businessHours String?
+  licenseUrl    String?
+  verifyStatus  String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BillingOrder {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String   // POST_QUOTA | MERCHANT_VERIFY | POST_TOP | POST_REFRESH
+  amount     Int      // in cents
+  status     String   @default("PENDING") // PENDING | PAID | CANCELLED
+  payChannel String   @default("WECHAT") // WECHAT | ALIPAY | MOCK_WALLET
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model QuotaLedger {
+  id           String   @id @default(cuid())
+  userId       String
+  changeAmount Int      // Positive for added, negative for consumed
+  reason       String   // BUY_QUOTA, NEW_USER_FREE, POST_CONSUME
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model ValueAddedLog {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  action    String   // TOP, REFRESH
+  cost      Int      // Cost in cents
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([postId])
+}

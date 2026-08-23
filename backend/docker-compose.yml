@@ -1,0 +1,36 @@
+# 生产/联调环境: 后端 + PostgreSQL + Redis
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lslife
+      POSTGRES_PASSWORD: lslife_pwd
+      POSTGRES_DB: lslife
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  api:
+    build: .
+    depends_on:
+      - db
+      - redis
+    environment:
+      # 生产切换 schema.prisma 的 provider 为 postgresql
+      DATABASE_URL: "postgresql://lslife:lslife_pwd@db:5432/lslife?schema=public"
+      REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: "please-change-in-production"
+      PAY_PROVIDER: "wechat"
+      SMS_PROVIDER: "aliyun"
+      AI_PROVIDER: "dashscope"
+    ports:
+      - "4000:4000"
+
+volumes:
+  pgdata:

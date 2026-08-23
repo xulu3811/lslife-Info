@@ -1,0 +1,1 @@
+const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); prisma.post.findMany({where: {status: {in: ['pending_review', 'MANUAL_REVIEWING']}}}).then(res => console.log('Count:', res.length)).finally(()=>prisma.$disconnect());

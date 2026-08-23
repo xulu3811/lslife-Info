@@ -1,0 +1,24 @@
+[Unit]
+Description=PM2 process manager for lslife
+Documentation=https://pm2.keymetrics.io/
+After=network.target postgresql.service
+
+[Service]
+# oneshot + RemainAfterExit: 不依赖 pm2.pid (新版 PM2 不一定写该文件)
+# 开机执行 resurrect 恢复进程; 标记为 active 直到 ExecStop
+Type=oneshot
+RemainAfterExit=yes
+User=lslife
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+Environment=PATH=/home/lslife/.local/nodejs/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=PM2_HOME=/home/lslife/.pm2
+Restart=on-failure
+
+ExecStart=/home/lslife/.local/nodejs/bin/pm2 resurrect
+ExecReload=/home/lslife/.local/nodejs/bin/pm2 reload all
+ExecStop=/home/lslife/.local/nodejs/bin/pm2 kill
+
+[Install]
+WantedBy=multi-user.target

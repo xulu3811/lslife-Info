@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    name: 后端构建与冒烟测试
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install
+        run: npm ci || npm install
+      - name: Prisma generate & db push
+        run: |
+          cp .env.example .env
+          npx prisma generate
+          npx prisma db push --skip-generate
+      - name: Seed
+        run: npm run seed
+      - name: Type check
+        run: npm run lint
+      - name: Smoke test
+        run: |
+          npm run dev &
+          sleep 8
+          npm run smoke
+
+  android:
+    name: Android 构建
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      # 若仓库缺少 gradle-wrapper.jar, 先执行 `gradle wrapper` 生成
+      - name: Assemble Debug
+        run: gradle assembleDebug --no-daemon

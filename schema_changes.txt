@@ -1,0 +1,168 @@
+--- CHANGE 0 ---
+  ownedMerchants  Merchant[] @relation("MerchantOwner")
+  merchantInfo    MerchantInfo?
+  quotaLogs       QuotaLedger[]
+  billingOrders   BillingOrder[]
+  valueAddedLogs  ValueAddedLog[]
+
+  merchantCertification MerchantCertification?
+  wallet         UserWallet?
+  walletLogs     WalletLog[]
+  signInRecord   UserSignInRecord?
+  reports        Report[]
+
+  personIdentityId String?
+  personIdentity   PersonIdentity? @relation(fields: [personIdentityId], references: [idCardNumber])
+  devices          UserDeviceLogin[]
+}
+
+model PersonIdentity {
+  idCardNumber String @id
+  realName     String
+  isBlacklisted Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  users        User[]
+}
+
+model DeviceFingerprint {
+  deviceId     String @id
+  isBanned     Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  logins       UserDeviceLogin[]
+}
+
+model UserDeviceLogin {
+  id           String @id @default(cuid())
+  userId       String
+  deviceId     String
+  lastLoginAt  DateTime @default(now())
+  
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device       DeviceFingerprint @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  
+  @@unique([userId, deviceId])
+}
+--- CHANGE 1 ---
+  topic            String?  // 新增：参与的同城话题 (如 #连山探店, #周末去哪儿)
+  isTop            Boolean  @default(false)
+  topExpireAt      DateTime?
+  refreshedAt      DateTime?
+  linkedCommerceId String?
+
+  textHash         String?  // 新增：用于文本去重
+  imageHashes      String   @default("[]") // 新增：图片哈希数组，用于去重
+  isShadowBanned   Boolean  @default(false) // 新增：是否被影子封禁 (不展示在 Feeds 中)
+
+  createdAt        DateTime @default(now())
+--- CHANGE 2 ---
+  merchantCertification MerchantCertification?
+  wallet         UserWallet?
+  walletLogs     WalletLog[]
+  signInRecord   UserSignInRecord?
+  reports        Report[]
+
+  personIdentityId String?
+  personIdentity   PersonIdentity? @relation(fields: [personIdentityId], references: [idCardNumber])
+  devices          UserDeviceLogin[]
+}
+
+model PersonIdentity {
+  idCardNumber String @id
+  realName     String
+  isBlacklisted Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  users        User[]
+}
+
+model DeviceFingerprint {
+  deviceId     String @id
+  isBanned     Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  logins       UserDeviceLogin[]
+}
+
+model UserDeviceLogin {
+  id           String @id @default(cuid())
+  userId       String
+  deviceId     String
+  lastLoginAt  DateTime @default(now())
+  
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device       DeviceFingerprint @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  
+  @@unique([userId, deviceId])
+}
+--- CHANGE 3 ---
+  topic            String?  // 新增：参与的同城话题 (如 #连山探店, #周末去哪儿)
+  isTop            Boolean  @default(false)
+  topExpireAt      DateTime?
+  refreshedAt      DateTime?
+  linkedCommerceId String?
+
+  textHash         String?  // 新增：用于文本去重
+  imageHashes      String   @default("[]") // 新增：图片哈希数组，用于去重
+  isShadowBanned   Boolean  @default(false) // 新增：是否被影子封禁 (不展示在 Feeds 中)
+
+  createdAt        DateTime @default(now())
+--- CHANGE 4 ---
+  merchantCertification MerchantCertification?
+  wallet         UserWallet?
+  walletLogs     WalletLog[]
+  signInRecord   UserSignInRecord?
+  reports        Report[]
+
+  personIdentityId String?
+  personIdentity   PersonIdentity? @relation(fields: [personIdentityId], references: [idCardNumber])
+  devices          UserDeviceLogin[]
+}
+
+model PersonIdentity {
+  idCardNumber String @id
+  realName     String
+  isBlacklisted Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  users        User[]
+}
+
+model DeviceFingerprint {
+  deviceId     String @id
+  isBanned     Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  logins       UserDeviceLogin[]
+}
+
+model UserDeviceLogin {
+  id           String @id @default(cuid())
+  userId       String
+  deviceId     String
+  lastLoginAt  DateTime @default(now())
+  
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device       DeviceFingerprint @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  
+  @@unique([userId, deviceId])
+}
+--- CHANGE 5 ---
+enum PostType {
+  CLASSIFIED
+}
+--- CHANGE 6 ---
+enum PostType {
+  CLASSIFIED
+}
+--- CHANGE 7 ---
+enum PostType {
+  CLASSIFIED
+}

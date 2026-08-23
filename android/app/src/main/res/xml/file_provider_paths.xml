@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FileProvider 路径配置（OTA 升级专用）
+  允许系统安装器访问 App 外部存储 Downloads 目录下载的 APK
+-->
+<paths>
+    <external-files-path
+        name="apk_downloads"
+        path="Download/" />
+</paths>

@@ -1,0 +1,6 @@
+{
+  "name": "连山同城",
+  "description": "连山同城，提供便捷的地图定位、周边商户搜索、在线美食百货下单以及实时的配送骑手位置追踪，支持微信/支付宝等流畅支付体验与暗黑模式适配。",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lslife-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: lslife
+      POSTGRES_PASSWORD: af4a98b163543c58c46bf827bdd546a8
+      POSTGRES_DB: lslife
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: lslife-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:

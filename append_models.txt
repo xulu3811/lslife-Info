@@ -1,0 +1,62 @@
+
+// ================= 商业化与配额体系 =================
+model MerchantInfo {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  shopName      String
+  shopLogo      String?
+  shopBanner    String?
+  address       String
+  latitude      Float?
+  longitude     Float?
+  contactPhone  String
+  businessHours String?
+  licenseUrl    String?
+  verifyStatus  String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BillingOrder {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String   // POST_QUOTA | MERCHANT_VERIFY | POST_TOP | POST_REFRESH
+  amount     Int      // in cents
+  status     String   @default("PENDING") // PENDING | PAID | CANCELLED
+  payChannel String   @default("WECHAT") // WECHAT | ALIPAY | MOCK_WALLET
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model QuotaLedger {
+  id           String   @id @default(cuid())
+  userId       String
+  changeAmount Int      // Positive for added, negative for consumed
+  reason       String   // BUY_QUOTA, NEW_USER_FREE, POST_CONSUME
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model ValueAddedLog {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  action    String   // TOP, REFRESH
+  cost      Int      // Cost in cents
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([postId])
+}
