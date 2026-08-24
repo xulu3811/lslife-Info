@@ -290,7 +290,8 @@ private fun FavoritePostCard(
             }
 
             // 底部细分割线与附加属性/位置信息
-            if (!post.locationName.isNullOrBlank() || post.user?.authLabel != null) {
+            val displayLocation = post.town ?: post.city
+            if (!displayLocation.isNullOrBlank() || post.user?.authLabel != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFF5F5F5))
                 Spacer(modifier = Modifier.height(6.dp))
@@ -299,7 +300,7 @@ private fun FavoritePostCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (!post.locationName.isNullOrBlank()) {
+                    if (!displayLocation.isNullOrBlank()) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 Icons.Filled.LocationOn,
@@ -309,7 +310,7 @@ private fun FavoritePostCard(
                             )
                             Spacer(modifier = Modifier.width(2.dp))
                             Text(
-                                text = post.locationName,
+                                text = displayLocation,
                                 fontSize = 11.sp,
                                 color = Color(0xFF999999),
                                 maxLines = 1,

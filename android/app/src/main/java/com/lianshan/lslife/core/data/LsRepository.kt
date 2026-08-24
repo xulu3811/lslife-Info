@@ -73,11 +73,16 @@ class LsRepository @Inject constructor(
         pageSize: Int = 20
     ) = safeCall { 
         val attrJson = attrFilter?.takeIf { it.isNotEmpty() }?.let { map ->
-            kotlinx.serialization.json.buildJsonObject {
-                map.forEach { (k, v) -> put(k, kotlinx.serialization.json.JsonPrimitive(v)) }
-            }.toString()
+            kotlinx.serialization.json.Json.encodeToString(
+                kotlinx.serialization.json.JsonObject.serializer(),
+                buildJsonObject { map.forEach { (k, v) -> put(k, v) } }
+            )
         }
         api.posts(category, publisherType, listingType, publisherId, mine, q, minPrice, maxPrice, sortBy, attrJson, postType, page, pageSize) 
+    }
+
+    suspend fun dynamics(category: String? = null, page: Int = 1, pageSize: Int = 20, lat: Double? = null, lng: Double? = null) = safeCall {
+        api.getDynamics(category, page, pageSize, lat, lng)
     }
 
     suspend fun quota() = safeCall { api.quota() }
@@ -152,6 +157,6 @@ private fun Merchant.toEntity() = MerchantEntity(
 private fun MerchantEntity.toMerchant() = Merchant(
     id = id, name = name, rating = rating, distance = distance, sales = sales, avgPrice = avgPrice,
     tags = if (tags.isBlank()) emptyList() else tags.split("|"), deliveryFee = deliveryFee, deliveryTime = deliveryTime,
-    logo = logo, banner = logo, isFood = false, category = category, latitude = 0.0, longitude = 0.0,
+    logo = logo, banner = logo, isFood = false, category = category, province = "", city = "",
     description = "", address = "", phone = "",
 )

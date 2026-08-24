@@ -60,6 +60,9 @@ android {
         versionCode = appVersionCode
         versionName = appVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a"))
+        }
     }
 
     buildTypes {
@@ -92,6 +95,10 @@ android {
 }
 
 dependencies {
+    // AMap SDKs (Location & 3D Map)
+    // REMOVED 3dmap as it causes a 30+MB bloat and is currently unused. 
+    // implementation("com.amap.api:3dmap:latest.integration")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -127,14 +134,19 @@ dependencies {
     implementation(libs.datastore.preferences)
     implementation(libs.coil.compose)
 
-    // OSMdroid (免费开源地图替代方案)
-    implementation("org.osmdroid:osmdroid-android:6.1.18")
-    
+    // Map SDKs have been completely removed by product definition (No LBS)
     // ZXing QR Code Scanner
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     
     // CanHub Image Cropper
     implementation("com.vanniktech:android-image-cropper:4.6.0")
+    
+    // CameraX
+    val camerax_version = "1.3.1"
+    implementation("androidx.camera:camera-core:${camerax_version}")
+    implementation("androidx.camera:camera-camera2:${camerax_version}")
+    implementation("androidx.camera:camera-lifecycle:${camerax_version}")
+    implementation("androidx.camera:camera-view:${camerax_version}")
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

@@ -61,12 +61,12 @@ fun CategoryScreen(
 
         // 2. 单层 LazyVerticalGrid 跨列方案
         LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+            columns = GridCells.Fixed(3), // 改为3列
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 12.dp), // 轻微缩小边距以适配3列
             contentPadding = PaddingValues(top = 8.dp, bottom = 80.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             state.categoryGroups.forEach { group ->
@@ -77,7 +77,7 @@ fun CategoryScreen(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF333333),
-                        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
+                        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp)
                     )
                 }
                 
@@ -106,46 +106,44 @@ fun ProductCategoryCard(
 ) {
     Card(
         modifier = modifier
-            .height(100.dp)
+            .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = category.name,
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                color = Color(0xFF333333),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(12.dp)
-                    .fillMaxWidth(0.65f)
-            )
-
             val iconUrl = category.iconUrl ?: ""
             if (iconUrl.isNotEmpty()) {
                 val baseUrl = com.lianshan.lslife.BuildConfig.API_BASE_URL
                 val absoluteUrl = if (iconUrl.startsWith("http") || iconUrl.startsWith("android.resource://")) iconUrl else "${baseUrl.removeSuffix("/")}${if (iconUrl.startsWith("/")) "" else "/"}$iconUrl"
                 
-                // ⚠️ 传入该组件的 imageUrl 必须是经过 U2-Net 算法处理后的无背景透明底 PNG 图片。绝对不允许带有底色（如白色或黑色）的矩形图片破坏 UI。
                 AsyncImage(
                     model = absoluteUrl,
                     contentDescription = category.name,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(end = 0.dp, bottom = 0.dp) // 极小边距，让图片“沉底”并靠右
-                        .width(84.dp) // 缩小30%，原为120.dp
-                        .height(70.dp), // 缩小30%，原为100.dp
-                    contentScale = ContentScale.Fit,
-                    alignment = Alignment.BottomEnd // 关键属性：让加载出的图片在设定区域内严格贴底贴右！
+                    modifier = Modifier.size(48.dp),
+                    contentScale = ContentScale.Fit
                 )
+            } else {
+                Box(modifier = Modifier.size(48.dp))
             }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = category.name,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF333333),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

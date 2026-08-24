@@ -396,6 +396,18 @@ fun ChatScreen(
                             }
                         )
                         
+                        // Location Icon
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.clickable { 
+                                viewModel.sendLocation(23.1291, 113.2644, "广州塔", "广东省广州市海珠区阅江西路222号")
+                            }
+                        ) {
+                            Icon(Icons.Filled.LocationOn, contentDescription = "位置", tint = Color.DarkGray, modifier = Modifier.size(24.dp))
+                            Text("位置", fontSize = 10.sp, color = Color.DarkGray)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        
                         // Bag Icon
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -776,7 +788,43 @@ fun ChatBubble(
                         }
                     }
                 } else {
-                    Text("不支持的位置卡片", color = Color.Gray)
+                    Text("不支持的卡片", color = Color.Gray)
+                }
+            } else if (message.msgType == "LOCATION") {
+                val cardData = try {
+                    org.json.JSONObject(message.content)
+                } catch (e: Exception) {
+                    null
+                }
+                if (cardData != null) {
+                    Column(
+                        modifier = Modifier
+                            .width(220.dp)
+                            .background(Color.White)
+                            .padding(8.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.LocationOn, contentDescription = "位置", tint = PrimaryRed)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = cardData.optString("name", "位置"),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = cardData.optString("address", ""),
+                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 2,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                    }
+                } else {
+                    Text("位置解析失败", color = Color.Gray)
                 }
             } else if (message.msgType == "VOICE" || message.msgType == "AUDIO") {
                 val voiceData = try {

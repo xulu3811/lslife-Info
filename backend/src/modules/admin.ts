@@ -665,8 +665,10 @@ router.post(
             logo: cert.storePhotos.length > 0 ? JSON.parse(cert.storePhotos)[0] : '',
             banner: '',
             category: cert.categoryId,
-            latitude: 0,
-            longitude: 0,
+            province: '',
+            city: '',
+            district: '',
+            town: '',
             description: '新入驻商家',
             address: '',
             phone: cert.contactPhone

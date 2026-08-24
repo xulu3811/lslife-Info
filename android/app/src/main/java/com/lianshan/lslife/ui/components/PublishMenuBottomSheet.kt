@@ -1,8 +1,11 @@
 package com.lianshan.lslife.ui.components
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -13,17 +16,25 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CameraAlt
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import com.lianshan.lslife.feature.publish.PublishMomentState
+import com.lianshan.lslife.feature.publish.PublishMomentViewModel
 import com.lianshan.lslife.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
@@ -59,13 +70,62 @@ fun PublishMenuBottomSheet(
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = Color.White
     ) {
+        val pagerState = rememberPagerState(pageCount = { 2 })
+        val coroutineScope = rememberCoroutineScope()
+        val tabs = listOf("分类发布", "发动态")
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = Dimens.xxl),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CommercePublishTab(onDismiss, onNavigateToPublish)
+            TabRow(
+                selectedTabIndex = pagerState.currentPage,
+                containerColor = Color.White,
+                contentColor = Color(0xFFFF4D4F),
+                indicator = { tabPositions ->
+                    TabRowDefaults.SecondaryIndicator(
+                        modifier = Modifier
+                            .tabIndicatorOffset(tabPositions[pagerState.currentPage])
+                            .padding(horizontal = 48.dp)
+                            .clip(RoundedCornerShape(50)),
+                        height = 4.dp,
+                        color = Color(0xFFFF4D4F)
+                    )
+                },
+                divider = {}
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    val isSelected = pagerState.currentPage == index
+                    Tab(
+                        selected = isSelected,
+                        onClick = {
+                            coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                        },
+                        text = {
+                            Text(
+                                text = title,
+                                fontSize = if (isSelected) 16.sp else 14.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) Color(0xFF111111) else Color(0xFF666666)
+                            )
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 300.dp, max = 500.dp)
+            ) { page ->
+                when (page) {
+                    0 -> CommercePublishTab(onDismiss, onNavigateToPublish)
+                    1 -> MomentPublishTab(onDismiss)
+                }
+            }
         }
     }
 }
@@ -102,10 +162,8 @@ private fun CommercePublishTab(
                 }
             }
         }
-        Spacer(Modifier.height(Dimens.xxl))
     }
 }
-
 
 @Composable
 private fun RowScope.PublishMenuItemBox(
@@ -130,7 +188,7 @@ private fun RowScope.PublishMenuItemBox(
                 .border(0.5.dp, Color(0xFFEEEEEE), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            coil.compose.AsyncImage(
+            AsyncImage(
                 model = item.iconUrl,
                 contentDescription = item.title,
                 modifier = Modifier.size(60.dp)
@@ -145,5 +203,170 @@ private fun RowScope.PublishMenuItemBox(
             maxLines = 1,
             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
         )
+    }
+}
+
+@Composable
+private fun MomentPublishTab(
+    onDismiss: () -> Unit,
+    viewModel: PublishMomentViewModel = hiltViewModel()
+) {
+    var text by remember { mutableStateOf("") }
+    var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(6)) { uris ->
+        if (uris.isNotEmpty()) {
+            val newImages = (selectedImages + uris).take(6)
+            selectedImages = newImages
+        }
+    }
+    
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+    val takePhoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success && tempCameraUri != null) {
+            if (selectedImages.size < 6) {
+                selectedImages = selectedImages + tempCameraUri!!
+            }
+        }
+    }
+    
+    var showSourceMenu by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is PublishMomentState.Success -> {
+                Toast.makeText(context, "动态发布成功", Toast.LENGTH_SHORT).show()
+                viewModel.resetState()
+                onDismiss()
+            }
+            is PublishMomentState.Error -> {
+                Toast.makeText(context, (uiState as PublishMomentState.Error).message, Toast.LENGTH_SHORT).show()
+                viewModel.resetState()
+            }
+            else -> {}
+        }
+    }
+
+    if (showSourceMenu) {
+        AlertDialog(
+            onDismissRequest = { showSourceMenu = false },
+            title = { Text("添加图片") },
+            text = { Text("请选择图片来源") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showSourceMenu = false
+                    val file = java.io.File(context.cacheDir, "camera_${System.currentTimeMillis()}.jpg")
+                    val uri = androidx.core.content.FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                    tempCameraUri = uri
+                    takePhoto.launch(uri)
+                }) {
+                    Text("拍摄")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showSourceMenu = false
+                    pickMedia.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }) {
+                    Text("相册")
+                }
+            }
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = Dimens.lg)
+    ) {
+        OutlinedTextField(
+            value = text,
+            onValueChange = { text = it },
+            placeholder = { Text("分享新鲜事...", color = Color.Gray, fontSize = 15.sp) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 120.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = Color.Transparent,
+                focusedBorderColor = Color.Transparent,
+                unfocusedContainerColor = Color(0xFFF9F9F9),
+                focusedContainerColor = Color(0xFFF9F9F9)
+            ),
+            shape = RoundedCornerShape(12.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(selectedImages) { uri ->
+                Box(modifier = Modifier.aspectRatio(1f).clip(RoundedCornerShape(8.dp))) {
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(4.dp)
+                            .size(24.dp)
+                            .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                            .clickable {
+                                selectedImages = selectedImages.filter { it != uri }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Filled.Close, contentDescription = "删除", tint = Color.White, modifier = Modifier.size(16.dp))
+                    }
+                }
+            }
+            if (selectedImages.size < 6) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFFF5F5F5))
+                            .clickable {
+                                showSourceMenu = true
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = "添加图片", tint = Color.Gray, modifier = Modifier.size(32.dp))
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = {
+                viewModel.publishMoment(context, text, selectedImages)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            enabled = uiState !is PublishMomentState.Publishing && (text.isNotBlank() || selectedImages.isNotEmpty()),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFFF4D4F),
+                disabledContainerColor = Color(0xFFFF4D4F).copy(alpha = 0.5f)
+            ),
+            shape = RoundedCornerShape(24.dp)
+        ) {
+            if (uiState is PublishMomentState.Publishing) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+            } else {
+                Text("发布", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            }
+        }
     }
 }

@@ -48,6 +48,7 @@ model User {
 
   addresses      Address[]
   posts          Post[]
+  dynamicPosts   DynamicPost[]
   favorites      Favorite[]
   footprints     Footprint[]
   following      Follow[]   @relation("UserFollowing")
@@ -79,8 +80,6 @@ model User {
   personIdentity   PersonIdentity? @relation(fields: [personIdentityId], references: [idCardNumber])
   devices          UserDeviceLogin[]
   
-  cartItems        CartItem[]
-  orders           Order[]
   auditLogs        AdminAuditLog[]
 }
 
@@ -130,13 +129,14 @@ model Address {
   phone     String
   tag       String   @default("家")
   address   String
-  latitude  Float?
-  longitude Float?
+  province  String?
+  city      String?
+  district  String?
+  town      String?
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders Order[]
 
   @@index([userId])
 }
@@ -157,8 +157,10 @@ model Merchant {
   logo          String
   banner        String
   category      String?
-  latitude      Float
-  longitude     Float
+  province      String?
+  city          String?
+  district      String?
+  town          String?
   description   String
   address       String
   phone         String
@@ -170,8 +172,6 @@ model Merchant {
   posts        Post[]
   transactions WalletTransaction[]
   owner        User?               @relation("MerchantOwner", fields: [ownerId], references: [id])
-  products     Product[]
-  orders       Order[]
 }
 
 
@@ -239,9 +239,11 @@ model Post {
   price            Float?
   contactPhone     String?  // 新增：信息直连电话
   images           String   @default("[]") // JSON 字符串数组
-  latitude         Float?
-  longitude        Float?
-  locationName     String?
+  province         String?
+  city             String?
+  district         String?
+  town             String?
+  streetAddress    String?
   attributes       String   @default("{}") // JSON 动态属性
   status           String   @default("published") // pending_review | published | rejected | removed | taken_down
   reviewNote       String?
@@ -517,8 +519,10 @@ model MerchantInfo {
   shopLogo      String?
   shopBanner    String?
   address       String
-  latitude      Float?
-  longitude     Float?
+  province      String?
+  city          String?
+  district      String?
+  town          String?
   contactPhone  String
   businessHours String?
   licenseUrl    String?
@@ -674,111 +678,6 @@ model UserDeviceLogin {
   @@unique([userId, deviceId])
 }
 
-// ================= 电商闭环业务 (E-Commerce) =================
-
-model Product {
-  id          String   @id @default(cuid())
-  merchantId  String
-  name        String
-  description String
-  price       Float    @default(0)
-  stock       Int      @default(0)
-  images      String   @default("[]") // JSON string array of URLs
-  category    String?
-  status      String   @default("active") // active | unlisted | deleted
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
-
-  @@index([merchantId])
-  @@index([status])
-}
-
-model CartItem {
-  id        String   @id @default(cuid())
-  userId    String
-  productId String
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([productId])
-  @@unique([userId, productId])
-}
-
-model Order {
-  id          String   @id @default(cuid())
-  userId      String
-  merchantId  String
-  totalAmount Float    @default(0)
-  status      String   @default("PENDING") // PENDING | PAID | SHIPPED | COMPLETED | CANCELLED
-  addressId   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  merchant    Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
-  address     Address?    @relation(fields: [addressId], references: [id], onDelete: SetNull)
-  items       OrderItem[]
-  payment     Payment?
-  delivery    Delivery?
-
-  @@index([userId])
-  @@index([merchantId])
-  @@index([status])
-}
-
-model OrderItem {
-  id              String   @id @default(cuid())
-  orderId         String
-  productId       String
-  quantity        Int      @default(1)
-  priceAtPurchase Float
-  createdAt       DateTime @default(now())
-
-  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product         Product  @relation(fields: [productId], references: [id])
-
-  @@index([orderId])
-  @@index([productId])
-}
-
-model Payment {
-  id          String   @id @default(cuid())
-  orderId     String   @unique
-  amount      Float
-  method      String   @default("WECHAT") // WECHAT | ALIPAY | WALLET
-  status      String   @default("PENDING") // PENDING | SUCCESS | FAILED | REFUNDED
-  paymentTime DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  @@index([status])
-}
-
-model Delivery {
-  id             String   @id @default(cuid())
-  orderId        String   @unique
-  courierName    String?
-  trackingNumber String?
-  status         String   @default("PENDING") // PENDING | DISPATCHED | DELIVERED
-  dispatchTime   DateTime?
-  deliverTime    DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-}
-
 // ================= 主动风控与数据治理 (Active Governance) =================
 
 enum AdminActionType {
@@ -803,3 +702,28 @@ model AdminAuditLog {
   @@index([targetId])
   @@index([actionType])
 }
+
+model DynamicPost {
+  id               String   @id @default(cuid())
+  userId           String
+  content          String   // 文本内容
+  images           String   @default("[]") // 媒体数组 (JSON string)
+  province         String?
+  city             String?
+  district         String?
+  town             String?
+  streetAddress    String?
+  category         String   // 动态类型 (e.g. emergency, gossip, part_time)
+  status           String   @default("AI_REVIEWING") // AI_REVIEWING | MANUAL_REVIEWING | PUBLISHED | EXPIRED | DELETED
+  expiresAt        DateTime // 过期时间
+  evidenceHash     String?  // 关键哈希存证
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([city, district, town])
+  @@index([userId])
+}
+

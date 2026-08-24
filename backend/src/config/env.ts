@@ -18,6 +18,7 @@ export const env = {
   payProvider: process.env.PAY_PROVIDER ?? 'mock',
   aiProvider: process.env.AI_PROVIDER ?? 'mock',
   aiApiKey: process.env.AI_API_KEY ?? '',
+  geminiApiKey: process.env.GEMINI_API_KEY ?? '',
   aiModel: process.env.AI_MODEL ?? 'qwen-plus',
   contentModerationEnabled: (process.env.CONTENT_MODERATION_ENABLED ?? 'true') === 'true',
   isProd: process.env.NODE_ENV === 'production',

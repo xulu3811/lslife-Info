@@ -94,13 +94,15 @@ router.post(
         description: z.string().min(1).max(2000),
         price: z.number().nonnegative().optional().nullable(),
         images: z.array(z.string().min(8).max(500)).max(9).default([]),
-        latitude: z.number().nullable().optional(),
-        longitude: z.number().nullable().optional(),
-        locationName: z.string().max(80).nullable().optional(),
+        province: z.string().max(40).nullable().optional(),
+        city: z.string().max(40).nullable().optional(),
+        district: z.string().max(40).nullable().optional(),
+        town: z.string().max(60).nullable().optional(),
+        streetAddress: z.string().max(200).nullable().optional(),
         publisherType: z.enum(['INDIVIDUAL', 'MERCHANT']).default('INDIVIDUAL'),
         merchantId: z.string().nullable().optional(),
         listingType: z.enum(['GOODS', 'SERVICE']).default('GOODS'),
-        postType: z.enum(['CLASSIFIED', 'COMMERCE']).default('CLASSIFIED'),
+        postType: z.enum(['CLASSIFIED', 'MOMENT']).default('CLASSIFIED'),
         tradeMode: z.string().optional().default('INFO'),
         linkedCommerceId: z.string().nullable().optional(),
         attributes: z.record(z.string(), z.any()).optional().default({}),
@@ -108,6 +110,19 @@ router.post(
         contactPhone: z.string().nullable().optional(),
         imageHashes: z.array(z.string()).optional().default([]),
         useUrgentTag: z.boolean().optional().default(false),
+      })
+      .superRefine((data, ctx) => {
+        if (data.category === 'sys_dynamic') {
+          if (data.price !== null && data.price !== undefined) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "同城动态不支持设定价格" });
+          }
+          if (data.linkedCommerceId) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "同城动态不能关联商品" });
+          }
+          if (data.images.length > 6) {
+            ctx.addIssue({ code: z.ZodIssueCode.custom, message: "同城动态最多支持6张图片" });
+          }
+        }
       })
       .parse(req.body);
 
@@ -224,7 +239,7 @@ router.post(
           publisherType: body.publisherType,
           merchantId: body.publisherType === 'MERCHANT' ? body.merchantId : null,
           listingType: body.listingType,
-          postType: 'CLASSIFIED',
+          postType: body.postType,
           tradeMode: body.tradeMode,
           linkedCommerceId: body.linkedCommerceId ?? null,
           category: body.category,
@@ -232,9 +247,11 @@ router.post(
           description: body.description.trim(),
           price: body.price ?? null,
           images: JSON.stringify(body.images),
-          latitude: body.latitude,
-          longitude: body.longitude,
-          locationName: body.locationName ?? '连山壮族瑶族自治县',
+          province: body.province,
+          city: body.city,
+          district: body.district,
+          town: body.town,
+          streetAddress: body.streetAddress,
           attributes: JSON.stringify(body.attributes),
           status: moderation.status,
           reviewNote: moderation.note,
@@ -280,7 +297,9 @@ router.post(
     // 触发异步 AI 审核队列
     if (moderation.status === 'AI_REVIEWING') {
       import('../services/moderation.js').then(m => {
-        m.triggerAiReview(post.id, post.title, post.description);
+        let parsedImages: string[] = [];
+        try { parsedImages = JSON.parse(post.images); } catch (e) {}
+        m.triggerAiReview(post.id, post.title, post.description, parsedImages);
       }).catch(console.error);
     }
 
@@ -324,7 +343,7 @@ router.get(
         maxPrice: z.coerce.number().nonnegative().optional(),
         sortBy: z.enum(['latest', 'price_asc', 'price_desc', 'recommend']).default('latest'),
         attrFilter: z.string().optional(),
-        postType: z.literal('CLASSIFIED').optional(),
+        postType: z.enum(['CLASSIFIED', 'MOMENT']).optional(),
       })
       .parse(req.query);
 
@@ -526,7 +545,7 @@ router.get(
 
           if (allMatchingIds.length > 0) {
             const ids = allMatchingIds.map(p => p.id);
-            // 2. 利用 PostgreSQL 专属的 jsonb_each_text 把 JSON keys/values 炸开，进行数据库层的 Group By
+            // 2. 利用 PostgreSQL 专属的 jsonb_each_text把 JSON keys/values 炸开，进行数据库层的 Group By
             const rawAgg = await prisma.$queryRaw<Array<{ key: string; value: string; cnt: number | bigint }>>`
               SELECT key, value, count(*) as cnt 
               FROM "Post" p, jsonb_each_text(p.attributes::jsonb) 
@@ -922,9 +941,11 @@ router.put(
         description: z.string().min(1).max(2000),
         price: z.number().nonnegative().optional().nullable(),
         images: z.array(z.string().min(8).max(500)).max(9).default([]),
-        latitude: z.number().nullable().optional(),
-        longitude: z.number().nullable().optional(),
-        locationName: z.string().max(80).nullable().optional(),
+        province: z.string().max(40).nullable().optional(),
+        city: z.string().max(40).nullable().optional(),
+        district: z.string().max(40).nullable().optional(),
+        town: z.string().max(60).nullable().optional(),
+        streetAddress: z.string().max(200).nullable().optional(),
         postType: z.enum(['CLASSIFIED', 'COMMERCE']).optional(),
         tradeMode: z.string().optional(),
         linkedCommerceId: z.string().nullable().optional(),
@@ -951,9 +972,11 @@ router.put(
         description: body.description.trim(),
         price: body.price ?? null,
         images: JSON.stringify(body.images),
-        latitude: body.latitude,
-        longitude: body.longitude,
-        locationName: body.locationName ?? '连山壮族瑶族自治县',
+        province: body.province,
+        city: body.city,
+        district: body.district,
+        town: body.town,
+        streetAddress: body.streetAddress,
         tradeMode: body.tradeMode,
         linkedCommerceId: body.linkedCommerceId !== undefined ? (body.linkedCommerceId ?? null) : undefined,
         attributes: JSON.stringify(body.attributes),

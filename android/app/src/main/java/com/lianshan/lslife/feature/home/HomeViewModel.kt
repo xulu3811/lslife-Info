@@ -7,7 +7,7 @@ import com.lianshan.lslife.core.data.LsRepository
 import com.lianshan.lslife.core.model.Banner
 import com.lianshan.lslife.core.model.CategoryNode
 import com.lianshan.lslife.core.model.CategorySchemaResponse
-import com.lianshan.lslife.core.model.HomeMatrixData
+
 import com.lianshan.lslife.core.model.Merchant
 import com.lianshan.lslife.core.model.Post
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,7 +48,7 @@ data class HomeUiState(
     val refreshing: Boolean = false,
 
     val banners: List<Banner> = emptyList(),
-    val matrixData: HomeMatrixData = HomeMatrixData(),
+
     val selectedTab: String = "RECOMMENDED",
     val currentLocation: String = "📍连山县",
     val searchHotwords: List<String> = listOf("搜本地 靠谱保洁阿姨", "查看最新急售二手房", "找日结兼职工人", "精选同城美食"),
@@ -68,7 +68,7 @@ class HomeViewModel @Inject constructor(
     init {
         observeCategoryTree()
         loadBanners()
-        loadMatrix()
+
         load()
     }
 
@@ -126,13 +126,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadMatrix() {
-        viewModelScope.launch {
-            repo.getHomeMatrix().onSuccess { m ->
-                _state.update { it.copy(matrixData = m) }
-            }
-        }
-    }
+
 
     fun onSort(s: String) {
         _state.update { it.copy(sort = s) }

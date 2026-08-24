@@ -121,6 +121,15 @@ interface ApiService {
         @Query("pageSize") pageSize: Int = 20,
     ): ApiEnvelope<PostPage>
 
+    @GET("dynamics")
+    suspend fun getDynamics(
+        @Query("category") category: String? = null,
+        @Query("page") page: Int = 1,
+        @Query("pageSize") pageSize: Int = 20,
+        @Query("lat") lat: Double? = null,
+        @Query("lng") lng: Double? = null
+    ): ApiEnvelope<PostPage>
+
     @GET("posts/discover")
     suspend fun getDiscoverPosts(@Query("categoryId") categoryId: String? = null): ApiEnvelope<List<DiscoverSection>>
 

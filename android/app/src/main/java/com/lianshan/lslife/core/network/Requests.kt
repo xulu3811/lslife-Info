@@ -81,9 +81,11 @@ data class PublishRequest(
     val contactPhone: String? = null,
     val category: String,
     val images: List<String> = emptyList(),
-    val latitude: Double? = null,
-    val longitude: Double? = null,
-    val locationName: String? = null,
+    val province: String? = null,
+    val city: String? = null,
+    val district: String? = null,
+    val town: String? = null,
+    val streetAddress: String? = null,
     val postType: String = "CLASSIFIED",
     val attributes: JsonObject = JsonObject(emptyMap())
 )
@@ -144,7 +146,11 @@ data class CreatePostRequest(
     val useUrgentTag: Boolean = false,
 
     val attributes: @Serializable(with = FlexibleJsonObjectSerializer::class) JsonObject = JsonObject(emptyMap()),
-    val locationName: String? = null,
+    val province: String? = null,
+    val city: String? = null,
+    val district: String? = null,
+    val town: String? = null,
+    val streetAddress: String? = null,
     val linkedCommerceId: String? = null,
     val topic: String? = null,
 )

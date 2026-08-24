@@ -3,6 +3,7 @@ package com.lianshan.lslife.feature.home
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,8 +13,10 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.staggeredgrid.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.items
+
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -35,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +58,7 @@ import com.lianshan.lslife.ui.SessionViewModel
 import com.lianshan.lslife.ui.components.*
 import com.lianshan.lslife.ui.theme.Dimens
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private data class CategoryBadgeItem(
     val id: String,
@@ -154,89 +159,154 @@ fun HomeScreen(
             onMessageClick = onMessageClick
         )
 
-        PullToRefreshBox(
-            isRefreshing = state.refreshing,
-            onRefresh = viewModel::refresh,
-            modifier = Modifier.fillMaxSize()
+        val tabs = listOf("首页", "同城动态")
+        val pagerState = rememberPagerState(pageCount = { tabs.size })
+        val coroutineScope = rememberCoroutineScope()
+
+        PrimaryTabRow(
+            selectedTabIndex = pagerState.currentPage,
+            containerColor = Color.White,
+            contentColor = Color(0xFFFF4D4F),
+            indicator = {
+                TabRowDefaults.SecondaryIndicator(
+                    modifier = Modifier
+                        .tabIndicatorOffset(pagerState.currentPage)
+                        .padding(horizontal = 48.dp) // 缩短指示器宽度
+                        .clip(RoundedCornerShape(50)),
+                    height = 4.dp, // 加粗至4dp
+                    color = Color(0xFFFF4D4F)
+                )
+            },
+            divider = {}
         ) {
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(2),
-                state = gridState,
-                contentPadding = PaddingValues(start = Dimens.lg, end = Dimens.lg, top = 4.dp, bottom = Dimens.xl),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.listGap),
-                verticalItemSpacing = Dimens.listGap,
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                // 第二层：头部大 Banner 轮播 (广告位)
-                if (state.banners.isNotEmpty()) {
-                    item(span = StaggeredGridItemSpan.FullLine) {
-                        HomeBannerCarousel(banners = state.banners, onBannerClick = { Toast.makeText(context, it.title, Toast.LENGTH_SHORT).show() })
-                    }
-                }
-
-                // 第三层：金刚区导航 (单页 6 个品类发现大图)
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    KingkongCategoryPager(
-                        onCategoryClick = onNavigateToCategory,
-                        onNavigateToCategoryTab = onNavigateToCategoryTab
-                    )
-                }
-
-                // 第四层：场景化展位矩阵 (为您甄选：同城严选/品牌好店 + 限时福利/特惠抢单)
-                // 即使后端没有数据，也强制展示占位区块，让商家看到展位价值
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    HomeShowcaseMatrix(
-                        matrixData = state.matrixData,
-                        onPostClick = onOpenPost
-                    )
-                }
-
-                // 第五层：核心瀑布流 Tab 栏 ([推荐] [最新] [附近])
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    FeedTabHeader(
-                        selectedTab = state.selectedTab,
-                        onTabSelect = viewModel::onTabSelect,
-                        onFilterClick = { viewModel.setShowFilterBottomSheet(true) }
-                    )
-                }
-
-                // 第五层：差异化卡片展示 (B端认证商家 vs C端个人)
-                if (state.loading && state.posts.isEmpty()) {
-                    items(6) { SkeletonCard() }
-                } else if (state.error != null && state.posts.isEmpty()) {
-                    item(span = StaggeredGridItemSpan.FullLine) { ErrorBox(state.error!!, onRetry = { viewModel.load() }) }
-                } else {
-                    items(state.posts, key = { it.id }) { post ->
-                        StandardFeedCard(
-                            post = post,
-                            onClick = { onOpenPost(post.id) },
-                            onChatClick = { onOpenPost(post.id) }
-                        )
-                    }
-
-                    if (state.posts.isEmpty()) {
-                        item(span = StaggeredGridItemSpan.FullLine) {
-                            EmptyState(
-                                title = "暂无相关同城信息",
-                                subtitle = "去「发布」发一条同城服务或需求吧！",
-                                modifier = Modifier.fillMaxWidth().height(Dimens.xxl * 6),
+            tabs.forEachIndexed { index, title ->
+                val isSelected = pagerState.currentPage == index
+                Tab(
+                    selected = isSelected,
+                    onClick = {
+                        coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                    },
+                    text = {
+                        Row(verticalAlignment = Alignment.Top) {
+                            Text(
+                                text = title,
+                                fontSize = if (isSelected) 16.sp else 14.sp, // 回归协调的字体尺寸
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) Color(0xFF111111) else Color(0xFF666666) // 平滑的灰度过渡
                             )
+                            if (index == 1) {
+                                // 同城动态红点的呼吸动画
+                                val infiniteTransition = rememberInfiniteTransition(label = "badge_breathing")
+                                val alpha by infiniteTransition.animateFloat(
+                                    initialValue = 0.4f,
+                                    targetValue = 1.0f,
+                                    animationSpec = infiniteRepeatable(
+                                        animation = tween(1200, easing = LinearEasing),
+                                        repeatMode = RepeatMode.Reverse
+                                    ),
+                                    label = "badge_alpha"
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .offset(x = 2.dp, y = 0.dp)
+                                        .graphicsLayer { this.alpha = alpha }
+                                        .background(Color(0xFFFF4D4F), CircleShape)
+                                )
+                            }
                         }
                     }
+                )
+            }
+        }
 
-                    if (state.loadingMore) {
-                        item(span = StaggeredGridItemSpan.FullLine) {
-                            Box(modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.md), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.weight(1f)
+        ) { page ->
+            when (page) {
+                0 -> {
+                    PullToRefreshBox(
+                        isRefreshing = state.refreshing,
+                        onRefresh = viewModel::refresh,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        LazyVerticalStaggeredGrid(
+                            columns = StaggeredGridCells.Fixed(2),
+                            state = gridState,
+                            contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 4.dp, bottom = Dimens.xl),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalItemSpacing = 8.dp,
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+
+
+                            // 第三层：金刚区导航 (固定 10 宫格)
+                            item(span = StaggeredGridItemSpan.FullLine) {
+                                KingkongCategoryGrid(
+                                    onCategoryClick = onNavigateToCategory
+                                )
                             }
-                        }
-                    } else if (!state.hasMore && state.posts.isNotEmpty()) {
-                        item(span = StaggeredGridItemSpan.FullLine) {
-                            Box(modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.lg), contentAlignment = Alignment.Center) {
-                                Text("—— 连山同城，贴心服务 ——", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+
+
+                            // 第五层：核心瀑布流 Tab 栏 ([推荐] [最新] [附近])
+                            item(span = StaggeredGridItemSpan.FullLine) {
+                                FeedTabHeader(
+                                    selectedTab = state.selectedTab,
+                                    onTabSelect = viewModel::onTabSelect,
+                                    onFilterClick = { viewModel.setShowFilterBottomSheet(true) }
+                                )
+                            }
+
+                            // 第五层：差异化卡片展示 (B端认证商家 vs C端个人)
+                            if (state.loading && state.posts.isEmpty()) {
+                                items(6) { SkeletonCard() }
+                            } else if (state.error != null && state.posts.isEmpty()) {
+                                item(span = StaggeredGridItemSpan.FullLine) { ErrorBox(state.error!!, onRetry = { viewModel.load() }) }
+                            } else {
+                                items(state.posts, key = { it.id }) { post ->
+                                    StandardFeedCard(
+                                        post = post,
+                                        onClick = { onOpenPost(post.id) },
+                                        onChatClick = { onOpenPost(post.id) }
+                                    )
+                                }
+
+                                if (state.posts.isEmpty()) {
+                                    item(span = StaggeredGridItemSpan.FullLine) {
+                                        EmptyState(
+                                            title = "暂无相关同城信息",
+                                            subtitle = "去「发布」发一条同城服务或需求吧！",
+                                            modifier = Modifier.fillMaxWidth().height(Dimens.xxl * 6),
+                                        )
+                                    }
+                                }
+
+                                if (state.loadingMore) {
+                                    item(span = StaggeredGridItemSpan.FullLine) {
+                                        Box(modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.md), contentAlignment = Alignment.Center) {
+                                            CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                                        }
+                                    }
+                                } else if (!state.hasMore && state.posts.isNotEmpty()) {
+                                    item(span = StaggeredGridItemSpan.FullLine) {
+                                        Box(modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.lg), contentAlignment = Alignment.Center) {
+                                            Text("—— 连山同城，贴心服务 ——", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
+                }
+                1 -> {
+                    val dynamicsViewModel: DynamicsViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+                    CityDynamicsScreen(
+                        viewModel = dynamicsViewModel,
+                        onPostClick = { onOpenPost(it) },
+                        onChatClick = { onOpenPost(it) } // Navigate to chat or post detail
+                    )
                 }
             }
         }
@@ -415,79 +485,32 @@ private fun HomeBannerCarousel(
     }
 }
 
-/** 第三层：金刚区导航 (4列 x 2行 横向 Pager 翻页) */
-@OptIn(ExperimentalFoundationApi::class)
+/** 第三层：金刚区导航 (固定 10 宫格) */
 @Composable
-private fun KingkongCategoryPager(
-    onCategoryClick: (String) -> Unit,
-    onNavigateToCategoryTab: () -> Unit
+private fun KingkongCategoryGrid(
+    onCategoryClick: (String) -> Unit
 ) {
-    val allCategories = (page1Categories + page2Categories).take(10)
-    val pages = remember(allCategories) { allCategories.chunked(8) }
-    val pagerState = rememberPagerState(pageCount = { pages.size })
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 4.dp),
+            .padding(top = 8.dp, bottom = 4.dp, start = 8.dp, end = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 强制设置金刚区 Pager 的固定高度 (包含 2 行图标 + 间距)
-        // 从而消除从 Tab1 (两行) 滑动到 Tab2 (单行) 时的底部卡片上移抖动现象
-        val fixedPagerHeight = 220.dp
-        HorizontalPager(
-            state = pagerState,
-            verticalAlignment = Alignment.Top,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(fixedPagerHeight)
-        ) { page ->
-            val pageItems = pages[page]
-            Column(modifier = Modifier.fillMaxWidth()) {
-                val row1 = pageItems.take(4)
-                val row2 = pageItems.drop(4).take(4)
+        val row1 = page1Categories.take(5)
+        val row2 = page1Categories.drop(5).take(5)
 
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    row1.forEach { cat ->
-                        KingkongItemView(cat, onCategoryClick)
-                    }
-                    repeat(4 - row1.size) { Spacer(modifier = Modifier.weight(1f)) }
-                }
-
-                if (row2.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        row2.forEach { cat ->
-                            KingkongItemView(cat, onCategoryClick)
-                        }
-                        repeat(4 - row2.size) { Spacer(modifier = Modifier.weight(1f)) }
-                    }
+        Row(modifier = Modifier.fillMaxWidth()) {
+            row1.forEach { cat ->
+                KingkongItemView(cat, modifier = Modifier.weight(1f)) { id ->
+                    onCategoryClick(id)
                 }
             }
         }
-        
-        // Pager indicator
-        if (pages.size > 1) {
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                repeat(pages.size) { iteration ->
-                    val isSelected = pagerState.currentPage == iteration
-                    val color = if (isSelected) Color(0xFFFF4D4F) else Color(0xFFE0E0E0)
-                    val width = if (isSelected) 14.dp else 5.dp
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 3.dp)
-                            .clip(CircleShape)
-                            .background(color)
-                            .height(5.dp)
-                            .width(width)
-                    )
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            row2.forEach { cat ->
+                KingkongItemView(cat, modifier = Modifier.weight(1f)) { id ->
+                    onCategoryClick(id)
                 }
             }
         }
@@ -495,36 +518,28 @@ private fun KingkongCategoryPager(
 }
 
 @Composable
-private fun RowScope.KingkongItemView(
+private fun KingkongItemView(
     cat: CategoryBadgeItem,
+    modifier: Modifier = Modifier,
     onClick: (String) -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .weight(1f)
-            .heightIn(min = 96.dp)
+        modifier = modifier
+            .padding(vertical = 4.dp)
             .clickable { onClick(cat.id) },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .size(72.dp)
-                .clip(CircleShape)
-                .background(Color.White)
-                .border(0.5.dp, Color(0xFFEEEEEE), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            AsyncImage(
-                model = cat.iconUrl,
-                contentDescription = cat.name,
-                modifier = Modifier.size(60.dp)
-            )
-        }
+        // 彻底移除生硬的圆形白底与边框，让3D实物图标自然悬浮，极大增强呼吸感与空间感
+        AsyncImage(
+            model = cat.iconUrl,
+            contentDescription = cat.name,
+            modifier = Modifier.size(48.dp) // 统一基准：48.dp
+        )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = cat.name,
-            fontSize = 13.sp,
-            color = Color(0xFF333333),
+            fontSize = 11.sp, // 与分类页协调
+            color = Color(0xFF444444),
             fontWeight = FontWeight.Medium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -532,186 +547,7 @@ private fun RowScope.KingkongItemView(
     }
 }
 
-/** 第四层：场景化展位矩阵 (为您甄选魔方) */
-@Composable
-private fun HomeShowcaseMatrix(
-    matrixData: com.lianshan.lslife.core.model.HomeMatrixData,
-    onPostClick: (String) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        // Block 1: 畅销榜单 (隐藏)
-        /*
-        ShowcaseHorizontalBlock(
-            title = "畅销榜单",
-            subtitle = "大家都在看",
-            items = matrixData.featuredMerchants,
-            titleColor = Color(0xFF111111),
-            onPostClick = onPostClick
-        )
-        */
 
-        // Block 2: 优选好物
-        ShowcaseHorizontalBlock(
-            title = "优选好物",
-            subtitle = "同城极速达",
-            items = matrixData.specialOffers,
-            titleColor = Color(0xFF111111),
-            onPostClick = onPostClick
-        )
-    }
-}
-
-@Composable
-private fun ShowcaseHorizontalBlock(
-    title: String,
-    subtitle: String,
-    items: List<com.lianshan.lslife.core.model.Post>,
-    titleColor: Color,
-    onPostClick: (String) -> Unit
-) {
-    if (items.isEmpty()) return
-
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = Color.White,
-        shadowElevation = 0.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 12.dp,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = Color(0x0D000000),
-                ambientColor = Color(0x0D000000)
-            )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp, bottom = 16.dp, start = 16.dp)
-        ) {
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    text = title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF111111)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = subtitle,
-                    fontSize = 12.sp,
-                    color = Color(0xFF666666),
-                    fontWeight = FontWeight.Normal,
-                    modifier = Modifier.padding(bottom = 2.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            
-            val context = androidx.compose.ui.platform.LocalContext.current
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(end = 16.dp)
-            ) {
-                items(items.size) { index ->
-                    val post = items[index]
-                    val imageUrl = post.images.firstOrNull() ?: ""
-
-                    Column(
-                        horizontalAlignment = Alignment.Start,
-                        modifier = Modifier
-                            .width(108.dp)
-                            .clickable { onPostClick(post.id) }
-                    ) {
-                        AsyncImage(
-                            model = imageUrl,
-                            contentDescription = post.title,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(4f / 3f)
-                                .clip(RoundedCornerShape(8.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = post.title ?: "同城发布",
-                            color = Color(0xFF333333),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Normal,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.heightIn(min = 34.dp)
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            val avatarUrl = post.user?.avatar ?: ""
-                            AsyncImage(
-                                model = avatarUrl,
-                                contentDescription = "Avatar",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFFEEEEEE))
-                            )
-                            
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = Color(0xFFE8F5E9),
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clickable {
-                                            val phone = post.contactPhone
-                                            if (phone.isNullOrBlank()) {
-                                                Toast.makeText(context, "对方暂未公开电话", Toast.LENGTH_SHORT).show()
-                                            } else {
-                                                Toast.makeText(context, "正在拨打电话: $phone", Toast.LENGTH_SHORT).show()
-                                            }
-                                        }
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Filled.Call,
-                                            contentDescription = "Call",
-                                            tint = Color(0xFF4CAF50),
-                                            modifier = Modifier.size(12.dp)
-                                        )
-                                    }
-                                }
-                                
-                                Surface(
-                                    shape = CircleShape,
-                                    color = Color(0xFFFFEBEE),
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clickable { onPostClick(post.id) }
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.Chat,
-                                            contentDescription = "Chat",
-                                            tint = Color(0xFFF44336),
-                                            modifier = Modifier.size(12.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 /** 第五层：Feed 切换 Tab 栏 */
 @Composable
@@ -726,50 +562,75 @@ private fun FeedTabHeader(
         "NEARBY" to "附近"
     )
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // 提供视觉留白
+        Spacer(modifier = Modifier.height(18.dp))
+
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = Color.White,
+            shadowElevation = 0.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 6.dp)
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(12.dp),
+                    spotColor = Color(0x14000000), // 柔和的浅色底层阴影，扩散自然
+                    ambientColor = Color(0x0A000000)
+                )
         ) {
-            tabs.forEach { (key, name) ->
-                val selected = selectedTab == key
-                Column(
-                    modifier = Modifier.clickable { onTabSelect(key) },
-                    horizontalAlignment = Alignment.CenterHorizontally
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = name,
-                        fontSize = if (selected) 15.sp else 13.sp,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                        color = if (selected) Color(0xFF111111) else Color.Gray
-                    )
-                    if (selected) {
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 2.dp)
-                                .size(16.dp, 3.dp)
-                                .background(Color(0xFFFF4D4F), CircleShape)
-                        )
+                    tabs.forEach { (key, name) ->
+                        val selected = selectedTab == key
+                        Column(
+                            modifier = Modifier.clickable { onTabSelect(key) },
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = name,
+                                fontSize = if (selected) 15.sp else 13.sp,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (selected) Color(0xFF111111) else Color.Gray
+                            )
+                            if (selected) {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(top = 4.dp)
+                                        .size(16.dp, 3.dp)
+                                        .background(Color(0xFFFF4D4F), CircleShape)
+                                )
+                            }
+                        }
                     }
                 }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Row(
+                    modifier = Modifier
+                        .clickable { onFilterClick() }
+                        .padding(horizontal = 6.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("筛选", fontSize = 13.sp, color = Color.Gray)
+                    Icon(
+                        imageVector = Icons.Filled.FilterList,
+                        contentDescription = "Filter",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Row(
-            modifier = Modifier
-                .clickable { onFilterClick() }
-                .padding(horizontal = 6.dp, vertical = 2.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("筛选", fontSize = 13.sp, color = Color.Gray)
-            Icon(imageVector = Icons.Filled.FilterList, contentDescription = "Filter", tint = Color.Gray, modifier = Modifier.size(16.dp))
         }
     }
 }
@@ -801,32 +662,31 @@ private fun StandardFeedCard(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp)
+                        .aspectRatio(1.5f, matchHeightConstraintsFirst = false) // 限制为 3:2 比例，显著降低图片高度
                         .background(Color(0xFFF7F7F7)),
                     contentAlignment = Alignment.Center
                 ) {
                     AsyncImage(
                         model = imageUrl + "?x-oss-process=image/resize,w_500",
                         contentDescription = post.title,
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.Crop, // 确保图片裁剪不缩放变形
                         modifier = Modifier.fillMaxSize()
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            Column(modifier = Modifier.padding(horizontal = 10.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 8.dp)) {
                 Text(
                     text = post.title ?: "同城发布",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Normal,
-                    lineHeight = 17.sp,
+                    fontSize = 13.sp, // 缩小至13.sp
+                    fontWeight = FontWeight.Bold, // 保持粗体
                     color = Color(0xFF111111),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp)) // 从10.dp缩小至8.dp，内边距更紧凑
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -840,16 +700,16 @@ private fun StandardFeedCard(
                         contentDescription = "Avatar",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(20.dp)
+                            .size(20.dp) // 头像限制在20.dp
                             .clip(CircleShape)
                             .background(Color(0xFFEEEEEE))
                     )
                     
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     
                     Text(
                         text = authorName,
-                        fontSize = 11.sp,
+                        fontSize = 11.sp, // 发布者昵称 11.sp
                         color = Color(0xFF666666),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -877,29 +737,29 @@ private fun StandardFeedCard(
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     
                     Surface(
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(12.dp),
                         color = Color(0xFFFFEBEE),
                         modifier = Modifier
-                            .height(26.dp)
+                            .height(24.dp) // 按钮高度更迷你
                             .clickable { onChatClick() }
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 10.dp)
+                            modifier = Modifier.padding(horizontal = 8.dp) // 缩小内边距
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Chat,
                                 contentDescription = "联系",
                                 tint = Color(0xFFFF4D4F),
-                                modifier = Modifier.size(13.dp)
+                                modifier = Modifier.size(11.dp) // Icon 缩小
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "联系",
-                                fontSize = 11.sp,
+                                fontSize = 10.sp, // 文字缩小至 10.sp
                                 fontWeight = FontWeight.Medium,
                                 color = Color(0xFFFF4D4F)
                             )

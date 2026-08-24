@@ -27,6 +27,7 @@ import appVersionRoutes from './modules/appVersion.js';
 import billingRoutes from './modules/billing.js';
 import promotionsRoutes from './modules/promotions.js';
 import categoryRoutes from './routes/category.js';
+import dynamicsRoutes from './modules/dynamics.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadsDir = path.resolve(__dirname, '../public/uploads');
@@ -78,6 +79,7 @@ export function createApp() {
   app.use('/api/users', userRoutes);
   app.use('/api/categories', categoryRoutes);
   app.use('/api/merchants', merchantRoutes);
+  app.use('/api/dynamics', dynamicsRoutes);
 
   app.use('/api/posts', publishRoutes);
   app.use('/api/membership', membershipRoutes);

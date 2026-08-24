@@ -206,7 +206,7 @@ class PublishViewModel @Inject constructor(
                         contactPhone = post.contactPhone ?: "",
                         tradeMode = post.tradeMode,
                         images = post.images,
-                        location = post.locationName ?: "连山壮族瑶族自治县",
+                        location = post.town ?: post.city ?: "连山壮族瑶族自治县",
                         attributesMap = attrs,
                     )
                 }
@@ -426,7 +426,7 @@ class PublishViewModel @Inject constructor(
                 merchantId = s.merchantId,
                 listingType = s.listingType,
                 attributes = mergedAttributes,
-                locationName = s.location,
+                town = s.location,
             )
             
             val result = if (s.editingPostId != null) {
