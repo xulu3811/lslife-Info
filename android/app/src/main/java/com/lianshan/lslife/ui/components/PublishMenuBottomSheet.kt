@@ -91,7 +91,7 @@ fun PublishMenuBottomSheet(
                             .padding(horizontal = 48.dp)
                             .clip(RoundedCornerShape(50)),
                         height = 4.dp,
-                        color = Color(0xFFFF4D4F)
+                        color = Color(0xFF4285F4)
                     )
                 },
                 divider = {}
@@ -119,7 +119,7 @@ fun PublishMenuBottomSheet(
 
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxWidth().heightIn(min = 300.dp, max = 500.dp)
+                modifier = Modifier.fillMaxWidth().height(380.dp)
             ) { page ->
                 when (page) {
                     0 -> CommercePublishTab(onDismiss, onNavigateToPublish)
@@ -180,26 +180,17 @@ private fun RowScope.PublishMenuItemBox(
             },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .size(72.dp)
-                .clip(CircleShape)
-                .background(Color.White)
-                .border(0.5.dp, Color(0xFFEEEEEE), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            AsyncImage(
-                model = item.iconUrl,
-                contentDescription = item.title,
-                modifier = Modifier.size(60.dp)
-            )
-        }
+        AsyncImage(
+            model = item.iconUrl,
+            contentDescription = item.title,
+            modifier = Modifier.size(48.dp) // 统一基准：48.dp
+        )
         Spacer(Modifier.height(6.dp))
         Text(
             text = item.title,
-            fontSize = 13.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF333333),
+            color = Color(0xFF444444),
             maxLines = 1,
             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
         )

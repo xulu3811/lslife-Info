@@ -167,15 +167,15 @@ fun HomeScreen(
             selectedTabIndex = pagerState.currentPage,
             containerColor = Color.White,
             contentColor = Color(0xFFFF4D4F),
-            modifier = Modifier.height(44.dp), // 降低上下高度
+            modifier = Modifier.height(36.dp), // 进一步降低高度
             indicator = {
                 TabRowDefaults.SecondaryIndicator(
                     modifier = Modifier
                         .tabIndicatorOffset(pagerState.currentPage)
                         .padding(horizontal = 48.dp) // 缩短指示器宽度
                         .clip(RoundedCornerShape(50)),
-                    height = 4.dp, // 加粗至4dp
-                    color = Color(0xFFFF4D4F)
+                    height = 3.dp, // 细化至3dp
+                    color = Color(0xFF4285F4)
                 )
             },
             divider = {}
@@ -184,7 +184,7 @@ fun HomeScreen(
                 val isSelected = pagerState.currentPage == index
                 Tab(
                     selected = isSelected,
-                    modifier = Modifier.height(44.dp),
+                    modifier = Modifier.height(36.dp),
                     onClick = {
                         coroutineScope.launch { pagerState.animateScrollToPage(index) }
                     },
@@ -192,7 +192,7 @@ fun HomeScreen(
                         Row(verticalAlignment = Alignment.Top) {
                             Text(
                                 text = title,
-                                fontSize = 15.sp, // 字体不再随着选中状态忽大忽小
+                                fontSize = 14.sp, // 缩小字体
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                 color = if (isSelected) Color(0xFF111111) else Color(0xFF666666) // 平滑的灰度过渡
                             )
@@ -338,6 +338,13 @@ private fun TopSearchHeaderBar(
                 .padding(end = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Icon(
+                imageVector = Icons.Filled.LocationOn,
+                contentDescription = "Location",
+                tint = Color(0xFF34A853),
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(2.dp))
             Text(
                 text = locationText,
                 fontSize = 14.sp,
@@ -584,7 +591,7 @@ private fun FeedTabHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 6.dp), // 减少内边距缩小高度
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
@@ -599,7 +606,7 @@ private fun FeedTabHeader(
                         ) {
                             Text(
                                 text = name,
-                                fontSize = if (selected) 15.sp else 13.sp,
+                                fontSize = if (selected) 14.sp else 12.sp, // 缩小字体
                                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                                 color = if (selected) Color(0xFF111111) else Color.Gray
                             )
@@ -623,12 +630,12 @@ private fun FeedTabHeader(
                         .padding(horizontal = 6.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("筛选", fontSize = 13.sp, color = Color.Gray)
+                    Text("筛选", fontSize = 12.sp, color = Color.Gray) // 缩小字体
                     Icon(
                         imageVector = Icons.Filled.FilterList,
                         contentDescription = "Filter",
                         tint = Color.Gray,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(14.dp) // 缩小图标
                     )
                 }
             }
@@ -742,7 +749,7 @@ private fun StandardFeedCard(
                     
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = Color(0xFFFFEBEE),
+                        color = Color(0xFFE3F2FD),
                         modifier = Modifier
                             .height(24.dp) // 按钮高度更迷你
                             .clickable { onChatClick() }
@@ -754,7 +761,7 @@ private fun StandardFeedCard(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Chat,
                                 contentDescription = "联系",
-                                tint = Color(0xFFFF4D4F),
+                                tint = Color(0xFF4285F4),
                                 modifier = Modifier.size(11.dp) // Icon 缩小
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -762,7 +769,7 @@ private fun StandardFeedCard(
                                 text = "联系",
                                 fontSize = 10.sp, // 文字缩小至 10.sp
                                 fontWeight = FontWeight.Medium,
-                                color = Color(0xFFFF4D4F)
+                                color = Color(0xFF4285F4)
                             )
                         }
                     }
