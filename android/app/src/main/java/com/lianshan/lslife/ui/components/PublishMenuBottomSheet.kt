@@ -215,10 +215,11 @@ private fun MomentPublishTab(
     var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val aiGenerating by viewModel.aiGenerating.collectAsStateWithLifecycle()
 
-    val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(6)) { uris ->
+    val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(3)) { uris ->
         if (uris.isNotEmpty()) {
-            val newImages = (selectedImages + uris).take(6)
+            val newImages = (selectedImages + uris).take(3)
             selectedImages = newImages
         }
     }
@@ -226,7 +227,7 @@ private fun MomentPublishTab(
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
     val takePhoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success && tempCameraUri != null) {
-            if (selectedImages.size < 6) {
+            if (selectedImages.size < 3) {
                 selectedImages = selectedImages + tempCameraUri!!
             }
         }
@@ -281,21 +282,64 @@ private fun MomentPublishTab(
             .fillMaxSize()
             .padding(horizontal = Dimens.lg)
     ) {
-        OutlinedTextField(
-            value = text,
-            onValueChange = { text = it },
-            placeholder = { Text("分享新鲜事...", color = Color.Gray, fontSize = 15.sp) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 120.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.Transparent,
-                focusedBorderColor = Color.Transparent,
-                unfocusedContainerColor = Color(0xFFF9F9F9),
-                focusedContainerColor = Color(0xFFF9F9F9)
-            ),
-            shape = RoundedCornerShape(12.dp)
-        )
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = Color(0xFFF7F8FA),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = { Text("分享新鲜事...", color = Color.Gray, fontSize = 15.sp) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 120.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent
+                    )
+                )
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Surface(
+                        onClick = {
+                            viewModel.generateAiDescription(text) { newText ->
+                                text = newText
+                            }
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                        color = Color(0xFFFFF0F0),
+                        enabled = text.isNotBlank() && !aiGenerating
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (aiGenerating) {
+                                CircularProgressIndicator(modifier = Modifier.size(12.dp), color = Color(0xFFFF4D4F), strokeWidth = 2.dp)
+                            } else {
+                                Text("✨", fontSize = 12.sp)
+                            }
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = if (aiGenerating) "AI润色中..." else "AI帮你写",
+                                fontSize = 12.sp,
+                                color = Color(0xFFFF4D4F),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -328,19 +372,23 @@ private fun MomentPublishTab(
                     }
                 }
             }
-            if (selectedImages.size < 6) {
+            if (selectedImages.size < 3) {
                 item {
-                    Box(
+                    Column(
                         modifier = Modifier
                             .aspectRatio(1f)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFF5F5F5))
+                            .background(Color(0xFFF7F8FA))
+                            .border(1.dp, Color(0xFFEFEFEF), RoundedCornerShape(8.dp))
                             .clickable {
                                 showSourceMenu = true
                             },
-                        contentAlignment = Alignment.Center
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(Icons.Filled.Add, contentDescription = "添加图片", tint = Color.Gray, modifier = Modifier.size(32.dp))
+                        Icon(Icons.Filled.Add, contentDescription = "添加图片", tint = Color(0xFFFF4D4F), modifier = Modifier.size(28.dp))
+                        Spacer(Modifier.height(4.dp))
+                        Text("${selectedImages.size}/3", fontSize = 11.sp, color = Color.Gray)
                     }
                 }
             }

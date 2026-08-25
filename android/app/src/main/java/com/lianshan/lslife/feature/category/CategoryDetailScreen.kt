@@ -289,8 +289,9 @@ fun ModernCategoryHeader(
                         // 选中态：深邃黑背景 + 3D 弥散软阴影悬浮感
                         Box(
                             modifier = Modifier
+                                .height(32.dp)
                                 .shadow(
-                                    elevation = 6.dp,
+                                    elevation = 4.dp,
                                     shape = CircleShape,
                                     spotColor = Color.Black.copy(alpha = 0.15f),
                                     ambientColor = Color.Black.copy(alpha = 0.10f)
@@ -298,7 +299,7 @@ fun ModernCategoryHeader(
                                 .clip(CircleShape)
                                 .background(Color(0xFF1A1A1A))
                                 .clickable { onSubCategorySelect(subCat.id) }
-                                .padding(horizontal = 18.dp, vertical = 8.dp),
+                                .padding(horizontal = 16.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -312,20 +313,22 @@ fun ModernCategoryHeader(
                         // 未选态：纯粹极简文字 + 浅色交互
                         Box(
                             modifier = Modifier
+                                .height(32.dp)
                                 .clip(CircleShape)
                                 .clickable { onSubCategorySelect(subCat.id) }
-                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                                .padding(horizontal = 12.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = subCat.name,
-                                color = Color(0xFF8E8E93),
+                                color = Color(0xFF666666),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium
                             )
                         }
                     }
                 }
+
             }
         }
     }

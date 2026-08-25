@@ -228,35 +228,64 @@ fun DynamicFeedCard(
                 }
             } ?: 1f // fallback
             
+            val displayText = if (item.title.isNotBlank()) item.title else item.description
+
             if (absoluteUrl.isNotEmpty()) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(absoluteUrl)
                         .crossfade(true)
-                        .size(Size.ORIGINAL) // Allow Coil to optimize or restrict resolution based on view size
+                        .size(Size.ORIGINAL)
                         .build(),
                     contentDescription = item.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(aspectRatio.coerceIn(0.5f, 1.5f)) // keep it reasonable to avoid overly long images
+                        .aspectRatio(aspectRatio.coerceIn(0.5f, 1.5f))
                         .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
                         .background(Color(0xFFEEEEEE))
                 )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            val displayText = if (item.title.isNotBlank()) item.title else item.description
-            if (displayText.isNotBlank()) {
-                Text(
-                    text = displayText,
-                    fontSize = 13.sp,
-                    color = Color(0xFF222222),
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                Spacer(modifier = Modifier.height(8.dp))
+                if (displayText.isNotBlank()) {
+                    Text(
+                        text = displayText,
+                        fontSize = 13.sp,
+                        color = Color(0xFF222222),
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+            } else {
+                val gradientColors = listOf(
+                    listOf(Color(0xFFE3F2FD), Color(0xFFBBDEFB)),
+                    listOf(Color(0xFFF3E5F5), Color(0xFFE1BEE7)),
+                    listOf(Color(0xFFE8F5E9), Color(0xFFC8E6C9)),
+                    listOf(Color(0xFFFFF3E0), Color(0xFFFFE0B2)),
+                    listOf(Color(0xFFFFEBEE), Color(0xFFFFCDD2))
                 )
+                val colorIndex = kotlin.math.abs(item.id.hashCode()) % gradientColors.size
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1.2f)
+                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                        .background(androidx.compose.ui.graphics.Brush.linearGradient(gradientColors[colorIndex]))
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = displayText,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF333333),
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        lineHeight = 22.sp
+                    )
+                }
                 Spacer(modifier = Modifier.height(10.dp))
             }
 

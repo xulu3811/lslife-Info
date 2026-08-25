@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.lianshan.lslife.core.data.AuthRepository
 import com.lianshan.lslife.core.data.CategoryRepository
 import com.lianshan.lslife.core.data.LsRepository
+import com.lianshan.lslife.core.data.AddressManager
+import com.lianshan.lslife.core.data.AddressNode
 import com.lianshan.lslife.core.model.CategoryNode
 import com.lianshan.lslife.core.model.DynamicField
 import com.lianshan.lslife.core.model.Quota
@@ -54,7 +56,8 @@ data class PublishUiState(
     val contactPhone: String = "",
     val tradeMode: TradeMode = TradeMode.INFO_PUBLISH,
     val images: List<String> = emptyList(),
-    val location: String = "连山壮族瑶族自治县",
+    val locationRegion: String = "",
+    val locationDetail: String = "",
     val quota: Quota? = null,
     val submitting: Boolean = false,
     val aiOptimizing: Boolean = false,
@@ -62,6 +65,7 @@ data class PublishUiState(
     val success: Boolean = false,
     val editingPostId: String? = null,
     val publishedPostId: String? = null,
+    val addressNodes: List<AddressNode> = emptyList(),
     val useUrgentTag: Boolean = false,
     val isKycVerified: Boolean = false,
 )
@@ -69,6 +73,7 @@ data class PublishUiState(
 @HiltViewModel
 class PublishViewModel @Inject constructor(
     private val repo: LsRepository,
+    private val addressManager: AddressManager,
     private val categoryRepo: CategoryRepository,
     private val authRepo: AuthRepository,
     private val savedStateHandle: SavedStateHandle,
@@ -82,7 +87,8 @@ class PublishViewModel @Inject constructor(
     val state: StateFlow<PublishUiState> = _state
 
     init {
-        observeCategories()
+        loadCategories()
+        loadAddresses()
         observeKycState()
     }
 
@@ -94,7 +100,14 @@ class PublishViewModel @Inject constructor(
         }
     }
 
-    private fun observeCategories() {
+    private fun loadAddresses() {
+        viewModelScope.launch {
+            val nodes = addressManager.getAddresses()
+            _state.update { it.copy(addressNodes = nodes) }
+        }
+    }
+
+    private fun loadCategories() {
         viewModelScope.launch {
             categoryRepo.getCategoryTree()
         }
@@ -206,7 +219,8 @@ class PublishViewModel @Inject constructor(
                         contactPhone = post.contactPhone ?: "",
                         tradeMode = post.tradeMode,
                         images = post.images,
-                        location = post.town ?: post.city ?: "连山壮族瑶族自治县",
+                        locationRegion = post.town ?: post.city ?: "",
+                        locationDetail = "",
                         attributesMap = attrs,
                     )
                 }
@@ -230,7 +244,8 @@ class PublishViewModel @Inject constructor(
         _state.update { it.copy(images = current + uris) }
     }
     fun removeImage(uri: String) = _state.update { it.copy(images = it.images - uri) }
-    fun onLocation(l: String) = _state.update { it.copy(location = l) }
+    fun onLocationRegion(l: String) = _state.update { it.copy(locationRegion = l) }
+    fun onLocationDetail(l: String) = _state.update { it.copy(locationDetail = l) }
     fun onPublisherType(type: String, merchantId: String? = null) = _state.update { 
         it.copy(publisherType = type, merchantId = merchantId) 
     }
@@ -242,87 +257,28 @@ class PublishViewModel @Inject constructor(
         val draft = s.description
         _state.update { it.copy(aiOptimizing = true) }
         viewModelScope.launch {
-            val text = "$hint $draft"
-            val extractedAttrs = s.attributesMap.toMutableMap()
-
-            // 智能本地抽取逻辑：匹配当前分类 Schema 中的选项与描述文案
-            s.categorySchemas.forEach { schema ->
-                when (schema.type) {
-                    com.lianshan.lslife.core.model.FieldType.SINGLE_CHOICE -> {
-                        val match = schema.options.find { opt -> text.contains(opt) }
-                        if (match != null && !extractedAttrs.containsKey(schema.key)) {
-                            extractedAttrs[schema.key] = match
-                        }
-                    }
-                    com.lianshan.lslife.core.model.FieldType.MULTI_CHOICE -> {
-                        val matches = schema.options.filter { opt -> text.contains(opt) }
-                        if (matches.isNotEmpty()) {
-                            val existing = extractedAttrs[schema.key]
-                            val newSet = if (existing is Collection<*>) {
-                                (existing.filterNotNull().map { it.toString() } + matches).toSet().toList()
-                            } else {
-                                matches
-                            }
-                            extractedAttrs[schema.key] = newSet
-                        }
-                    }
-                    com.lianshan.lslife.core.model.FieldType.NUMBER_INPUT -> {
-                        val regex = Regex("(\\d+(\\.\\d+)?)\\s*${schema.unit ?: ""}")
-                        val match = regex.find(text)
-                        if (match != null && !extractedAttrs.containsKey(schema.key)) {
-                            extractedAttrs[schema.key] = match.groupValues[1]
-                        }
-                    }
-                    else -> {}
-                }
-            }
-
-            // 构造传递给后端的临时 DynamicField 列表
-            val tempSchema = s.categorySchemas.map {
-                com.lianshan.lslife.core.model.DynamicField(
-                    key = it.key,
-                    label = it.label,
-                    fieldType = it.type.name,
-                    options = it.options
-                )
-            }
-
             repo.aiGenerateDescription(
                 title = hint,
                 categoryId = s.categoryId,
                 draft = draft,
-                schema = tempSchema
+                schema = emptyList()
             ).onSuccess { res ->
                 val newTitle = res.title
                 val newDesc = res.description
-                
-                s.categorySchemas.forEach { field ->
-                    val element = res.attributes[field.key]
-                    val extractedVal = if (element is kotlinx.serialization.json.JsonPrimitive) element.content else element?.toString() ?: ""
-                    if (extractedVal.isNotBlank()) {
-                        if (field.type == com.lianshan.lslife.core.model.FieldType.MULTI_CHOICE) {
-                             extractedAttrs[field.key] = extractedVal.split(",").map { it.trim() }
-                        } else {
-                             extractedAttrs[field.key] = extractedVal
-                        }
-                    }
-                }
 
                 _state.update {
                     it.copy(
                         aiOptimizing = false,
                         title = newTitle.ifBlank { s.title },
                         description = newDesc.ifBlank { draft },
-                        attributesMap = extractedAttrs,
-                        message = "✨ AI 已基于描述智能匹配并自动填入分类属性！"
+                        message = "✨ AI 润色成功！"
                     )
                 }
             }.onFailure {
                 _state.update {
                     it.copy(
                         aiOptimizing = false,
-                        attributesMap = extractedAttrs,
-                        message = "✨ AI 已完成智能属性提取与自动选择！"
+                        message = "AI 润色失败: ${it.message}"
                     )
                 }
             }
@@ -426,7 +382,7 @@ class PublishViewModel @Inject constructor(
                 merchantId = s.merchantId,
                 listingType = s.listingType,
                 attributes = mergedAttributes,
-                town = s.location,
+                town = s.locationRegion + if (s.locationDetail.isNotBlank()) " " + s.locationDetail else "",
             )
             
             val result = if (s.editingPostId != null) {

@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lianshan.lslife.core.data.LsRepository
+import com.lianshan.lslife.core.data.AddressManager
+import com.lianshan.lslife.core.data.AddressNode
 import com.lianshan.lslife.core.network.MerchantCertifyRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +29,8 @@ sealed class CertifyState {
 
 @HiltViewModel
 class MerchantCertifyViewModel @Inject constructor(
-    private val repository: LsRepository
+    private val repository: LsRepository,
+    private val addressManager: AddressManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<CertifyState>(CertifyState.Idle)
@@ -41,6 +44,11 @@ class MerchantCertifyViewModel @Inject constructor(
     var contactName = mutableStateOf("")
     var contactPhone = mutableStateOf("")
     
+    var storeAddressRegion = mutableStateOf("")
+    var storeAddressDetail = mutableStateOf("")
+    
+    var addressNodes = mutableStateOf<List<AddressNode>>(emptyList())
+    
     var businessLicenseUrl = mutableStateOf("")
     var storePhotos = mutableStateOf<List<String>>(emptyList())
     
@@ -50,6 +58,13 @@ class MerchantCertifyViewModel @Inject constructor(
 
     init {
         loadDraft()
+        loadAddresses()
+    }
+
+    private fun loadAddresses() {
+        viewModelScope.launch {
+            addressNodes.value = addressManager.getAddresses()
+        }
     }
 
     private fun loadDraft() {

@@ -456,6 +456,15 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                     onBack = { navController.popBackStack() }
                 )
             }
+            composable(Routes.ADMIN_DASHBOARD) {
+                com.lianshan.lslife.feature.admin.AdminDashboardScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onOpenApprovals = { navController.navigate(Routes.ADMIN_APPROVAL_DASHBOARD) },
+                    onOpenUserGovernance = { navController.navigate(Routes.ADMIN_USER_LIST) },
+                    onOpenContentGovernance = { navController.navigate(Routes.ADMIN_GOVERNANCE_CENTER) },
+                    onOpenReports = { navController.navigate(Routes.ADMIN_REPORT_LIST) }
+                )
+            }
             composable(Routes.ADMIN_GOVERNANCE_CENTER) {
                 com.lianshan.lslife.feature.admin.GovernanceCenterScreen(
                     onBack = { navController.popBackStack() }
@@ -477,7 +486,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                     onOpenAdminApprovals = { navController.navigate(Routes.ADMIN_APPROVAL_DASHBOARD) },
                     onOpenAdminUserList = { navController.navigate(Routes.ADMIN_USER_LIST) },
                     onOpenAdminReportList = { navController.navigate(Routes.ADMIN_REPORT_LIST) },
-                    onOpenGovernanceCenter = { navController.navigate(Routes.ADMIN_GOVERNANCE_CENTER) },
+                    onOpenGovernanceCenter = { navController.navigate(Routes.ADMIN_DASHBOARD) },
                     onOpenPromotionCenter = { navController.navigate("promotion_center") },
                     onLoggedOut = {
                         navController.navigate(Routes.LOGIN) { popUpTo(0) }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lianshan.lslife.core.model.AttributeSchema
 import com.lianshan.lslife.core.model.FieldType
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DisplaySettings
+import androidx.compose.ui.draw.shadow
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -31,55 +35,68 @@ fun DynamicAttributesSection(
 ) {
     if (schemas.isEmpty()) return
 
+    val scheme = MaterialTheme.colorScheme
+
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         color = Color.White,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = RoundedCornerShape(12.dp),
+                spotColor = Color(0x1A000000),
+                ambientColor = Color(0x1A000000)
+            )
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            // Header
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp, 16.dp)
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(Color(0xFFE52F2F))
+                    Icon(
+                        imageVector = Icons.Filled.DisplaySettings,
+                        contentDescription = null,
+                        tint = scheme.primary,
+                        modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = "专属规则与分类属性",
                         fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF333333)
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFF222222)
                     )
                 }
                 Text(
-                    text = "根据已选分类动态配置",
+                    text = "根据分类动态配置",
                     fontSize = 12.sp,
-                    color = Color(0xFF999999)
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Medium
                 )
             }
 
-            HorizontalDivider(color = Color(0xFFF5F5F5))
+            HorizontalDivider(color = Color(0xFFF0F0F0))
 
+            // Dynamic Fields
             schemas.forEach { schema ->
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = schema.label,
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF444444)
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF333333)
                         )
                         if (schema.isRequired) {
-                            Text(" *", color = Color(0xFFE52F2F), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.width(4.dp))
+                            Text("*", color = scheme.primary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -147,7 +164,6 @@ fun DynamicAttributesSection(
     }
 }
 
-/** 芯片选择组 (单选 / 多选) */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AttributeChipGroup(
@@ -156,34 +172,36 @@ private fun AttributeChipGroup(
     isMultiSelect: Boolean,
     onOptionSelected: (String) -> Unit
 ) {
+    val scheme = MaterialTheme.colorScheme
+
     FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         options.forEach { option ->
             val isSelected = selectedOptions.contains(option)
-            val bgColor = if (isSelected) Color(0xFFFFF0F0) else Color(0xFFF5F6F8)
-            val textColor = if (isSelected) Color(0xFFE52F2F) else Color(0xFF555555)
-            val borderColor = if (isSelected) Color(0xFFE52F2F) else Color.Transparent
+            val bgColor = if (isSelected) scheme.primaryContainer else Color(0xFFF7F8FA)
+            val textColor = if (isSelected) scheme.primary else Color(0xFF555555)
+            val borderColor = if (isSelected) scheme.primary.copy(alpha = 0.5f) else Color.Transparent
 
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(CircleShape)
                     .background(bgColor)
                     .border(
-                        width = if (isSelected) 1.dp else 0.dp,
+                        width = 1.dp,
                         color = borderColor,
-                        shape = RoundedCornerShape(8.dp)
+                        shape = CircleShape
                     )
                     .clickable { onOptionSelected(option) }
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = option,
                     fontSize = 13.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                     color = textColor
                 )
             }
@@ -191,19 +209,20 @@ private fun AttributeChipGroup(
     }
 }
 
-/** 数字带单位输入框 */
 @Composable
 private fun AttributeNumberField(
     value: String,
     unit: String,
     onValueChange: (String) -> Unit
 ) {
+    val scheme = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFF5F6F8))
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .background(Color(0xFFF7F8FA))
+            .border(1.dp, Color(0xFFEFEFEF), RoundedCornerShape(8.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -215,19 +234,18 @@ private fun AttributeNumberField(
             modifier = Modifier.weight(1f),
             decorationBox = { innerTextField ->
                 if (value.isEmpty()) {
-                    Text("请输入数值", fontSize = 14.sp, color = Color.Gray)
+                    Text("请输入数值", fontSize = 14.sp, color = Color(0xFFBBBBBB))
                 }
                 innerTextField()
             }
         )
         if (unit.isNotEmpty()) {
-            Spacer(Modifier.width(6.dp))
-            Text(text = unit, fontSize = 14.sp, color = Color(0xFF666666), fontWeight = FontWeight.Medium)
+            Spacer(Modifier.width(8.dp))
+            Text(text = unit, fontSize = 14.sp, color = scheme.primary, fontWeight = FontWeight.Bold)
         }
     }
 }
 
-/** 文本输入框 */
 @Composable
 private fun AttributeTextField(
     value: String,
@@ -237,8 +255,9 @@ private fun AttributeTextField(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFF5F6F8))
-            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .background(Color(0xFFF7F8FA))
+            .border(1.dp, Color(0xFFEFEFEF), RoundedCornerShape(8.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         BasicTextField(
             value = value,
@@ -247,7 +266,7 @@ private fun AttributeTextField(
             modifier = Modifier.fillMaxWidth(),
             decorationBox = { innerTextField ->
                 if (value.isEmpty()) {
-                    Text("请输入相关描述", fontSize = 14.sp, color = Color.Gray)
+                    Text("请输入相关描述", fontSize = 14.sp, color = Color(0xFFBBBBBB))
                 }
                 innerTextField()
             }

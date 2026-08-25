@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.PendingActions
+import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.StarRate
 import androidx.compose.material.icons.outlined.SupportAgent
@@ -134,98 +135,94 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            // 一、 Joybuy 极简 Header (三层式排版与高级微胶囊美学)
-            Row(
+            // 一、 现代沉浸式高级 Header (更精致微缩的 3D Soft UI 风格)
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onOpenPersonalInfo)
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 16.dp, bottom = 12.dp)
-                    .statusBarsPadding(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // 1. 头像区 (Joybuy 60dp 纯净圆环 + 细微边框与底色)
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFF1F5F9)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    NetworkImage(
-                        url = user?.avatar, 
-                        contentDescription = "头像", 
-                        shape = CircleShape,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape)
-                    )
-                }
-                
-                Spacer(modifier = Modifier.width(14.dp))
-                
-                // 2. 信息区 (三层式结构：昵称主身份 -> 实名与会员属性流 -> 账号辅助信息)
-                Column(modifier = Modifier.weight(1f)) {
-                    // 第一层：昵称 + 主身份微渐变胶囊
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = user?.nickname ?: "点击登录",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E293B),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFFF8FAFC),
+                                Color(0xFFF1F5F9) // Softer silver-blue
+                            )
                         )
+                    )
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 20.dp, bottom = 16.dp)
+                    .statusBarsPadding()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // 1. 头像区 (微缩至 56dp，边框 2dp)
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                            .padding(2.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        NetworkImage(
+                            url = user?.avatar, 
+                            contentDescription = "头像", 
+                            shape = CircleShape,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.width(14.dp))
+                    
+                    // 2. 信息区 (精致紧凑的三行排版，收缩间距)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = user?.nickname ?: "点击登录",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1E293B),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if (user != null) {
+                                val isMerchant = user.role.contains("MERCHANT") || state.merchantCertStatus == "APPROVED"
+                                if (user.role == "ADMIN" || user.role == "SUPERADMIN" || isMerchant) {
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    JoybuyPrimaryRoleBadge(role = user.role, isMerchant = isMerchant)
+                                }
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Text(
+                            text = if (user != null) "同城号: ${user.phone ?: "未绑定"}" else "登录开启同城精彩生活",
+                            fontSize = 12.sp,
+                            color = Color(0xFF64748B),
+                            fontWeight = FontWeight.Normal
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
                         if (user != null) {
-                            val isMerchant = user.role.contains("MERCHANT") || state.merchantCertStatus == "APPROVED"
-                            if (user.role == "ADMIN" || user.role == "SUPERADMIN" || isMerchant) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                JoybuyRealNameBadge(isVerified = user.realNameStatus == "verified")
                                 Spacer(modifier = Modifier.width(6.dp))
-                                JoybuyPrimaryRoleBadge(role = user.role, isMerchant = isMerchant)
+                                JoybuyVipBadge(tier = user.membershipTier)
                             }
                         }
                     }
                     
-                    Spacer(modifier = Modifier.height(4.dp))
-                    
-                    // 第二层：实名状态胶囊 + 会员等级胶囊
-                    if (user != null) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            JoybuyRealNameBadge(isVerified = user.realNameStatus == "verified")
-                            Spacer(modifier = Modifier.width(6.dp))
-                            JoybuyVipBadge(tier = user.membershipTier)
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                    }
-                    
-                    // 第三层：辅助账号信息
-                    Text(
-                        text = if (user != null) "账号: ${user.phone ?: "未绑定"}" else "登录查看更多同城服务",
-                        fontSize = 12.sp,
-                        color = Color(0xFF94A3B8),
-                        fontWeight = FontWeight.Normal
-                    )
-                }
-                
-                // 3. 右侧“个人主页”胶囊引导按钮
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFF8FAFC))
-                        .padding(horizontal = 8.dp, vertical = 5.dp)
-                ) {
-                    Text(
-                        text = "个人主页",
-                        fontSize = 11.sp,
-                        color = Color(0xFF64748B),
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.width(2.dp))
+                    // 3. 右侧极简主页入口
                     Icon(
                         Icons.Filled.ChevronRight,
-                        contentDescription = null,
+                        contentDescription = "个人主页",
                         tint = Color(0xFF94A3B8),
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -534,8 +531,8 @@ fun AdminWorkspaceCard(
     Column(modifier = modifier.fillMaxWidth()) {
         SectionTitle(
             title = "运营管理",
-            showChevron = true,
-            onClick = onOpenAdminApprovals,
+            showChevron = false,
+            onClick = {},
             topPadding = 14.dp
         )
         Row(
@@ -545,6 +542,11 @@ fun AdminWorkspaceCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AdminStatusGridItem(
+                icon = Icons.Outlined.Dashboard,
+                label = "平台数据",
+                modifier = Modifier.weight(1f).clickable { onOpenGovernanceCenter() }
+            )
+            AdminStatusGridItem(
                 icon = Icons.Outlined.PendingActions,
                 label = "待办审批",
                 badgeCount = pendingReviews,
@@ -552,18 +554,13 @@ fun AdminWorkspaceCard(
             )
             AdminStatusGridItem(
                 icon = Icons.Outlined.HowToReg,
-                label = "用户管理",
+                label = "用户治理",
                 modifier = Modifier.weight(1f).clickable { onOpenUserManagement() }
             )
             AdminStatusGridItem(
-                icon = Icons.Outlined.Info,
-                label = "举报处理",
+                icon = Icons.Outlined.Gavel,
+                label = "内容风控",
                 modifier = Modifier.weight(1f).clickable { onOpenReportHandling() }
-            )
-            AdminStatusGridItem(
-                icon = Icons.Outlined.Dashboard,
-                label = "管理中枢",
-                modifier = Modifier.weight(1f).clickable { onOpenGovernanceCenter() }
             )
         }
     }
@@ -612,17 +609,18 @@ private fun JoybuyPrimaryRoleBadge(role: String, isMerchant: Boolean) {
     if (role == "ADMIN" || role == "SUPERADMIN") {
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(100.dp))
+                .height(18.dp)
+                .clip(RoundedCornerShape(4.dp))
                 .background(
                     Brush.horizontalGradient(
-                        listOf(Color(0xFF2563EB), Color(0xFF1D4ED8))
+                        listOf(Color(0xFF3B82F6), Color(0xFF2563EB))
                     )
                 )
-                .padding(horizontal = 7.dp, vertical = 2.dp),
+                .padding(horizontal = 6.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "平台管理员",
+                text = "平台管理",
                 fontSize = 10.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
@@ -631,17 +629,18 @@ private fun JoybuyPrimaryRoleBadge(role: String, isMerchant: Boolean) {
     } else if (isMerchant) {
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(100.dp))
+                .height(18.dp)
+                .clip(RoundedCornerShape(4.dp))
                 .background(
                     Brush.horizontalGradient(
-                        listOf(Color(0xFFFF5252), Color(0xFFE91E63))
+                        listOf(Color(0xFFF43F5E), Color(0xFFE11D48))
                     )
                 )
-                .padding(horizontal = 7.dp, vertical = 2.dp),
+                .padding(horizontal = 6.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "商家用户",
+                text = "商家认证",
                 fontSize = 10.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
@@ -655,12 +654,14 @@ private fun JoybuyRealNameBadge(isVerified: Boolean) {
     if (isVerified) {
         Box(
             modifier = Modifier
+                .height(18.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(Color(0xFFECFDF5))
-                .padding(horizontal = 6.dp, vertical = 1.5.dp)
+                .padding(horizontal = 6.dp),
+            contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "已实名 ✓",
+                text = "已实名",
                 fontSize = 10.sp,
                 color = Color(0xFF059669),
                 fontWeight = FontWeight.Medium
@@ -669,9 +670,11 @@ private fun JoybuyRealNameBadge(isVerified: Boolean) {
     } else {
         Box(
             modifier = Modifier
+                .height(18.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(Color(0xFFF1F5F9))
-                .padding(horizontal = 6.dp, vertical = 1.5.dp)
+                .padding(horizontal = 6.dp),
+            contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "未实名",
@@ -689,16 +692,18 @@ private fun JoybuyVipBadge(tier: String?) {
         "premium" -> {
             Box(
                 modifier = Modifier
+                    .height(18.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(
                         Brush.horizontalGradient(
                             listOf(Color(0xFFFDE68A), Color(0xFFF59E0B))
                         )
                     )
-                    .padding(horizontal = 6.dp, vertical = 1.5.dp)
+                    .padding(horizontal = 6.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "👑 超级会员",
+                    text = "超级会员",
                     fontSize = 10.sp,
                     color = Color(0xFF78350F),
                     fontWeight = FontWeight.Bold
@@ -708,12 +713,14 @@ private fun JoybuyVipBadge(tier: String?) {
         "vip" -> {
             Box(
                 modifier = Modifier
+                    .height(18.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(Color(0xFFFEF3C7))
-                    .padding(horizontal = 6.dp, vertical = 1.5.dp)
+                    .padding(horizontal = 6.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "VIP 会员",
+                    text = "VIP",
                     fontSize = 10.sp,
                     color = Color(0xFFB45309),
                     fontWeight = FontWeight.SemiBold
@@ -723,12 +730,14 @@ private fun JoybuyVipBadge(tier: String?) {
         else -> {
             Box(
                 modifier = Modifier
+                    .height(18.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(Color(0xFFF1F5F9))
-                    .padding(horizontal = 6.dp, vertical = 1.5.dp)
+                    .padding(horizontal = 6.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "普通会员",
+                    text = "免费用户",
                     fontSize = 10.sp,
                     color = Color(0xFF94A3B8),
                     fontWeight = FontWeight.Medium

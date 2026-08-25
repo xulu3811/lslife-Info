@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -37,6 +38,9 @@ fun AdminReportListScreen(
     val scheme = MaterialTheme.colorScheme
     val snackbar = remember { SnackbarHostState() }
 
+    var topLevelTab by remember { mutableIntStateOf(0) }
+    val topTabs = listOf("举报处理", "资源治理")
+
     val tabs = listOf(
         "PENDING" to "待处理",
         "RESOLVED" to "已解决",
@@ -57,12 +61,13 @@ fun AdminReportListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("举报处理", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
+                title = { Text("内容风控", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "返回")
                     }
                 },
+                
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White,
                     scrolledContainerColor = Color.White
@@ -72,11 +77,31 @@ fun AdminReportListScreen(
         snackbarHost = { SnackbarHost(snackbar) },
         containerColor = Color(0xFFF7F8FA)
     ) { padding ->
-        Column(
+                Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
         ) {
+            TabRow(
+                selectedTabIndex = topLevelTab,
+                containerColor = Color.White,
+                indicator = { tabPositions ->
+                    TabRowDefaults.PrimaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[topLevelTab]),
+                        color = scheme.primary
+                    )
+                }
+            ) {
+                topTabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = topLevelTab == index,
+                        onClick = { topLevelTab = index },
+                        text = { Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp) }
+                    )
+                }
+            }
+            
+            if (topLevelTab == 0) {
             ScrollableTabRow(
                 selectedTabIndex = tabs.indexOfFirst { it.first == state.currentTab }.takeIf { it >= 0 } ?: 0,
                 containerColor = Color.White,
@@ -125,6 +150,48 @@ fun AdminReportListScreen(
                         )
                     }
                 }
+            }
+        } else {
+            ResourceGovernanceSection()
+        }
+    }
+}
+}
+
+@Composable
+private fun ResourceGovernanceSection() {
+    var searchText by remember { mutableStateOf("") }
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(16.dp)
+        ) {
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                placeholder = { Text("搜索违规帖子标题 / 内容", color = Color.Gray, fontSize = 14.sp) },
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "搜索", tint = Color.Gray)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFFF4F5F7),
+                    unfocusedContainerColor = Color(0xFFF4F5F7),
+                    disabledContainerColor = Color(0xFFF4F5F7),
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                )
+            )
+        }
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color(0xFFCBD5E1))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(if (searchText.isEmpty()) "输入关键词全站检索异常帖子" else "未找到与 \"${searchText}\" 相关的资源", color = Color.Gray, fontSize = 14.sp)
             }
         }
     }

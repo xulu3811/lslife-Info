@@ -191,6 +191,48 @@ fun Step2BasicInfo(viewModel: MerchantCertifyViewModel) {
         label = { Text("联系电话 (必填)") },
         modifier = Modifier.fillMaxWidth()
     )
+    Spacer(Modifier.height(8.dp))
+    
+    var showAddressPicker by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    
+    OutlinedTextField(
+        value = viewModel.storeAddressRegion.value,
+        onValueChange = {},
+        label = { Text("所在地区 (必填)") },
+        modifier = Modifier.fillMaxWidth(),
+        readOnly = true,
+        trailingIcon = {
+            IconButton(onClick = { showAddressPicker = true }) {
+                Icon(Icons.Filled.Add, contentDescription = "Select Region")
+            }
+        },
+        interactionSource = androidx.compose.foundation.interaction.MutableInteractionSource().also { interactionSource ->
+            androidx.compose.runtime.LaunchedEffect(interactionSource) {
+                interactionSource.interactions.collect {
+                    if (it is androidx.compose.foundation.interaction.PressInteraction.Release) {
+                        showAddressPicker = true
+                    }
+                }
+            }
+        }
+    )
+    Spacer(Modifier.height(8.dp))
+    OutlinedTextField(
+        value = viewModel.storeAddressDetail.value,
+        onValueChange = { viewModel.storeAddressDetail.value = it },
+        label = { Text("详细地址 (门牌号等)") },
+        modifier = Modifier.fillMaxWidth()
+    )
+
+    if (showAddressPicker) {
+        com.lianshan.lslife.ui.components.AddressPickerBottomSheet(
+            addressNodes = viewModel.addressNodes.value,
+            onDismissRequest = { showAddressPicker = false },
+            onAddressSelected = {
+                viewModel.storeAddressRegion.value = it
+            }
+        )
+    }
 }
 
 @Composable

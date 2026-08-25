@@ -167,6 +167,7 @@ fun HomeScreen(
             selectedTabIndex = pagerState.currentPage,
             containerColor = Color.White,
             contentColor = Color(0xFFFF4D4F),
+            modifier = Modifier.height(44.dp), // 降低上下高度
             indicator = {
                 TabRowDefaults.SecondaryIndicator(
                     modifier = Modifier
@@ -183,6 +184,7 @@ fun HomeScreen(
                 val isSelected = pagerState.currentPage == index
                 Tab(
                     selected = isSelected,
+                    modifier = Modifier.height(44.dp),
                     onClick = {
                         coroutineScope.launch { pagerState.animateScrollToPage(index) }
                     },
@@ -190,8 +192,8 @@ fun HomeScreen(
                         Row(verticalAlignment = Alignment.Top) {
                             Text(
                                 text = title,
-                                fontSize = if (isSelected) 16.sp else 14.sp, // 回归协调的字体尺寸
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                fontSize = 15.sp, // 字体不再随着选中状态忽大忽小
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                 color = if (isSelected) Color(0xFF111111) else Color(0xFF666666) // 平滑的灰度过渡
                             )
                             if (index == 1) {
@@ -563,8 +565,7 @@ private fun FeedTabHeader(
     )
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        // 提供视觉留白
-        Spacer(modifier = Modifier.height(18.dp))
+        // 移除多余的视觉留白，提升空间利用率 (原本这里有 18dp Spacer)
 
         Surface(
             shape = RoundedCornerShape(12.dp),

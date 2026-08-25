@@ -361,4 +361,29 @@ interface ApiService {
     suspend fun banUser(
         @Body body: Map<String, String>
     ): ApiEnvelope<kotlinx.serialization.json.JsonObject>
+
+    @POST("admin/governance/revoke-post")
+    suspend fun revokePost(
+        @Body body: Map<String, String>
+    ): ApiEnvelope<kotlinx.serialization.json.JsonObject>
+
+    @POST("admin/governance/revoke-kyc")
+    suspend fun revokeKyc(
+        @Body body: Map<String, String>
+    ): ApiEnvelope<kotlinx.serialization.json.JsonObject>
+
+    @POST("admin/governance/revoke-merchant")
+    suspend fun revokeMerchant(
+        @Body body: Map<String, String>
+    ): ApiEnvelope<kotlinx.serialization.json.JsonObject>
+
+    @GET("admin/governance/search-users")
+    suspend fun searchGovernanceUsers(
+        @Query("keyword") keyword: String
+    ): ApiEnvelope<List<GovernanceUserDto>>
+
+    @GET("admin/governance/search-posts")
+    suspend fun searchGovernancePosts(
+        @Query("keyword") keyword: String
+    ): ApiEnvelope<List<GovernancePostDto>>
 }

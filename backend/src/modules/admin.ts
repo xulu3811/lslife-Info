@@ -706,6 +706,68 @@ router.post(
 );
 
 // ================= 数据治理与主动风控 (Active Governance) =================
+router.get(
+  '/governance/search-users',
+  asyncHandler(async (req, res) => {
+    const { keyword } = z.object({ keyword: z.string().min(1) }).parse(req.query);
+    
+    // Attempt to search by exact ID, phone, or nickname
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { id: keyword },
+          { phone: { contains: keyword } },
+          { nickname: { contains: keyword } }
+        ]
+      },
+      take: 20,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        phone: true,
+        nickname: true,
+        avatar: true,
+        status: true,
+        role: true,
+        realNameStatus: true,
+      }
+    });
+
+    return ok(res, users);
+  })
+);
+
+router.get(
+  '/governance/search-posts',
+  asyncHandler(async (req, res) => {
+    const { keyword } = z.object({ keyword: z.string().min(1) }).parse(req.query);
+    
+    const posts = await prisma.post.findMany({
+      where: {
+        OR: [
+          { id: keyword },
+          { title: { contains: keyword } },
+          { description: { contains: keyword } }
+        ]
+      },
+      take: 20,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        createdAt: true,
+        user: {
+          select: { id: true, nickname: true, phone: true }
+        }
+      }
+    });
+
+    return ok(res, posts);
+  })
+);
+
 router.post(
   '/governance/ban-user',
   asyncHandler(async (req, res) => {
@@ -745,6 +807,178 @@ router.post(
     broadcastToAll({ type: 'DATA_REFRESH_REQUIRED', target: 'posts' });
 
     return ok(res, null, 'User banned and resources taken down.');
+  })
+);
+
+router.post(
+  '/governance/revoke-post',
+  asyncHandler(async (req, res) => {
+    const adminId = req.userId!;
+    const { targetPostId, reason } = z.object({
+      targetPostId: z.string(),
+      reason: z.string().optional()
+    }).parse(req.body);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.post.update({
+        where: { id: targetPostId },
+        data: { status: 'removed', reviewNote: reason || '超级管理员强制下架' }
+      });
+      await tx.adminAuditLog.create({
+        data: {
+          adminId,
+          targetId: targetPostId,
+          actionType: 'TAKE_DOWN_POST',
+          reason: reason || '超级管理员强制下架'
+        }
+      });
+    });
+
+    broadcastToAll({ type: 'DATA_REFRESH_REQUIRED', target: 'posts' });
+    return ok(res, null, 'Post removed successfully.');
+  })
+);
+
+router.post(
+  '/governance/revoke-kyc',
+  asyncHandler(async (req, res) => {
+    const adminId = req.userId!;
+    const { targetUserId, reason } = z.object({
+      targetUserId: z.string(),
+      reason: z.string().optional()
+    }).parse(req.body);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: targetUserId },
+        data: { realNameStatus: 'none', realName: null, idCardHash: null }
+      });
+      await tx.adminAuditLog.create({
+        data: {
+          adminId,
+          targetId: targetUserId,
+          actionType: 'REVOKE_REAL_NAME',
+          reason: reason || '虚假实名认证撤销'
+        }
+      });
+    });
+    pushToUser(targetUserId, { event: 'USER_STATE_CHANGED', message: '您的实名认证因违规已被撤销。' });
+    return ok(res, null, 'User KYC revoked successfully.');
+  })
+);
+
+router.post(
+  '/governance/revoke-merchant',
+  asyncHandler(async (req, res) => {
+    const adminId = req.userId!;
+    const { targetUserId, reason } = z.object({
+      targetUserId: z.string(),
+      reason: z.string().optional()
+    }).parse(req.body);
+
+    await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({ where: { id: targetUserId }});
+      if (!user) throw new ApiError(404, 'User not found');
+      
+      const newRole = user.role.replace('MERCHANT_VERIFIED', 'USER');
+      await tx.user.update({
+        where: { id: targetUserId },
+        data: { role: newRole }
+      });
+      
+      await tx.merchantInfo.updateMany({
+        where: { userId: targetUserId },
+        data: { verifyStatus: 'REJECTED' }
+      });
+      
+      await tx.merchantCertification.updateMany({
+        where: { userId: targetUserId, status: 'APPROVED' },
+        data: { status: 'REJECTED', rejectReason: reason || '虚假/违规商家认证撤销' }
+      });
+
+      await tx.adminAuditLog.create({
+        data: {
+          adminId,
+          targetId: targetUserId,
+          actionType: 'REVOKE_MERCHANT',
+          reason: reason || '虚假/违规商家认证撤销'
+        }
+      });
+    });
+    pushToUser(targetUserId, { event: 'USER_STATE_CHANGED', message: '您的商家入驻认证因违规已被撤销。' });
+    return ok(res, null, 'Merchant auth revoked successfully.');
+  })
+);
+
+router.get(
+  '/governance/search-users',
+  asyncHandler(async (req, res) => {
+    const keyword = (req.query.keyword as string) || '';
+    if (!keyword.trim()) return ok(res, []);
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(keyword);
+    const where: any = {
+      OR: [
+        { phone: { contains: keyword } },
+        { nickname: { contains: keyword } }
+      ]
+    };
+    if (isUuid) {
+      where.OR.push({ id: keyword });
+    }
+
+    const users = await prisma.user.findMany({
+      where,
+      take: 20,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        phone: true,
+        nickname: true,
+        avatar: true,
+        status: true,
+        realNameStatus: true,
+        role: true,
+        createdAt: true
+      }
+    });
+
+    return ok(res, users);
+  })
+);
+
+router.get(
+  '/governance/search-posts',
+  asyncHandler(async (req, res) => {
+    const keyword = (req.query.keyword as string) || '';
+    if (!keyword.trim()) return ok(res, []);
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(keyword);
+    const where: any = {
+      OR: [
+        { title: { contains: keyword } },
+        { description: { contains: keyword } }
+      ]
+    };
+    if (isUuid) {
+      where.OR.push({ id: keyword });
+    }
+
+    const posts = await prisma.post.findMany({
+      where,
+      take: 20,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        createdAt: true,
+        user: { select: { nickname: true, phone: true } }
+      }
+    });
+
+    return ok(res, posts);
   })
 );
 

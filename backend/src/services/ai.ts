@@ -1,5 +1,6 @@
 import { env } from '../config/env.js';
 import { prisma } from '../lib/prisma.js';
+import { ApiError } from '../lib/http.js';
 
 export interface AiRecommendation {
   merchantId: string;
@@ -114,7 +115,10 @@ const deepseekProvider: AiProvider = {
         response_format: { type: 'json_object' },
       }),
     });
-    const data = (await resp.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const data = (await resp.json()) as any;
+    if (data.error) {
+      throw new ApiError(500, data.error.message || 'AI API Error');
+    }
     const text = data.choices?.[0]?.message?.content ?? '{}';
     return JSON.parse(text) as AiReply;
   },
@@ -130,6 +134,9 @@ const deepseekProvider: AiProvider = {
       }),
     });
     const data = (await resp.json()) as any;
+    if (data.error) {
+      throw new ApiError(500, data.error.message || 'AI API Error');
+    }
     return data.choices?.[0]?.message?.content ?? '{}';
   },
 };

@@ -25,23 +25,6 @@ router.post(
   '/generate-description',
   requireAuth,
   asyncHandler(async (req, res) => {
-    const user = (req as any).currentUser;
-    if (user.role !== 'ADMIN') {
-      const isMerchant = !!user.merchantCertification && user.merchantCertification.status === 'APPROVED';
-      if (!isMerchant) {
-        throw new ApiError(403, '目前仅向入驻商家开放 AI 智能文案功能');
-      }
-      let privileges: any = user.privileges;
-      if (typeof privileges === 'string') {
-        try { privileges = JSON.parse(privileges); } catch (e) { privileges = {}; }
-      }
-      if (!privileges || typeof privileges !== 'object') privileges = {};
-      
-      const isSubscribed = privileges.merchant_subscription === 'active';
-      if (!isSubscribed) {
-        throw new ApiError(403, '您的免费商家版不支持 AI 生成，请升级商家套餐');
-      }
-    }
     const { title, categoryId, draft, schema } = z
       .object({
         title: z.string().nullable().optional(),
@@ -50,6 +33,8 @@ router.post(
         schema: z.array(z.any()).optional().default([]),
       })
       .parse(req.body);
+
+    const user = (req as any).currentUser;
 
     let targetSchema = schema;
     let categoryName = '同城发布';

@@ -37,6 +37,7 @@ object Routes {
     const val ADMIN_KYC_REVIEW_LIST = "admin_kyc_review_list"
     const val ADMIN_MERCHANT_CERT_REVIEW_LIST = "admin_merchant_cert_review_list"
     const val ADMIN_GOVERNANCE_CENTER = "admin_governance_center"
+    const val ADMIN_DASHBOARD = "admin_dashboard"
 
     fun merchant(id: String) = "merchant/$id"
     fun publicProfile(userId: String) = "public_profile/$userId"

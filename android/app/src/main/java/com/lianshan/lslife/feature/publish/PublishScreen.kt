@@ -3,6 +3,7 @@ package com.lianshan.lslife.feature.publish
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,16 +24,21 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,6 +76,7 @@ fun PublishScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
     var showCategoryBottomSheet by remember { mutableStateOf(false) }
+    var showAddressPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.requireCategorySelection) {
         if (state.requireCategorySelection) {
@@ -144,7 +151,7 @@ fun PublishScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(48.dp)
                     .background(Color.White)
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -154,51 +161,50 @@ fun PublishScreen(
                     Icon(
                         imageVector = Icons.Filled.Close,
                         contentDescription = "Close",
-                        modifier = Modifier.clickable { onClose() }
+                        modifier = Modifier.size(20.dp).clickable { onClose() }
                     )
-                    Spacer(Modifier.width(12.dp))
-                    Text("发布信息", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.width(8.dp))
+                    Text("发布信息", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    
+                    state.quota?.let { q ->
+                        val isUnlimited = q.limit >= 999999
+                        if (!isUnlimited) {
+                            Spacer(Modifier.width(8.dp))
+                            Surface(
+                                color = Color(0xFFF7F8FA),
+                                shape = RoundedCornerShape(4.dp),
+                                modifier = Modifier.padding(top = 1.dp)
+                            ) {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        withStyle(style = SpanStyle(color = Color(0xFFE53935))) {
+                                            append("${q.used}")
+                                        }
+                                        append("/${q.limit}")
+                                    },
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Button(
                         onClick = { viewModel.submit() },
                         enabled = !state.submitting,
                         colors = ButtonDefaults.buttonColors(containerColor = scheme.primary),
-                        modifier = Modifier.height(36.dp)
+                        modifier = Modifier.height(30.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
                     ) {
                         if (state.submitting) {
-                            CircularProgressIndicator(color = scheme.onPrimary, modifier = Modifier.size(18.dp))
+                            CircularProgressIndicator(color = scheme.onPrimary, modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
                         } else {
                             val isEditMode = !postId.isNullOrBlank() && postId != "{postId}"
-                            Text(if (isEditMode) "确认修改" else "确认发布", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text(if (isEditMode) "确认修改" else "确认发布", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
-                    }
-                }
-            }
-
-            // Quota Banner
-            state.quota?.let { q ->
-                val isUnlimited = q.limit >= 999999
-                val limitText = if (isUnlimited) "不设限制" else "${q.limit}条"
-                val isFull = !isUnlimited && q.used >= q.limit
-                Surface(
-                    color = if (isFull) Color(0xFFFFF0F0) else Color(0xFFFFF8E1),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = if (isFull) "⚠️ 本月发布名额已满 (${q.used}/$limitText)，请升级会员或下月再发" 
-                                   else "💡 本月发布名额：已发布 ${q.used} / 总量 $limitText",
-                            fontSize = 13.sp,
-                            color = if (isFull) Color(0xFFD32F2F) else Color(0xFFF57F17),
-                            fontWeight = FontWeight.Medium
-                        )
                     }
                 }
             }
@@ -213,9 +219,14 @@ fun PublishScreen(
             ) {
                 // Card 1: Category Picker
                 Surface(
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(12.dp),
                     color = Color.White,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().shadow(
+                        elevation = 4.dp,
+                        shape = RoundedCornerShape(12.dp),
+                        spotColor = Color(0x1A000000),
+                        ambientColor = Color(0x1A000000)
+                    )
                 ) {
                     Row(
                         modifier = Modifier
@@ -245,9 +256,14 @@ fun PublishScreen(
 
                 // Card 2: Images, Title and Description
                 Surface(
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(12.dp),
                     color = Color.White,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().shadow(
+                        elevation = 4.dp,
+                        shape = RoundedCornerShape(12.dp),
+                        spotColor = Color(0x1A000000),
+                        ambientColor = Color(0x1A000000)
+                    )
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         // Image Picker Row
@@ -284,7 +300,8 @@ fun PublishScreen(
                                         modifier = Modifier
                                             .size(90.dp)
                                             .clip(RoundedCornerShape(8.dp))
-                                            .background(Color(0xFFF5F5F5))
+                                            .background(Color(0xFFF7F8FA))
+                                            .border(1.dp, Color(0xFFEFEFEF), RoundedCornerShape(8.dp))
                                             .clickable {
                                                 pickMedia.launch(
                                                     androidx.activity.result.PickVisualMediaRequest(
@@ -295,9 +312,9 @@ fun PublishScreen(
                                         verticalArrangement = Arrangement.Center,
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Icon(Icons.Filled.Add, contentDescription = "Add", tint = Color.Gray)
+                                        Icon(Icons.Filled.Add, contentDescription = "Add", tint = scheme.primary, modifier = Modifier.size(24.dp))
                                         Spacer(Modifier.height(4.dp))
-                                        Text("添加图片", fontSize = 11.sp, color = Color.Gray)
+                                        Text("添加图片", fontSize = 11.sp, color = scheme.primary, fontWeight = FontWeight.Medium)
                                     }
                                 }
                             }
@@ -310,8 +327,9 @@ fun PublishScreen(
                         BasicTextField(
                             value = state.title,
                             onValueChange = viewModel::onTitle,
-                            textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold, color = scheme.onSurface),
+                            textStyle = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = scheme.onSurface),
                             cursorBrush = SolidColor(scheme.primary),
+                            singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .bringIntoViewRequester(titleBringIntoView)
@@ -325,18 +343,21 @@ fun PublishScreen(
                                 }
                                 .padding(bottom = 12.dp),
                             decorationBox = { innerTextField ->
-                                Column {
-                                    Box {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Box(modifier = Modifier.weight(1f)) {
                                         if (state.title.isEmpty()) {
-                                            Text("填写吸引人的标题...", color = Color.LightGray, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                                            Text("填写吸引人的标题...", color = Color.LightGray, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                                         }
                                         innerTextField()
                                     }
+                                    Spacer(Modifier.width(8.dp))
                                     Text(
                                         text = "${state.title.length}/30",
                                         color = if (state.title.length >= 30) scheme.error else Color.LightGray,
-                                        fontSize = 12.sp,
-                                        modifier = Modifier.align(Alignment.End).padding(top = 4.dp)
+                                        fontSize = 12.sp
                                     )
                                 }
                             }
@@ -374,32 +395,28 @@ fun PublishScreen(
 
                         Spacer(Modifier.height(12.dp))
 
-                        // AI Helper Button (Merchant Only) & Urgent Tag Toggle
+                        // AI Helper Button & Urgent Tag Toggle
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            if (state.publisherType == "MERCHANT") {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .clickable(enabled = !state.aiOptimizing) { viewModel.generateAiDescription() }
-                                        .background(Color(0xFFF4F0FF), RoundedCornerShape(12.dp))
-                                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                                ) {
-                                    if (state.aiOptimizing) {
-                                        CircularProgressIndicator(color = Color(0xFF673AB7), modifier = Modifier.size(16.dp))
-                                        Spacer(Modifier.width(6.dp))
-                                        Text("AI 智能文案生成中...", fontSize = 12.sp, color = Color(0xFF673AB7), fontWeight = FontWeight.Bold)
-                                    } else {
-                                        Icon(Icons.Filled.AutoAwesome, contentDescription = "AI", tint = Color(0xFF673AB7), modifier = Modifier.size(16.dp))
-                                        Spacer(Modifier.width(6.dp))
-                                        Text("AI 智能文案润色 >", fontSize = 12.sp, color = Color(0xFF673AB7), fontWeight = FontWeight.Bold)
-                                    }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .clickable(enabled = !state.aiOptimizing) { viewModel.generateAiDescription() }
+                                    .background(Color(0xFFF4F0FF), RoundedCornerShape(12.dp))
+                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                            ) {
+                                if (state.aiOptimizing) {
+                                    CircularProgressIndicator(color = Color(0xFF673AB7), modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(6.dp))
+                                    Text("AI 智能文案生成中...", fontSize = 12.sp, color = Color(0xFF673AB7), fontWeight = FontWeight.Bold)
+                                } else {
+                                    Icon(Icons.Filled.AutoAwesome, contentDescription = "AI", tint = Color(0xFF673AB7), modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(6.dp))
+                                    Text("AI 智能文案润色 >", fontSize = 12.sp, color = Color(0xFF673AB7), fontWeight = FontWeight.Bold)
                                 }
-                            } else {
-                                Spacer(modifier = Modifier.width(4.dp))
                             }
 
                             Row(
@@ -426,9 +443,14 @@ fun PublishScreen(
 
                 // Card 4: Dynamic Trade Mode Fields & Location
                 Surface(
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(12.dp),
                     color = Color.White,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().shadow(
+                        elevation = 4.dp,
+                        shape = RoundedCornerShape(12.dp),
+                        spotColor = Color(0x1A000000),
+                        ambientColor = Color(0x1A000000)
+                    )
                 ) {
                     Column {
                         val focusRequester = remember { FocusRequester() }
@@ -475,15 +497,42 @@ fun PublishScreen(
                         HorizontalDivider(color = Color(0xFFF5F5F5))
 
                         // Location
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("发布位置", fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                            Text(state.location, fontSize = 14.sp, color = Color.Gray)
+                        Column {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { showAddressPicker = true }
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("发布位置", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(if (state.locationRegion.isEmpty()) "请选择 (必填)" else state.locationRegion, fontSize = 14.sp, color = if (state.locationRegion.isEmpty()) Color.LightGray else Color.Gray)
+                                    Icon(Icons.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                            HorizontalDivider(color = Color(0xFFF5F5F5), modifier = Modifier.padding(horizontal = 16.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("详细地址", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Spacer(Modifier.width(16.dp))
+                                BasicTextField(
+                                    value = state.locationDetail,
+                                    onValueChange = viewModel::onLocationDetail,
+                                    textStyle = TextStyle(fontSize = 14.sp, color = Color.Black, textAlign = androidx.compose.ui.text.style.TextAlign.End),
+                                    modifier = Modifier.weight(1f),
+                                    decorationBox = { inner ->
+                                        if (state.locationDetail.isEmpty()) Text("街道/门牌号等 (非必填)", color = Color.LightGray, fontSize = 14.sp, textAlign = androidx.compose.ui.text.style.TextAlign.End)
+                                        else inner()
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -506,6 +555,16 @@ fun PublishScreen(
                 showCategoryBottomSheet = false
             },
             preSelectedLevel1Id = state.preSelectedLevel1Id
+        )
+    }
+
+    if (showAddressPicker) {
+        com.lianshan.lslife.ui.components.AddressPickerBottomSheet(
+            addressNodes = state.addressNodes,
+            onDismissRequest = { showAddressPicker = false },
+            onAddressSelected = {
+                viewModel.onLocationRegion(it)
+            }
         )
     }
 }

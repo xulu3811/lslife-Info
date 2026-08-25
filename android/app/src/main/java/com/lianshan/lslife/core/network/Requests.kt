@@ -310,3 +310,31 @@ data class FollowListResponse(
     val pageSize: Int,
     val list: List<FollowUserItem>
 )
+
+@Serializable
+data class GovernanceUserDto(
+    val id: String,
+    val phone: String? = null,
+    val nickname: String? = null,
+    val avatar: String? = null,
+    val status: String? = null,
+    val role: String? = null,
+    val realNameStatus: String? = null
+)
+
+@Serializable
+data class GovernancePostUserDto(
+    val id: String,
+    val nickname: String? = null,
+    val phone: String? = null
+)
+
+@Serializable
+data class GovernancePostDto(
+    val id: String,
+    val title: String,
+    val description: String? = null,
+    val status: String? = null,
+    val createdAt: String? = null,
+    val user: GovernancePostUserDto? = null
+)

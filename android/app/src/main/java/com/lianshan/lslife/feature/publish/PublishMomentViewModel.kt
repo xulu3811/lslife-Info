@@ -35,6 +35,34 @@ class PublishMomentViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<PublishMomentState>(PublishMomentState.Idle)
     val uiState: StateFlow<PublishMomentState> = _uiState.asStateFlow()
 
+    private val _aiGenerating = MutableStateFlow(false)
+    val aiGenerating: StateFlow<Boolean> = _aiGenerating.asStateFlow()
+
+    fun generateAiDescription(text: String, onUpdate: (String) -> Unit) {
+        if (text.isBlank()) return
+        _aiGenerating.value = true
+        viewModelScope.launch {
+            try {
+                val res = repository.aiGenerateDescription(
+                    title = null,
+                    categoryId = "sys_dynamic",
+                    draft = text,
+                    schema = emptyList()
+                )
+                if (res.isSuccess) {
+                    val aiText = res.getOrNull()?.description
+                    if (!aiText.isNullOrBlank()) {
+                        onUpdate(aiText)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _aiGenerating.value = false
+            }
+        }
+    }
+
     fun publishMoment(context: Context, text: String, imageUris: List<Uri>) {
         if (text.isBlank() && imageUris.isEmpty()) {
             _uiState.value = PublishMomentState.Error("动态内容不能为空")
