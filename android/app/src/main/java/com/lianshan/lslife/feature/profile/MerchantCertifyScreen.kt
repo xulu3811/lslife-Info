@@ -102,9 +102,9 @@ fun Stepper(currentStep: Int) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         StepDot(step = 1, current = currentStep, label = "主体类型")
-        Divider(Modifier.weight(1f).padding(horizontal = 8.dp), color = if (currentStep > 1) MaterialTheme.colorScheme.primary else Color.LightGray)
+        HorizontalDivider(Modifier.weight(1f).padding(horizontal = 8.dp), color = if (currentStep > 1) Color(0xFF4285F4) else Color(0xFFDADCE0))
         StepDot(step = 2, current = currentStep, label = "基础信息")
-        Divider(Modifier.weight(1f).padding(horizontal = 8.dp), color = if (currentStep > 2) MaterialTheme.colorScheme.primary else Color.LightGray)
+        HorizontalDivider(Modifier.weight(1f).padding(horizontal = 8.dp), color = if (currentStep > 2) Color(0xFF4285F4) else Color(0xFFDADCE0))
         StepDot(step = 3, current = currentStep, label = "资质上传")
     }
 }
@@ -112,7 +112,7 @@ fun Stepper(currentStep: Int) {
 @Composable
 fun StepDot(step: Int, current: Int, label: String) {
     val isCompletedOrCurrent = step <= current
-    val color = if (isCompletedOrCurrent) MaterialTheme.colorScheme.primary else Color.LightGray
+    val color = if (isCompletedOrCurrent) Color(0xFF4285F4) else Color(0xFFDADCE0) // Google Blue & Grey
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
@@ -155,13 +155,13 @@ fun TypeSelectionCard(title: String, description: String, selected: Boolean, onC
             .fillMaxWidth()
             .clickable { onClick() },
         colors = CardDefaults.cardColors(
-            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+            containerColor = if (selected) Color(0xFFE8F0FE) else MaterialTheme.colorScheme.surface
         ),
-        border = if (selected) androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+        border = if (selected) androidx.compose.foundation.BorderStroke(2.dp, Color(0xFF4285F4)) else androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFDADCE0))
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text(title, fontWeight = FontWeight.Bold, color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface)
-            Text(description, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
+            Text(title, fontWeight = FontWeight.Bold, color = if (selected) Color(0xFF4285F4) else MaterialTheme.colorScheme.onSurface)
+            Text(description, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp), color = if (selected) Color(0xFF4285F4).copy(alpha=0.8f) else MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -304,7 +304,9 @@ fun BottomBarActions(
         Button(
             onClick = { if (currentStep < 3) onNext() else onSubmit() },
             modifier = Modifier.fillMaxWidth().height(50.dp),
-            enabled = isValid && uiState !is CertifyState.Loading
+            enabled = isValid && uiState !is CertifyState.Loading,
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4285F4))
         ) {
             if (uiState is CertifyState.Loading) {
                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))

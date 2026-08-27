@@ -136,7 +136,7 @@ fun CityDynamicsScreen(
             ) {
                 Text(
                     text = "👇 有 $newPostsCount 条新动态",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.surface,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -159,7 +159,7 @@ fun DynamicsSkeletonGrid() {
             val heightInfo = if (index % 2 == 0) 220.dp else 180.dp
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(heightInfo)
@@ -169,24 +169,24 @@ fun DynamicsSkeletonGrid() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                            .background(Color(0xFFEEEEEE))
+                            .background(MaterialTheme.colorScheme.outlineVariant)
                     )
                     Column(modifier = Modifier.padding(8.dp)) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(0.8f)
                                 .height(14.dp)
-                                .background(Color(0xFFEEEEEE), RoundedCornerShape(4.dp))
+                                .background(MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(20.dp).background(Color(0xFFEEEEEE), CircleShape))
+                            Box(modifier = Modifier.size(20.dp).background(MaterialTheme.colorScheme.outlineVariant, CircleShape))
                             Spacer(modifier = Modifier.width(6.dp))
                             Box(
                                 modifier = Modifier
                                     .width(60.dp)
                                     .height(12.dp)
-                                    .background(Color(0xFFEEEEEE), RoundedCornerShape(4.dp))
+                                    .background(MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
                             )
                         }
                     }
@@ -204,14 +204,15 @@ fun DynamicFeedCard(
 ) {
     val context = LocalContext.current
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         color = Color.White,
         shadowElevation = 0.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE8EAED)),
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
     ) {
-        Column(modifier = Modifier.padding(bottom = 12.dp)) {
+        Column {
             val imageUrl = item.images.firstOrNull() ?: ""
             val baseUrl = com.lianshan.lslife.BuildConfig.API_BASE_URL
             val absoluteUrl = if (imageUrl.startsWith("http") || imageUrl.startsWith("android.resource://") || imageUrl.startsWith("file://")) {
@@ -222,15 +223,16 @@ fun DynamicFeedCard(
                 ""
             }
 
-            val aspectRatio = item.imageWidth?.let { w ->
-                item.imageHeight?.let { h ->
-                    if (h > 0) w.toFloat() / h.toFloat() else 1f
-                }
-            } ?: 1f // fallback
-            
             val displayText = if (item.title.isNotBlank()) item.title else item.description
 
             if (absoluteUrl.isNotEmpty()) {
+                // Image Post - Google Discover Style
+                val aspectRatio = item.imageWidth?.let { w ->
+                    item.imageHeight?.let { h ->
+                        if (h > 0) w.toFloat() / h.toFloat() else 1f
+                    }
+                } ?: 1f
+                
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(absoluteUrl)
@@ -241,62 +243,70 @@ fun DynamicFeedCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(aspectRatio.coerceIn(0.5f, 1.5f))
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                        .background(Color(0xFFEEEEEE))
+                        .aspectRatio(aspectRatio.coerceIn(0.7f, 1.5f))
+                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                        .background(Color(0xFFF1F3F4))
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                
                 if (displayText.isNotBlank()) {
                     Text(
                         text = displayText,
-                        fontSize = 13.sp,
-                        color = Color(0xFF222222),
-                        maxLines = 3,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF202124),
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(horizontal = 8.dp)
+                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 4.dp)
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
+                } else {
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             } else {
-                val gradientColors = listOf(
-                    listOf(Color(0xFFE3F2FD), Color(0xFFBBDEFB)),
-                    listOf(Color(0xFFF3E5F5), Color(0xFFE1BEE7)),
-                    listOf(Color(0xFFE8F5E9), Color(0xFFC8E6C9)),
-                    listOf(Color(0xFFFFF3E0), Color(0xFFFFE0B2)),
-                    listOf(Color(0xFFFFEBEE), Color(0xFFFFCDD2))
-                )
-                val colorIndex = kotlin.math.abs(item.id.hashCode()) % gradientColors.size
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1.2f)
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                        .background(androidx.compose.ui.graphics.Brush.linearGradient(gradientColors[colorIndex]))
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
+                // Text-only Post - Google Assistant/Keep Card Style
+                val googleColors = listOf(Color(0xFF4285F4), Color(0xFFEA4335), Color(0xFFFBBC05), Color(0xFF34A853))
+                val googleLightColors = listOf(Color(0xFFE8F0FE), Color(0xFFFCE8E6), Color(0xFFFEF7E0), Color(0xFFE6F4EA))
+                val colorIndex = kotlin.math.abs(item.id.hashCode()) % googleColors.size
+                
+                Column(modifier = Modifier.padding(12.dp)) {
+                    // Category/Type indicator
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .background(googleLightColors[colorIndex], RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "同城信息", 
+                                fontSize = 10.sp, 
+                                fontWeight = FontWeight.Bold,
+                                color = googleColors[colorIndex]
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
                     Text(
                         text = displayText,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF333333),
-                        maxLines = 4,
+                        color = Color(0xFF202124),
+                        maxLines = 5,
                         overflow = TextOverflow.Ellipsis,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         lineHeight = 22.sp
                     )
                 }
-                Spacer(modifier = Modifier.height(10.dp))
             }
 
+            // User Info & Actions Footer
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(horizontal = 8.dp)
+                    .padding(horizontal = 12.dp, vertical = 12.dp)
                     .fillMaxWidth()
             ) {
                 val avatarUrl = item.user?.avatar ?: ""
-                val authorName = item.user?.nickname ?: "匿名用户"
+                val authorName = item.user?.nickname ?: "连山市民"
                 
                 val absoluteAvatarUrl = if (avatarUrl.startsWith("http") || avatarUrl.startsWith("android.resource://") || avatarUrl.startsWith("file://")) {
                     avatarUrl
@@ -306,54 +316,31 @@ fun DynamicFeedCard(
                     ""
                 }
 
-                AsyncImage(
-                    model = absoluteAvatarUrl,
-                    contentDescription = "Avatar",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFEEEEEE))
+                com.lianshan.lslife.ui.components.GoogleAvatar(
+                    url = absoluteAvatarUrl,
+                    size = 20.dp
                 )
                 
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(8.dp))
                 
                 Text(
                     text = authorName,
-                    fontSize = 11.sp,
-                    color = Color(0xFF888888),
+                    fontSize = 12.sp,
+                    color = Color(0xFF5F6368),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
                 
-                if (!item.distanceText.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Icon(
-                        imageVector = Icons.Filled.LocationOn,
-                        contentDescription = "Location",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(10.dp)
-                    )
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text(
-                        text = item.distanceText,
-                        fontSize = 10.sp,
-                        color = Color.Gray,
-                        maxLines = 1
-                    )
-                }
-                
                 Spacer(modifier = Modifier.width(4.dp))
                 
-                // Action button at bottom right (phone dial or chat)
                 if (!item.contactPhone.isNullOrEmpty()) {
                     Icon(
                         imageVector = Icons.Filled.Phone,
                         contentDescription = "拨打",
-                        tint = Color(0xFF888888),
+                        tint = Color(0xFF5F6368),
                         modifier = Modifier
-                            .size(24.dp)
+                            .size(20.dp)
                             .clip(CircleShape)
                             .clickable {
                                 val intent = Intent(Intent.ACTION_DIAL).apply {
@@ -361,18 +348,16 @@ fun DynamicFeedCard(
                                 }
                                 context.startActivity(intent)
                             }
-                            .padding(4.dp)
                     )
                 } else {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Chat,
                         contentDescription = "聊天",
-                        tint = Color(0xFF888888),
+                        tint = Color(0xFF5F6368),
                         modifier = Modifier
-                            .size(24.dp)
+                            .size(20.dp)
                             .clip(CircleShape)
                             .clickable { onChatClick() }
-                            .padding(4.dp)
                     )
                 }
             }

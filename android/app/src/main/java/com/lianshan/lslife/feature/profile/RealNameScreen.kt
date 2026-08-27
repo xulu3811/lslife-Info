@@ -100,22 +100,24 @@ fun RealNameScreen(
         ) {
             if (isVerified) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                    modifier = Modifier.fillMaxWidth()
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F4EA)), // Google Green Light
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Column(modifier = Modifier.padding(Dimens.lg)) {
-                        Text("认证状态：已实名", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                        Text("您已通过实名认证，可享受平台的完整功能。", style = MaterialTheme.typography.bodyMedium)
+                        Text("认证状态：已实名", style = MaterialTheme.typography.titleMedium, color = Color(0xFF34A853), fontWeight = FontWeight.Bold) // Google Green
+                        Text("您已通过实名认证，可享受平台的完整功能。", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF34A853).copy(alpha = 0.9f))
                     }
                 }
             } else if (isPending) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                    modifier = Modifier.fillMaxWidth()
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF7E0)), // Google Yellow Light
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Column(modifier = Modifier.padding(Dimens.lg)) {
-                        Text("认证状态：人工审核中", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold)
-                        Text("您提交的身份资料正在人工审核中，请耐心等待1-3个工作日。", style = MaterialTheme.typography.bodyMedium)
+                        Text("认证状态：人工审核中", style = MaterialTheme.typography.titleMedium, color = Color(0xFFE37400), fontWeight = FontWeight.Bold) // Google Dark Yellow/Orange
+                        Text("您提交的身份资料正在人工审核中，请耐心等待1-3个工作日。", style = MaterialTheme.typography.bodyMedium, color = Color(0xFFE37400).copy(alpha = 0.9f))
                     }
                 }
             } else {
@@ -184,7 +186,7 @@ fun RealNameScreen(
                         Text(
                             "《实名认证免责协议》", 
                             fontSize = 14.sp, 
-                            color = MaterialTheme.colorScheme.primary,
+                            color = Color(0xFF4285F4), // Google Blue
                             fontWeight = FontWeight.Medium,
                             textDecoration = TextDecoration.Underline
                         )
@@ -203,7 +205,7 @@ fun RealNameScreen(
                     enabled = canSubmit,
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
+                        containerColor = Color(0xFF4285F4), // Google Blue
                         disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 ) {

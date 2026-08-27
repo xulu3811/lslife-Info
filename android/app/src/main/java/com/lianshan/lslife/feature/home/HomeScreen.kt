@@ -146,7 +146,7 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF7F7F7))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .statusBarsPadding()
     ) {
         // 第一层：顶部搜索与本地化头栏
@@ -165,8 +165,8 @@ fun HomeScreen(
 
         PrimaryTabRow(
             selectedTabIndex = pagerState.currentPage,
-            containerColor = Color.White,
-            contentColor = Color(0xFFFF4D4F),
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.error,
             modifier = Modifier.height(36.dp), // 进一步降低高度
             indicator = {
                 TabRowDefaults.SecondaryIndicator(
@@ -194,7 +194,7 @@ fun HomeScreen(
                                 text = title,
                                 fontSize = 14.sp, // 缩小字体
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color(0xFF111111) else Color(0xFF666666) // 平滑的灰度过渡
+                                color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant // 平滑的灰度过渡
                             )
                             if (index == 1) {
                                 // 同城动态红点的呼吸动画
@@ -213,7 +213,7 @@ fun HomeScreen(
                                         .size(6.dp)
                                         .offset(x = 2.dp, y = 0.dp)
                                         .graphicsLayer { this.alpha = alpha }
-                                        .background(Color(0xFFFF4D4F), CircleShape)
+                                        .background(MaterialTheme.colorScheme.error, CircleShape)
                                 )
                             }
                         }
@@ -349,7 +349,7 @@ private fun TopSearchHeaderBar(
                 text = locationText,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF222222)
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
 
@@ -360,7 +360,7 @@ private fun TopSearchHeaderBar(
                 .height(36.dp)
                 .clickable { onSearchClick() },
             shape = RoundedCornerShape(18.dp),
-            color = Color(0xFFF2F2F2)
+            color = MaterialTheme.colorScheme.outlineVariant
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -369,7 +369,7 @@ private fun TopSearchHeaderBar(
                 Icon(
                     imageVector = Icons.Filled.Search,
                     contentDescription = "Search",
-                    tint = Color.Gray,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
@@ -384,7 +384,7 @@ private fun TopSearchHeaderBar(
                     Text(
                         text = targetText,
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Normal,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -400,7 +400,7 @@ private fun TopSearchHeaderBar(
             Icon(
                 imageVector = Icons.Outlined.Notifications,
                 contentDescription = "Messages",
-                tint = Color(0xFF333333),
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(26.dp)
             )
             if (unreadCount > 0) {
@@ -408,12 +408,12 @@ private fun TopSearchHeaderBar(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .offset(x = 4.dp, y = (-2).dp)
-                        .background(Color(0xFFFF4D4F), CircleShape)
+                        .background(MaterialTheme.colorScheme.error, CircleShape)
                         .padding(horizontal = 4.dp, vertical = 1.dp)
                 ) {
                     Text(
                         text = if (unreadCount > 99) "99+" else unreadCount.toString(),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.surface,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -437,7 +437,7 @@ private fun HomeBannerCarousel(
             .fillMaxWidth()
             .height(130.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFEFEFEF))
+            .background(MaterialTheme.colorScheme.outlineVariant)
     ) {
         HorizontalPager(
             state = pagerState,
@@ -465,7 +465,7 @@ private fun HomeBannerCarousel(
                 ) {
                     Text(
                         text = banner.title,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.surface,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1
@@ -487,7 +487,7 @@ private fun HomeBannerCarousel(
                     modifier = Modifier
                         .size(if (active) 12.dp else 6.dp, 6.dp)
                         .clip(CircleShape)
-                        .background(if (active) Color(0xFFFF4D4F) else Color.White.copy(alpha = 0.7f))
+                        .background(if (active) MaterialTheme.colorScheme.error else Color.White.copy(alpha = 0.7f))
                 )
             }
         }
@@ -548,7 +548,7 @@ private fun KingkongItemView(
         Text(
             text = cat.name,
             fontSize = 11.sp, // 与分类页协调
-            color = Color(0xFF444444),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Medium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -576,7 +576,7 @@ private fun FeedTabHeader(
 
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surface,
             shadowElevation = 0.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -608,14 +608,14 @@ private fun FeedTabHeader(
                                 text = name,
                                 fontSize = if (selected) 14.sp else 12.sp, // 缩小字体
                                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (selected) Color(0xFF111111) else Color.Gray
+                                color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             if (selected) {
                                 Box(
                                     modifier = Modifier
                                         .padding(top = 4.dp)
                                         .size(16.dp, 3.dp)
-                                        .background(Color(0xFFFF4D4F), CircleShape)
+                                        .background(MaterialTheme.colorScheme.error, CircleShape)
                                 )
                             }
                         }
@@ -630,11 +630,11 @@ private fun FeedTabHeader(
                         .padding(horizontal = 6.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("筛选", fontSize = 12.sp, color = Color.Gray) // 缩小字体
+                    Text("筛选", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) // 缩小字体
                     Icon(
                         imageVector = Icons.Filled.FilterList,
                         contentDescription = "Filter",
-                        tint = Color.Gray,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(14.dp) // 缩小图标
                     )
                 }
@@ -652,7 +652,7 @@ private fun StandardFeedCard(
 ) {
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = if (post.isUrgent) Color(0xFFFFF7F7) else Color.White,
+        color = if (post.isUrgent) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surface,
         shadowElevation = 0.dp,
         modifier = Modifier
             .fillMaxWidth()
@@ -671,7 +671,7 @@ private fun StandardFeedCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1.5f, matchHeightConstraintsFirst = false) // 限制为 3:2 比例，显著降低图片高度
-                        .background(Color(0xFFF7F7F7)),
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
                     AsyncImage(
@@ -689,7 +689,7 @@ private fun StandardFeedCard(
                     text = post.title ?: "同城发布",
                     fontSize = 13.sp, // 缩小至13.sp
                     fontWeight = FontWeight.Bold, // 保持粗体
-                    color = Color(0xFF111111),
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -703,14 +703,9 @@ private fun StandardFeedCard(
                     val avatarUrl = post.user?.avatar ?: ""
                     val authorName = post.user?.nickname ?: "连山用户"
                     
-                    AsyncImage(
-                        model = avatarUrl,
-                        contentDescription = "Avatar",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(20.dp) // 头像限制在20.dp
-                            .clip(CircleShape)
-                            .background(Color(0xFFEEEEEE))
+                    com.lianshan.lslife.ui.components.GoogleAvatar(
+                        url = avatarUrl,
+                        size = 20.dp
                     )
                     
                     Spacer(modifier = Modifier.width(6.dp))
@@ -718,7 +713,7 @@ private fun StandardFeedCard(
                     Text(
                         text = authorName,
                         fontSize = 11.sp, // 发布者昵称 11.sp
-                        color = Color(0xFF666666),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
@@ -731,7 +726,7 @@ private fun StandardFeedCard(
                                 .background(Color(0xFFFFD700), RoundedCornerShape(4.dp))
                                 .padding(horizontal = 4.dp, vertical = 2.dp)
                         ) {
-                            Text(text = "金牌", fontSize = 9.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(text = "金牌", fontSize = 9.sp, color = MaterialTheme.colorScheme.surface, fontWeight = FontWeight.Bold)
                         }
                     }
                     if (post.isUrgent) {
@@ -741,7 +736,7 @@ private fun StandardFeedCard(
                                 .background(Color(0xFFE53935), RoundedCornerShape(4.dp))
                                 .padding(horizontal = 4.dp, vertical = 2.dp)
                         ) {
-                            Text(text = "急售", fontSize = 9.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(text = "急售", fontSize = 9.sp, color = MaterialTheme.colorScheme.surface, fontWeight = FontWeight.Bold)
                         }
                     }
 

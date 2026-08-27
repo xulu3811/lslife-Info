@@ -58,6 +58,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lianshan.lslife.core.database.LocalMessageEntity
 import com.lianshan.lslife.ui.components.LoadingBox
 import com.lianshan.lslife.ui.theme.PrimaryRed
+import com.lianshan.lslife.ui.components.GoogleAvatar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -396,6 +397,7 @@ fun ChatScreen(
                             }
                         )
                         
+                        /* 位置功能未开发，暂时隐藏
                         // Location Icon
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -407,6 +409,7 @@ fun ChatScreen(
                             Text("位置", fontSize = 10.sp, color = Color.DarkGray)
                         }
                         Spacer(modifier = Modifier.width(8.dp))
+                        */
                         
                         // Bag Icon
                         Column(
@@ -518,6 +521,8 @@ fun ChatScreen(
                                 ChatBubble(
                                     message = message,
                                     isMe = isMe,
+                                    avatarUrl = if (isMe) state.currentUserAvatar else state.targetAvatar,
+                                    nickname = if (isMe) state.currentUserName else targetName,
                                     audioManager = audioManager,
                                     onClick = {
                                         if (selectedIds.isNotEmpty()) {
@@ -667,11 +672,15 @@ fun RecalledMessagePill(text: String) {
     }
 }
 
+
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatBubble(
     message: LocalMessageEntity,
     isMe: Boolean,
+    avatarUrl: String?,
+    nickname: String,
     audioManager: AudioManager,
     onClick: () -> Unit = {},
     onLongPress: () -> Unit
@@ -683,20 +692,51 @@ fun ChatBubble(
         bottomEnd = if (isMe) 4.dp else 16.dp
     )
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (isMe) Arrangement.End else Arrangement.Start
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+        horizontalArrangement = if (isMe) Arrangement.End else Arrangement.Start,
+        verticalAlignment = Alignment.Top
     ) {
-        Box(
-            modifier = Modifier
-                .widthIn(max = 280.dp)
-                .clip(shape)
-                .background(color = if (isMe) PrimaryRed else MaterialTheme.colorScheme.surfaceVariant)
-                .combinedClickable(
-                    onClick = onClick,
-                    onLongClick = onLongPress
-                )
-                .padding(horizontal = 16.dp, vertical = 10.dp)
+        if (!isMe) {
+            GoogleAvatar(url = avatarUrl, size = 40.dp)
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+        Column(
+            horizontalAlignment = if (isMe) Alignment.End else Alignment.Start
         ) {
+            Text(
+                text = nickname,
+                fontSize = 11.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 4.dp, start = 4.dp, end = 4.dp)
+            )
+            
+            Box(
+                modifier = Modifier
+                    .widthIn(max = 240.dp)
+                    .clip(shape)
+                    .background(color = if (isMe) PrimaryRed else MaterialTheme.colorScheme.surfaceVariant)
+                    .combinedClickable(
+                        onClick = {
+                            if (message.msgType == "VOICE" || message.msgType == "AUDIO") {
+                                var url = ""
+                                val voiceData = try { org.json.JSONObject(message.content) } catch (e: Exception) { null }
+                                if (voiceData != null) {
+                                    url = voiceData.optString("url")
+                                } else if (message.content.contains("|")) {
+                                    url = message.content.substringBefore("|")
+                                }
+                                if (url.isNotEmpty()) {
+                                    url = url.replace("http://", "https://")
+                                    audioManager.playAudio(url)
+                                }
+                            }
+                            onClick()
+                        },
+                        onLongClick = onLongPress
+                    )
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+            ) {
             if (message.msgType == "IMAGE") {
                 var model: Any = message.content
                 if (message.content.startsWith("base64:")) {
@@ -827,20 +867,33 @@ fun ChatBubble(
                     Text("位置解析失败", color = Color.Gray)
                 }
             } else if (message.msgType == "VOICE" || message.msgType == "AUDIO") {
+                var duration = 1
+                var url = ""
+                
+                // Try JSON format first
                 val voiceData = try {
                     org.json.JSONObject(message.content)
                 } catch (e: Exception) { null }
+                
                 if (voiceData != null) {
-                    val duration = voiceData.optInt("duration", 1)
-                    val url = voiceData.optString("url")
+                    duration = voiceData.optInt("duration", 1)
+                    url = voiceData.optString("url")
+                } else if (message.content.contains("|")) {
+                    // Try url|duration format
+                    val parts = message.content.split("|")
+                    url = parts[0]
+                    duration = parts.getOrNull(1)?.toIntOrNull() ?: 1
+                }
+                
+                if (url.isNotEmpty()) {
+                    url = url.replace("http://", "https://")
                     val currentPlayingUrl by audioManager.currentPlayingUrl.collectAsStateWithLifecycle()
                     val isPlaying by audioManager.isPlaying.collectAsStateWithLifecycle()
                     val isThisPlaying = (currentPlayingUrl == url && isPlaying)
                     
                     Row(
                         modifier = Modifier
-                            .widthIn(min = 60.dp, max = (60 + duration * 5).dp)
-                            .clickable { audioManager.playAudio(url) },
+                            .widthIn(min = 60.dp, max = (60 + duration * 5).dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = if (isMe) Arrangement.End else Arrangement.Start
                     ) {
@@ -874,6 +927,12 @@ fun ChatBubble(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
+            }
+        }
+
+        if (isMe) {
+            Spacer(modifier = Modifier.width(8.dp))
+            GoogleAvatar(url = avatarUrl, size = 40.dp)
         }
     }
 }

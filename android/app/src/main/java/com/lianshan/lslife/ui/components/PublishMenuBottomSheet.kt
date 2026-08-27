@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -225,6 +226,7 @@ private fun MomentPublishTab(
     }
     
     var showSourceMenu by remember { mutableStateOf(false) }
+    var showAddressPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState) {
         when (uiState) {
@@ -294,12 +296,36 @@ private fun MomentPublishTab(
                     )
                 )
                 
+                val locationRegion by viewModel.locationRegion.collectAsStateWithLifecycle()
+                
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    // Location Pill
+                    Surface(
+                        onClick = { showAddressPicker = true },
+                        shape = RoundedCornerShape(16.dp),
+                        color = Color(0xFFF1F3F4)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = Color(0xFF1A73E8), modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = if (locationRegion.isBlank()) "添加位置" else locationRegion.split("-").lastOrNull() ?: "添加位置",
+                                fontSize = 12.sp,
+                                color = Color(0xFF1A73E8),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+
+                    // AI Assist Pill
                     Surface(
                         onClick = {
                             viewModel.generateAiDescription(text) { newText ->
@@ -407,5 +433,16 @@ private fun MomentPublishTab(
                 Text("发布", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
         }
+    }
+
+    if (showAddressPicker) {
+        val nodes by viewModel.addressNodes.collectAsStateWithLifecycle()
+        AddressPickerBottomSheet(
+            addressNodes = nodes,
+            onDismissRequest = { showAddressPicker = false },
+            onAddressSelected = { selectedRegion ->
+                viewModel.locationRegion.value = selectedRegion
+            }
+        )
     }
 }

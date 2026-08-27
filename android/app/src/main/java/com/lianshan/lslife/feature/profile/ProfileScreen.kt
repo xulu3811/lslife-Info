@@ -1,6 +1,7 @@
 package com.lianshan.lslife.feature.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,6 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -89,6 +91,7 @@ fun ProfileScreen(
     onOpenPromotionCenter: () -> Unit,
     onLoggedOut: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
+    sessionViewModel: com.lianshan.lslife.ui.SessionViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -110,7 +113,7 @@ fun ProfileScreen(
     }
 
     Scaffold(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
@@ -143,8 +146,8 @@ fun ProfileScreen(
                     .background(
                         Brush.linearGradient(
                             colors = listOf(
-                                Color(0xFFF8FAFC),
-                                Color(0xFFF1F5F9) // Softer silver-blue
+                                MaterialTheme.colorScheme.background,
+                                MaterialTheme.colorScheme.surfaceVariant // Softer silver-blue
                             )
                         )
                     )
@@ -156,13 +159,21 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // 1. 头像区 (微缩至 56dp，边框 2dp)
+                    // 1. 头像区 (带 Google 风格四色光环边框)
+                    val googleColors = listOf(
+                        Color(0xFF4285F4), // Blue
+                        Color(0xFF34A853), // Green
+                        Color(0xFFFBBC05), // Yellow
+                        Color(0xFFEA4335), // Red
+                        Color(0xFF4285F4)  // Blue
+                    )
                     Box(
                         modifier = Modifier
-                            .size(56.dp)
+                            .size(62.dp)
+                            .border(2.5.dp, Brush.sweepGradient(googleColors), CircleShape)
+                            .padding(4.dp)
                             .clip(CircleShape)
-                            .background(Color.White)
-                            .padding(2.dp),
+                            .background(MaterialTheme.colorScheme.surface),
                         contentAlignment = Alignment.Center
                     ) {
                         NetworkImage(
@@ -184,7 +195,7 @@ fun ProfileScreen(
                                 text = user?.nickname ?: "点击登录",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E293B),
+                                color = MaterialTheme.colorScheme.onBackground,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -197,18 +208,16 @@ fun ProfileScreen(
                             }
                         }
                         
-                        Spacer(modifier = Modifier.height(4.dp))
-                        
-                        Text(
-                            text = if (user != null) "同城号: ${user.phone ?: "未绑定"}" else "登录开启同城精彩生活",
-                            fontSize = 12.sp,
-                            color = Color(0xFF64748B),
-                            fontWeight = FontWeight.Normal
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-                        
-                        if (user != null) {
+                        if (user == null) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "登录开启同城精彩生活",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.Normal
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.height(6.dp))
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 JoybuyRealNameBadge(isVerified = user.realNameStatus == "verified")
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -221,7 +230,7 @@ fun ProfileScreen(
                     Icon(
                         Icons.Filled.ChevronRight,
                         contentDescription = "个人主页",
-                        tint = Color(0xFF94A3B8),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -355,6 +364,13 @@ fun ProfileScreen(
                 onClick = { /* 关于我们 */ },
                 showDivider = true
             )
+            ProfileMenuSwitchRow(
+                icon = Icons.Outlined.Notifications,
+                title = "后台消息接收",
+                checked = sessionViewModel.keepAlive.collectAsStateWithLifecycle().value,
+                onCheckedChange = { sessionViewModel.toggleKeepAlive(it) },
+                showDivider = true
+            )
             ProfileMenuRow(
                 icon = Icons.Outlined.Settings,
                 title = "设置与隐私",
@@ -367,7 +383,7 @@ fun ProfileScreen(
             Text(
                 text = "© 2026 连山壮族瑶族自治县 · 智慧同城生活平台",
                 fontSize = 10.sp,
-                color = Color(0xFFCBD5E1),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -400,7 +416,7 @@ private fun SectionTitle(
             Icon(
                 Icons.Filled.ChevronRight, 
                 contentDescription = null, 
-                tint = Color(0xFF999999),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -461,14 +477,14 @@ private fun ProfileMenuRow(
                 Text(
                     rightText, 
                     fontSize = 13.sp, 
-                    color = Color(0xFF999999)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.width(4.dp))
             }
             Icon(
                 Icons.Filled.ChevronRight, 
                 contentDescription = null, 
-                tint = Color(0xFFCCCCCC), 
+                tint = MaterialTheme.colorScheme.outlineVariant, 
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -478,7 +494,60 @@ private fun ProfileMenuRow(
                     .fillMaxWidth()
                     .padding(start = 48.dp, end = 16.dp)
                     .height(0.5.dp)
-                    .background(Color(0xFFF0F0F0)),
+                    .background(MaterialTheme.colorScheme.outlineVariant),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileMenuSwitchRow(
+    icon: ImageVector,
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    showDivider: Boolean = true,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                icon, 
+                contentDescription = title, 
+                tint = MaterialTheme.colorScheme.onBackground, 
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                title, 
+                fontSize = 14.sp, 
+                fontWeight = FontWeight.Medium, 
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f)
+            )
+            
+            androidx.compose.material3.Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                modifier = Modifier.scale(0.8f),
+                colors = androidx.compose.material3.SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = Color(0xFF4285F4)
+                )
+            )
+        }
+        if (showDivider) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 48.dp, end = 16.dp)
+                    .height(0.5.dp)
+                    .background(MaterialTheme.colorScheme.outlineVariant),
             )
         }
     }
@@ -514,7 +583,7 @@ private fun DataBoardItem(
             text = label, 
             fontSize = 12.sp, 
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF666666)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -672,14 +741,14 @@ private fun JoybuyRealNameBadge(isVerified: Boolean) {
             modifier = Modifier
                 .height(18.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(Color(0xFFF1F5F9))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(horizontal = 6.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "未实名",
                 fontSize = 10.sp,
-                color = Color(0xFF94A3B8),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -732,14 +801,14 @@ private fun JoybuyVipBadge(tier: String?) {
                 modifier = Modifier
                     .height(18.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(Color(0xFFF1F5F9))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .padding(horizontal = 6.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "免费用户",
                     fontSize = 10.sp,
-                    color = Color(0xFF94A3B8),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
                 )
             }

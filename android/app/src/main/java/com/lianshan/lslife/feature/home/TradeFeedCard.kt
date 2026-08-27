@@ -42,7 +42,7 @@ fun TradeFeedCard(
             .fillMaxWidth()
             .padding(vertical = Dimens.xs, horizontal = Dimens.sm),
         shape = RoundedCornerShape(12.dp),
-        color = if (isUrgent) Color(0xFFFFF7F7) else Color.White,
+        color = if (isUrgent) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surface,
         shadowElevation = 2.dp
     ) {
         Column(

@@ -198,7 +198,12 @@ data class MerchantCertifyRequest(
     val contactPhone: String,
     val businessLicenseUrl: String? = null,
     val storePhotos: List<String> = emptyList(),
-    val isDraft: Boolean = false
+    val isDraft: Boolean = false,
+    val province: String? = null,
+    val city: String? = null,
+    val district: String? = null,
+    val town: String? = null,
+    val streetAddress: String? = null
 )
 
 @Serializable

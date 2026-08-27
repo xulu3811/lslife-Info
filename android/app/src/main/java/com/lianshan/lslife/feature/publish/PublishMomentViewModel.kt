@@ -1,5 +1,7 @@
 package com.lianshan.lslife.feature.publish
 
+import com.lianshan.lslife.core.data.AddressManager
+import com.lianshan.lslife.core.data.AddressNode
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -29,7 +31,8 @@ sealed class PublishMomentState {
 
 @HiltViewModel
 class PublishMomentViewModel @Inject constructor(
-    private val repository: LsRepository
+    private val repository: LsRepository,
+    private val addressManager: AddressManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PublishMomentState>(PublishMomentState.Idle)
@@ -37,6 +40,18 @@ class PublishMomentViewModel @Inject constructor(
 
     private val _aiGenerating = MutableStateFlow(false)
     val aiGenerating: StateFlow<Boolean> = _aiGenerating.asStateFlow()
+
+    private val _addressNodes = MutableStateFlow<List<AddressNode>>(emptyList())
+    val addressNodes: StateFlow<List<AddressNode>> = _addressNodes.asStateFlow()
+    
+    val locationRegion = MutableStateFlow("")
+    val locationDetail = MutableStateFlow("")
+
+    init {
+        viewModelScope.launch {
+            _addressNodes.value = addressManager.getAddresses()
+        }
+    }
 
     fun generateAiDescription(text: String, onUpdate: (String) -> Unit) {
         if (text.isBlank()) return
@@ -94,6 +109,8 @@ class PublishMomentViewModel @Inject constructor(
                     put("text", kotlinx.serialization.json.JsonPrimitive(text))
                 }
 
+                val addressParts = locationRegion.value.split("-")
+
                 val request = CreatePostRequest(
                     category = "sys_dynamic",
                     title = "", // No title for moments
@@ -101,7 +118,12 @@ class PublishMomentViewModel @Inject constructor(
                     price = null,
                     images = uploadedUrls,
                     attributes = attributesJson,
-                    postType = "MOMENT"
+                    postType = "MOMENT",
+                    province = addressParts.getOrNull(0),
+                    city = addressParts.getOrNull(1),
+                    district = addressParts.getOrNull(2),
+                    town = addressParts.getOrNull(3),
+                    streetAddress = locationDetail.value.takeIf { it.isNotBlank() }
                 )
 
                 val result = repository.createPost(request)

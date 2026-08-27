@@ -7,17 +7,25 @@ export default function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+
   const fetchUsers = () => {
     setLoading(true);
-    api.get(`/admin/users${search ? `?search=${encodeURIComponent(search)}` : ''}`)
-      .then(res => setUsers(res.data.data))
+    const query = new URLSearchParams({ page: String(page), limit: '20' });
+    if (search) query.append('keyword', search);
+    api.get(`/admin/users?${query.toString()}`)
+      .then(res => {
+        setUsers(res.data.data.items || []);
+        setTotal(res.data.data.total || 0);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     fetchUsers();
-  }, [search]);
+  }, [search, page]);
 
   const handleRecharge = (id: string, currentBalance: number) => {
     const amountStr = window.prompt(`当前余额: ￥${currentBalance}\n请输入要充值或扣减的金额 (扣减请输入负数):`, '0');
@@ -85,7 +93,7 @@ export default function UserManagement() {
             className="glass-input"
             style={{ paddingLeft: '40px' }}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
       </div>
@@ -118,12 +126,12 @@ export default function UserManagement() {
                   </td>
                   <td className="font-medium text-secondary">{user.phone}</td>
                   <td>
-                    <span className={`badge ${user.membershipTier === 'free' ? 'badge-neutral' : user.membershipTier === 'vip' ? 'badge-warning' : 'badge-danger'}`}>
-                      {user.membershipTier.toUpperCase()}
+                    <span className={`badge ${(user.membershipTier || 'free') === 'free' ? 'badge-neutral' : (user.membershipTier || 'free') === 'vip' ? 'badge-warning' : 'badge-danger'}`}>
+                      {(user.membershipTier || 'free').toUpperCase()}
                     </span>
                   </td>
                   <td className="font-bold text-success text-lg">
-                    ￥{user.walletBalance.toFixed(2)}
+                    ￥{(user.walletBalance || 0).toFixed(2)}
                   </td>
                   <td>
                     <span className={`badge ${user.realNameStatus === 'verified' ? 'badge-success' : user.realNameStatus === 'pending' ? 'badge-warning' : 'badge-neutral'}`}>
@@ -141,10 +149,10 @@ export default function UserManagement() {
                   </td>
                   <td className="text-right">
                     <div className="flex justify-end gap-2">
-                      <button onClick={() => handleRecharge(user.id, user.walletBalance)} className="glass-button secondary p-2" title="调额">
+                      <button onClick={() => handleRecharge(user.id, user.walletBalance || 0)} className="glass-button secondary p-2" title="调额">
                         <DollarSign size={16} className="text-primary" /> 调额
                       </button>
-                      <button onClick={() => handleMembership(user.id, user.membershipTier)} className="glass-button secondary p-2" title="身份">
+                      <button onClick={() => handleMembership(user.id, user.membershipTier || 'free')} className="glass-button secondary p-2" title="身份">
                         <Award size={16} className="text-warning" /> 身份
                       </button>
                       <button onClick={() => handleStatus(user.id, user.status)} className="glass-button secondary p-2" title={user.status === 'banned' ? '解封' : '封禁'}>
@@ -158,6 +166,30 @@ export default function UserManagement() {
           </table>
         )}
       </div>
+      
+      {!loading && total > 20 && (
+        <div className="flex justify-between items-center mt-4">
+          <div className="text-sm text-secondary">
+            共 {total} 条记录，当前第 {page} 页
+          </div>
+          <div className="flex gap-2">
+            <button 
+              className="glass-button secondary p-2 px-4" 
+              disabled={page === 1}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+            >
+              上一页
+            </button>
+            <button 
+              className="glass-button secondary p-2 px-4" 
+              disabled={page * 20 >= total}
+              onClick={() => setPage(p => p + 1)}
+            >
+              下一页
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

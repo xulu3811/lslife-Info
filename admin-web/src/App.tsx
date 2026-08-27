@@ -6,9 +6,7 @@ import Dashboard from './pages/Dashboard';
 import ContentAudit from './pages/ContentAudit';
 import KycAudit from './pages/KycAudit';
 import UserManagement from './pages/UserManagement';
-import { OrderManagement } from './pages/OrderManagement';
 import { MerchantManagement } from './pages/MerchantManagement';
-import { ProductAudit } from './pages/ProductAudit';
 import CategoryManagement from './pages/CategoryManagement';
 import { SystemSecurity } from './pages/SystemSecurity';
 import AppVersionManagement from './pages/AppVersionManagement';
@@ -39,9 +37,7 @@ export default function App() {
           <Route path="content" element={<ContentAudit />} />
           <Route path="kyc" element={<KycAudit />} />
           <Route path="categories" element={<CategoryManagement />} />
-          <Route path="orders" element={<OrderManagement />} />
           <Route path="merchants" element={<MerchantManagement />} />
-          <Route path="products" element={<ProductAudit />} />
           <Route path="settings" element={<SystemSecurity />} />
           <Route path="app-version" element={<AppVersionManagement />} />
         </Route>

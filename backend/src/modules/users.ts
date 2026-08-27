@@ -146,7 +146,7 @@ router.get(
       posts: posts.map((p) => ({
         ...p,
         images: JSON.parse(p.images) as string[],
-        attributes: JSON.parse(p.attributes) as Record<string, string>,
+        attributes: (p.attributes as any) as Record<string, string>,
       })),
     }, '获取橱窗信息成功');
   })

@@ -46,43 +46,43 @@ model User {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
-  addresses      Address[]
-  posts          Post[]
-  dynamicPosts   DynamicPost[]
-  favorites      Favorite[]
-  footprints     Footprint[]
-  following      Follow[]   @relation("UserFollowing")
-  followers      Follow[]   @relation("UserFollowers")
-  notifications  Notification[]
-  subscriptions  Subscription[]
-  transactions   WalletTransaction[]
+  addresses     Address[]
+  posts         Post[]
+  dynamicPosts  DynamicPost[]
+  favorites     Favorite[]
+  footprints    Footprint[]
+  following     Follow[]            @relation("UserFollowing")
+  followers     Follow[]            @relation("UserFollowers")
+  notifications Notification[]
+  subscriptions Subscription[]
+  transactions  WalletTransaction[]
 
-  ownedMerchants  Merchant[] @relation("MerchantOwner")
-  merchantInfo    MerchantInfo?
-  quotaLogs       QuotaLedger[]
-  billingOrders   BillingOrder[]
-  valueAddedLogs  ValueAddedLog[]
-  friendRequestsSent   FriendRequest[] @relation("RequestSender")
-  friendRequestsRecv   FriendRequest[] @relation("RequestReceiver")
-  friendshipsAsUser    Friendship[]    @relation("FriendshipUser")
-  friendshipsAsFriend  Friendship[]    @relation("FriendshipFriend")
+  ownedMerchants      Merchant[]      @relation("MerchantOwner")
+  merchantInfo        MerchantInfo?
+  quotaLogs           QuotaLedger[]
+  billingOrders       BillingOrder[]
+  valueAddedLogs      ValueAddedLog[]
+  friendRequestsSent  FriendRequest[] @relation("RequestSender")
+  friendRequestsRecv  FriendRequest[] @relation("RequestReceiver")
+  friendshipsAsUser   Friendship[]    @relation("FriendshipUser")
+  friendshipsAsFriend Friendship[]    @relation("FriendshipFriend")
 
   merchantCertification MerchantCertification?
-  wallet         UserWallet?
-  walletLogs     WalletLog[]
-  signInRecord   UserSignInRecord?
-  reports        Report[]
-  promotions     PromotionTask[]
-  merchantWallet MerchantWallet?
-  cardTransactions CardTransaction[]
+  wallet                UserWallet?
+  walletLogs            WalletLog[]
+  signInRecord          UserSignInRecord?
+  reports               Report[]
+  promotions            PromotionTask[]
+  merchantWallet        MerchantWallet?
+  cardTransactions      CardTransaction[]
 
   personIdentityId String?
-  personIdentity   PersonIdentity? @relation(fields: [personIdentityId], references: [idCardNumber])
+  personIdentity   PersonIdentity?   @relation(fields: [personIdentityId], references: [idCardNumber])
   devices          UserDeviceLogin[]
-  
-  auditLogs        AdminAuditLog[]
-}
 
+  auditLogs     AdminAuditLog[]
+  ModerationLog ModerationLog[]
+}
 
 enum MerchantCertStatus {
   DRAFT
@@ -93,19 +93,19 @@ enum MerchantCertStatus {
 }
 
 model MerchantCertification {
-  id                 String   @id @default(cuid())
-  userId             String   @unique
+  id                 String             @id @default(cuid())
+  userId             String             @unique
   status             MerchantCertStatus @default(DRAFT)
-  certType           String   @default("ENTERPRISE") // ENTERPRISE | INDIVIDUAL
+  certType           String             @default("ENTERPRISE") // ENTERPRISE | INDIVIDUAL
   storeName          String
   categoryId         String
   contactName        String
   contactPhone       String
   businessLicenseUrl String?
-  storePhotos        String   @default("[]") // JSON string array of URLs
+  storePhotos        String             @default("[]") // JSON string array of URLs
   rejectReason       String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -174,7 +174,6 @@ model Merchant {
   owner        User?               @relation("MerchantOwner", fields: [ownerId], references: [id])
 }
 
-
 // ================= 资金流水 =================
 model WalletTransaction {
   id            String   @id @default(cuid())
@@ -194,7 +193,6 @@ model WalletTransaction {
   @@index([userId])
   @@index([merchantId])
 }
-
 
 // ================= 分类与动态表单 =================
 model Category {
@@ -223,80 +221,80 @@ model Category {
 
 // ================= 同城发布 =================
 model Post {
-  id               String   @id @default(cuid())
-  userId           String
-  publisherType    String   @default("INDIVIDUAL") // INDIVIDUAL | MERCHANT
-  merchantId       String?
-  listingType      String   @default("GOODS") // GOODS | SERVICE
-  postType         PostType @default(CLASSIFIED) // 新增：意图分流
-  likeCount        Int      @default(0)
-  isSponsored      Boolean  @default(false)
-  tradeMode        String   @default("INFO")
-  category         String
-  categoryId       String?
-  title            String
-  description      String
-  price            Float?
-  contactPhone     String?  // 新增：信息直连电话
-  images           String   @default("[]") // JSON 字符串数组
-  province         String?
-  city             String?
-  district         String?
-  town             String?
-  streetAddress    String?
-  attributes       String   @default("{}") // JSON 动态属性
-  status           String   @default("published") // pending_review | published | rejected | removed | taken_down
-  reviewNote       String?
-  sellerType       String   @default("INDIVIDUAL") // INDIVIDUAL | MERCHANT
-  marketingHook    String?  // 营销钩子文案
-  isFeatured       Boolean  @default(false) // 是否入选同城严选/品牌好店
+  id            String   @id @default(cuid())
+  userId        String
+  publisherType String   @default("INDIVIDUAL") // INDIVIDUAL | MERCHANT
+  merchantId    String?
+  listingType   String   @default("GOODS") // GOODS | SERVICE
+  postType      PostType @default(CLASSIFIED) // 新增：意图分流
+  likeCount     Int      @default(0)
+  isSponsored   Boolean  @default(false)
+  tradeMode     String   @default("INFO")
+  category      String
+  categoryId    String?
+  title         String
+  description   String
+  price         Float?
+  contactPhone  String? // 新增：信息直连电话
+  images        String   @default("[]") // JSON 字符串数组
+  province      String?
+  city          String?
+  district      String?
+  town          String?
+  streetAddress String?
+  attributes    Json     @default("{}") // JSON 动态属性
+  status        String   @default("published") // pending_review | published | rejected | removed | taken_down
+  reviewNote    String?
+  sellerType    String   @default("INDIVIDUAL") // INDIVIDUAL | MERCHANT
+  marketingHook String? // 营销钩子文案
+  isFeatured    Boolean  @default(false) // 是否入选同城严选/品牌好店
 
-  topic            String?  // 新增：参与的同城话题 (如 #连山探店, #周末去哪儿)
-  isUrgent         Boolean  @default(false) // 新增：急售标签
-  isTop            Boolean  @default(false)
+  topic            String? // 新增：参与的同城话题 (如 #连山探店, #周末去哪儿)
+  isUrgent         Boolean   @default(false) // 新增：急售标签
+  isTop            Boolean   @default(false)
   topExpireAt      DateTime?
   refreshedAt      DateTime?
   linkedCommerceId String?
 
-  textHash         String?  // 新增：用于文本去重
-  imageHashes      String   @default("[]") // 新增：图片哈希数组，用于去重
-  isShadowBanned   Boolean  @default(false) // 新增：是否被影子封禁 (不展示在 Feeds 中)
+  textHash       String? // 新增：用于文本去重
+  imageHashes    String  @default("[]") // 新增：图片哈希数组，用于去重
+  isShadowBanned Boolean @default(false) // 新增：是否被影子封禁 (不展示在 Feeds 中)
 
-  createdAt        DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  merchant    Merchant?   @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchant Merchant? @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 
-  categoryRel Category?   @relation(fields: [categoryId], references: [id])
-  favorites   Favorite[]
-  footprints  Footprint[]
+  categoryRel    Category?       @relation(fields: [categoryId], references: [id])
+  favorites      Favorite[]
+  footprints     Footprint[]
   valueAddedLogs ValueAddedLog[]
-  promotions  PromotionTask[]
-
+  promotions     PromotionTask[]
 
   @@index([userId])
   @@index([category])
   @@index([categoryId])
   @@index([status, category]) // 新增复合索引加速搜索
-  @@index([status, price])    // 新增复合索引加速价格过滤
+  @@index([status, price]) // 新增复合索引加速价格过滤
+  @@index([attributes], type: Gin) // JSONB 动态属性检索加速
 }
 
 // ================= 商业推广 =================
 model PromotionTask {
-  id          String   @id @default(cuid())
-  postId      String   
-  userId      String   
-  type        String   // 类型：TOP(置顶), BUMP(擦亮), TAG(急售)
-  status      String   @default("ACTIVE") // 状态：ACTIVE(生效中), EXPIRED(已过期)
-  startTime   DateTime @default(now())
-  endTime     DateTime 
-  config      Json?    
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  type      String // 类型：TOP(置顶), BUMP(擦亮), TAG(急售)
+  status    String   @default("ACTIVE") // 状态：ACTIVE(生效中), EXPIRED(已过期)
+  startTime DateTime @default(now())
+  endTime   DateTime
+  config    Json?
 
-  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status, endTime])
   @@index([postId])
@@ -382,16 +380,16 @@ model AdminUser {
 
 // ================= 举报投诉 =================
 model Report {
-  id          String   @id @default(cuid())
-  reporterId  String
-  targetType  String   // POST, USER
-  targetId    String
-  reason      String
-  status      String   @default("PENDING") // PENDING, RESOLVED, INVALID
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  reporterId String
+  targetType String // POST, USER
+  targetId   String
+  reason     String
+  status     String   @default("PENDING") // PENDING, RESOLVED, INVALID
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  reporter    User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
   @@index([reporterId])
   @@index([targetType, targetId])
@@ -407,25 +405,25 @@ model SystemConfig {
 
 // ================= 虚拟货币钱包系统 =================
 model UserWallet {
-  userId        String   @id // 引用自 User.id
-  coinBalance   Int      @default(0) // 猫币余额
-  totalRecharged Float   @default(0.00) // 累计充值 (RMB)
-  version       Int      @default(0) // 乐观锁版本号
-  updatedAt     DateTime @updatedAt
+  userId         String   @id // 引用自 User.id
+  coinBalance    Int      @default(0) // 猫币余额
+  totalRecharged Float    @default(0.00) // 累计充值 (RMB)
+  version        Int      @default(0) // 乐观锁版本号
+  updatedAt      DateTime @updatedAt
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model WalletLog {
-  id            String   @id @default(cuid())
-  userId        String
-  amount        Int      // 变动数量 (正负值)
-  balanceAfter  Int      // 变动后余额快照
-  tradeType     String   // RECHARGE, REWARD, CONSUME_TOP, CONSUME_POST 等
-  relatedBizId  String?  // 关联业务 ID
-  createdAt     DateTime @default(now())
+  id           String   @id @default(cuid())
+  userId       String
+  amount       Int // 变动数量 (正负值)
+  balanceAfter Int // 变动后余额快照
+  tradeType    String // RECHARGE, REWARD, CONSUME_TOP, CONSUME_POST 等
+  relatedBizId String? // 关联业务 ID
+  createdAt    DateTime @default(now())
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
@@ -433,49 +431,49 @@ model WalletLog {
 
 // ================= 流量曝光卡系统 =================
 model MerchantWallet {
-  merchantId    String   @id // 关联 User.id
-  retailCards   Int      @default(0) // 充值购买的卡 (永久有效)
-  vipCards      Int      @default(0) // 会员赠送的卡 (月底清零)
-  updatedAt     DateTime @updatedAt
+  merchantId  String   @id // 关联 User.id
+  retailCards Int      @default(0) // 充值购买的卡 (永久有效)
+  vipCards    Int      @default(0) // 会员赠送的卡 (月底清零)
+  updatedAt   DateTime @updatedAt
 
-  user          User     @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 }
 
 model CardTransaction {
-  id            String   @id @default(cuid())
-  userId        String
-  type          String   // ADD, DEDUCT
-  amount        Int
-  retailBefore  Int
-  retailAfter   Int
-  vipBefore     Int
-  vipAfter      Int
-  reason        String
-  createdAt     DateTime @default(now())
+  id           String   @id @default(cuid())
+  userId       String
+  type         String // ADD, DEDUCT
+  amount       Int
+  retailBefore Int
+  retailAfter  Int
+  vipBefore    Int
+  vipAfter     Int
+  reason       String
+  createdAt    DateTime @default(now())
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
 }
 
 model RechargePackage {
-  id          Int      @id @default(autoincrement())
-  price       Float    // RMB 售价
-  coinsAmount Int      // 基础猫币数量
-  bonusCoins  Int      @default(0) // 赠送猫币
-  isActive    Boolean  @default(true) // 是否上架
+  id          Int     @id @default(autoincrement())
+  price       Float // RMB 售价
+  coinsAmount Int // 基础猫币数量
+  bonusCoins  Int     @default(0) // 赠送猫币
+  isActive    Boolean @default(true) // 是否上架
 }
 
 // ================= 用户签到 =================
 model UserSignInRecord {
-  userId             String   @id // 关联 User.id
-  continuousDays     Int      @default(0) // 连续签到天数
-  lastSignInDate     DateTime? // 上次签到日期 (只存日期部分或UTC时间)
-  totalSignInDays    Int      @default(0) // 总签到天数
-  updatedAt          DateTime @updatedAt
-  
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String    @id // 关联 User.id
+  continuousDays  Int       @default(0) // 连续签到天数
+  lastSignInDate  DateTime? // 上次签到日期 (只存日期部分或UTC时间)
+  totalSignInDays Int       @default(0) // 总签到天数
+  updatedAt       DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // ================= 用户收藏 =================
@@ -485,8 +483,8 @@ model Favorite {
   postId    String
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@index([userId])
@@ -509,8 +507,6 @@ model Banner {
   createdAt DateTime @default(now())
 }
 
-
-
 // ================= 商业化与配额体系 =================
 model MerchantInfo {
   id            String   @id @default(cuid())
@@ -530,34 +526,34 @@ model MerchantInfo {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model BillingOrder {
   id         String   @id @default(cuid())
   userId     String
-  type       String   // POST_QUOTA | MERCHANT_VERIFY | POST_TOP | POST_REFRESH
-  amount     Int      // in cents
+  type       String // POST_QUOTA | MERCHANT_VERIFY | POST_TOP | POST_REFRESH
+  amount     Int // in cents
   status     String   @default("PENDING") // PENDING | PAID | CANCELLED
   payChannel String   @default("WECHAT") // WECHAT | ALIPAY | MOCK_WALLET
-  metadata   Json?    // 存储订单的附加信息，例如 postId, days 等
+  metadata   Json? // 存储订单的附加信息，例如 postId, days 等
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
 }
 
 model QuotaLedger {
   id           String   @id @default(cuid())
   userId       String
-  changeAmount Int      // Positive for added, negative for consumed
-  reason       String   // BUY_QUOTA, NEW_USER_FREE, POST_CONSUME
+  changeAmount Int // Positive for added, negative for consumed
+  reason       String // BUY_QUOTA, NEW_USER_FREE, POST_CONSUME
   createdAt    DateTime @default(now())
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
 }
 
@@ -565,13 +561,13 @@ model ValueAddedLog {
   id        String   @id @default(cuid())
   userId    String
   postId    String
-  action    String   // TOP, REFRESH
-  cost      Int      // Cost in cents
+  action    String // TOP, REFRESH
+  cost      Int // Cost in cents
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([postId])
 }
@@ -609,21 +605,22 @@ model Friendship {
   userId    String
   friendId  String
   createdAt DateTime @default(now())
-  
-  user      User     @relation("FriendshipUser", fields: [userId], references: [id], onDelete: Cascade)
-  friend    User     @relation("FriendshipFriend", fields: [friendId], references: [id], onDelete: Cascade)
+
+  user   User @relation("FriendshipUser", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendshipFriend", fields: [friendId], references: [id], onDelete: Cascade)
+
   @@unique([userId, friendId])
 }
 
 // ================= ???? =================
 model Footprint {
-  id        String   @id @default(cuid())
-  userId    String
-  postId    String
-  viewedAt  DateTime @default(now())
+  id       String   @id @default(cuid())
+  userId   String
+  postId   String
+  viewedAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@index([userId])
@@ -634,47 +631,46 @@ model Footprint {
 // ================= ????/?? =================
 model Follow {
   id          String   @id @default(cuid())
-  followerId  String   // ??? (?)
-  followingId String   // ???? (TA)
+  followerId  String // ??? (?)
+  followingId String // ???? (TA)
   createdAt   DateTime @default(now())
 
-  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
-  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
   @@index([followerId])
   @@index([followingId])
 }
 
-
 model PersonIdentity {
-  idCardNumber String @id
-  realName     String
-  isBlacklisted Boolean @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  users        User[]
+  idCardNumber  String   @id
+  realName      String
+  isBlacklisted Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  users User[]
 }
 
 model DeviceFingerprint {
-  deviceId     String @id
-  isBanned     Boolean @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  logins       UserDeviceLogin[]
+  deviceId  String   @id
+  isBanned  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logins UserDeviceLogin[]
 }
 
 model UserDeviceLogin {
-  id           String @id @default(cuid())
-  userId       String
-  deviceId     String
-  lastLoginAt  DateTime @default(now())
-  
-  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  device       DeviceFingerprint @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
-  
+  id          String   @id @default(cuid())
+  userId      String
+  deviceId    String
+  lastLoginAt DateTime @default(now())
+
+  user   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device DeviceFingerprint @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+
   @@unique([userId, deviceId])
 }
 
@@ -690,40 +686,59 @@ enum AdminActionType {
 model AdminAuditLog {
   id         String          @id @default(cuid())
   adminId    String
-  targetId   String          // 被操作的对象 ID（如 userId, postId）
+  targetId   String // 被操作的对象 ID（如 userId, postId）
   actionType AdminActionType
-  reason     String?         // 违规原因
-  metadata   Json?           // 附加操作快照
+  reason     String? // 违规原因
+  metadata   Json? // 附加操作快照
   createdAt  DateTime        @default(now())
 
-  admin      User            @relation(fields: [adminId], references: [id])
-  
+  admin User @relation(fields: [adminId], references: [id])
+
   @@index([adminId])
   @@index([targetId])
   @@index([actionType])
 }
 
 model DynamicPost {
-  id               String   @id @default(cuid())
-  userId           String
-  content          String   // 文本内容
-  images           String   @default("[]") // 媒体数组 (JSON string)
-  province         String?
-  city             String?
-  district         String?
-  town             String?
-  streetAddress    String?
-  category         String   // 动态类型 (e.g. emergency, gossip, part_time)
-  status           String   @default("AI_REVIEWING") // AI_REVIEWING | MANUAL_REVIEWING | PUBLISHED | EXPIRED | DELETED
-  expiresAt        DateTime // 过期时间
-  evidenceHash     String?  // 关键哈希存证
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id            String   @id @default(cuid())
+  userId        String
+  content       String // 文本内容
+  images        String   @default("[]") // 媒体数组 (JSON string)
+  province      String?
+  city          String?
+  district      String?
+  town          String?
+  streetAddress String?
+  category      String // 动态类型 (e.g. emergency, gossip, part_time)
+  status        String   @default("AI_REVIEWING") // AI_REVIEWING | MANUAL_REVIEWING | PUBLISHED | EXPIRED | DELETED
+  expiresAt     DateTime // 过期时间
+  evidenceHash  String? // 关键哈希存证
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([status, createdAt])
   @@index([city, district, town])
   @@index([userId])
 }
 
+model SensitiveWord {
+  id        String   @id @default(cuid())
+  word      String   @unique
+  category  String   @default("GENERAL") // e.g., PORN, SCAM, TERROR
+  level     Int      @default(1) // 1=review, 2=reject, 3=ban
+  createdAt DateTime @default(now())
+}
+
+model ModerationLog {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action       String
+  content      String
+  matchedWords String
+  level        Int
+  result       String
+  createdAt    DateTime @default(now())
+}

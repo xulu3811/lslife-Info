@@ -82,7 +82,8 @@ class AudioManager(private val context: Context) {
     }
 
     fun playAudio(url: String) {
-        if (_currentPlayingUrl.value == url && _isPlaying.value) {
+        val secureUrl = url.replace("http://", "https://")
+        if (_currentPlayingUrl.value == secureUrl && _isPlaying.value) {
             stopAudio()
             return
         }
@@ -91,7 +92,13 @@ class AudioManager(private val context: Context) {
         
         try {
             player = MediaPlayer().apply {
-                setDataSource(url)
+                setAudioAttributes(
+                    android.media.AudioAttributes.Builder()
+                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                        .build()
+                )
+                setDataSource(secureUrl)
                 setOnCompletionListener {
                     _isPlaying.value = false
                     _currentPlayingUrl.value = null
@@ -102,7 +109,15 @@ class AudioManager(private val context: Context) {
                 setOnPreparedListener {
                     it.start()
                     _isPlaying.value = true
-                    _currentPlayingUrl.value = url
+                    _currentPlayingUrl.value = secureUrl
+                }
+                setOnErrorListener { _, what, extra ->
+                    _isPlaying.value = false
+                    _currentPlayingUrl.value = null
+                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        android.widget.Toast.makeText(context, "播放异常 (Error: $what, Extra: $extra)", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                    true
                 }
             }
         } catch (e: Exception) {

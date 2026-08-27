@@ -121,8 +121,30 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
     val unreadCount by sessionViewModel.unreadCount.collectAsStateWithLifecycle()
     val inAppBanner by sessionViewModel.inAppBanner.collectAsStateWithLifecycle()
     var showPublishMenu by remember { mutableStateOf(false) }
+    var showSplash by remember { mutableStateOf(true) }
 
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn != null) {
+            // Guarantee a minimum brief display time for the splash logo
+            kotlinx.coroutines.delay(800)
+            showSplash = false
+        }
+    }
 
+    if (showSplash || isLoggedIn == null) {
+        // Brief Splash Screen with app icon
+        Box(
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(id = R.mipmap.ic_launcher),
+                contentDescription = "Splash Logo",
+                modifier = Modifier.size(100.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(22.dp))
+            )
+        }
+        return
+    }
 
     LaunchedEffect(Unit) {
         sessionViewModel.navigateToChatFlow.collect { (sessionId, targetUserId, targetName) ->
@@ -143,7 +165,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 Box {
                     NavigationBar(
                         modifier = Modifier.height(60.dp),
-                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        containerColor = MaterialTheme.colorScheme.surface,
                         tonalElevation = 0.dp,
                     ) {
                         tabs.forEach { tab ->
@@ -166,16 +188,24 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                                 },
                                 icon = {
                                     if (isPublish) {
+                                        val googleRingBrush = androidx.compose.ui.graphics.Brush.sweepGradient(
+                                            colors = listOf(
+                                                androidx.compose.ui.graphics.Color(0xFF4285F4), // Blue
+                                                androidx.compose.ui.graphics.Color(0xFFEA4335), // Red
+                                                androidx.compose.ui.graphics.Color(0xFFFBBC05), // Yellow
+                                                androidx.compose.ui.graphics.Color(0xFF34A853), // Green
+                                                androidx.compose.ui.graphics.Color(0xFF4285F4)  // Blue
+                                            )
+                                        )
                                         Box(
                                             modifier = Modifier
                                                 .size(37.dp)
-                                                .border(
-                                                    width = 1.2.dp,
-                                                    color = MaterialTheme.colorScheme.onBackground,
-                                                    shape = androidx.compose.foundation.shape.CircleShape
-                                                )
-                                                .background(androidx.compose.ui.graphics.Color.Transparent)
-                                                .padding(2.dp),
+                                                .background(googleRingBrush, androidx.compose.foundation.shape.CircleShape)
+                                                .padding(1.8.dp) // Border thickness
+                                                .background(androidx.compose.ui.graphics.Color.White, androidx.compose.foundation.shape.CircleShape)
+                                                .padding(1.dp) // Gap
+                                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                                .background(androidx.compose.ui.graphics.Color.Transparent),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Icon(
@@ -224,11 +254,11 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                                     }
                                 },
                                 colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = MaterialTheme.colorScheme.onBackground,
-                                    selectedTextColor = MaterialTheme.colorScheme.onBackground,
-                                    indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                                    unselectedIconColor = androidx.compose.ui.graphics.Color.Gray,
-                                    unselectedTextColor = androidx.compose.ui.graphics.Color.Gray,
+                                    selectedIconColor = androidx.compose.ui.graphics.Color(0xFF1A73E8),
+                                    selectedTextColor = androidx.compose.ui.graphics.Color(0xFF1A73E8),
+                                    indicatorColor = androidx.compose.ui.graphics.Color(0xFFE8F0FE),
+                                    unselectedIconColor = androidx.compose.ui.graphics.Color(0xFF5F6368),
+                                    unselectedTextColor = androidx.compose.ui.graphics.Color(0xFF5F6368),
                                 )
                             )
                         }
@@ -410,15 +440,14 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
             }
             
             composable(Routes.ADMIN_REVIEW_LIST) {
-                com.lianshan.lslife.feature.admin.AdminReviewListScreen(
-                    onBack = { navController.popBackStack() },
-                    onPostClick = { postId -> navController.navigate(Routes.postDetail(postId, mode = "admin")) }
+                com.lianshan.lslife.feature.admin.ContentAuditScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             
             composable(Routes.ADMIN_USER_LIST) {
-                com.lianshan.lslife.feature.admin.AdminUserListScreen(
-                    onBack = { navController.popBackStack() }
+                com.lianshan.lslife.feature.admin.UserGovernanceScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             
@@ -447,8 +476,8 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 )
             }
             composable(Routes.ADMIN_KYC_REVIEW_LIST) {
-                com.lianshan.lslife.feature.admin.AdminKycReviewListScreen(
-                    onBack = { navController.popBackStack() }
+                com.lianshan.lslife.feature.admin.KycAuditScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.ADMIN_MERCHANT_CERT_REVIEW_LIST) {
@@ -458,11 +487,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
             }
             composable(Routes.ADMIN_DASHBOARD) {
                 com.lianshan.lslife.feature.admin.AdminDashboardScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onOpenApprovals = { navController.navigate(Routes.ADMIN_APPROVAL_DASHBOARD) },
-                    onOpenUserGovernance = { navController.navigate(Routes.ADMIN_USER_LIST) },
-                    onOpenContentGovernance = { navController.navigate(Routes.ADMIN_GOVERNANCE_CENTER) },
-                    onOpenReports = { navController.navigate(Routes.ADMIN_REPORT_LIST) }
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.ADMIN_GOVERNANCE_CENTER) {

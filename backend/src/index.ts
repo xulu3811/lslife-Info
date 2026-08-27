@@ -4,9 +4,14 @@ import { attachRealtime } from './realtime/hub.js';
 import { env } from './config/env.js';
 import { prisma } from './lib/prisma.js';
 
+import { dfaEngine } from './services/dfa.js';
+
 const app = createApp();
 const server = http.createServer(app);
 attachRealtime(server);
+
+// Initialize DFA engine
+dfaEngine.init().catch(console.error);
 
 // ================= 推广中心：定时过期任务 =================
 setInterval(async () => {

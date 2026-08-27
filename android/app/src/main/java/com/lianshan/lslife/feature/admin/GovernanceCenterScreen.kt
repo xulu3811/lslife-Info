@@ -202,12 +202,12 @@ fun GovernanceCenterScreen(
             TabRow(
                 selectedTabIndex = selectedTabIndex,
                 containerColor = Color.White,
-                contentColor = Color(0xFFE53935),
+                contentColor = Color(0xFF1A73E8),
                 indicator = { tabPositions ->
                     if (selectedTabIndex < tabPositions.size) {
                         TabRowDefaults.SecondaryIndicator(
                             Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                            color = Color(0xFFE53935)
+                            color = Color(0xFF1A73E8)
                         )
                     }
                 }
@@ -220,7 +220,7 @@ fun GovernanceCenterScreen(
                             Text(
                                 title, 
                                 fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selectedTabIndex == index) Color(0xFFE53935) else Color.Gray
+                                color = if (selectedTabIndex == index) Color(0xFF1A73E8) else Color.Gray
                             ) 
                         }
                     )
@@ -260,7 +260,7 @@ fun UserGovernanceTab(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFFE53935),
+                focusedBorderColor = Color(0xFF1A73E8),
                 unfocusedBorderColor = Color.LightGray
             )
         )
@@ -269,7 +269,7 @@ fun UserGovernanceTab(
 
         if (state.isSearching && state.userResults.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Color(0xFFE53935))
+                CircularProgressIndicator(color = Color(0xFF1A73E8))
             }
         } else if (state.userResults.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -306,7 +306,7 @@ fun PostGovernanceTab(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFFE53935),
+                focusedBorderColor = Color(0xFF1A73E8),
                 unfocusedBorderColor = Color.LightGray
             )
         )
@@ -315,7 +315,7 @@ fun PostGovernanceTab(
 
         if (state.isSearching && state.postResults.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Color(0xFFE53935))
+                CircularProgressIndicator(color = Color(0xFF1A73E8))
             }
         } else if (state.postResults.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -363,7 +363,7 @@ fun UserCard(user: GovernanceUserDto, viewModel: GovernanceViewModel) {
                         onClick = { viewModel.setDialogAction(GovernanceActionType.BAN_USER, user.id) },
                         modifier = Modifier.weight(1f).height(40.dp),
                         shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEF2F2), contentColor = Color(0xFFDC2626)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFCE8E6), contentColor = Color(0xFFEA4335)),
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Text("账号封禁", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
@@ -432,7 +432,7 @@ fun PostCard(post: GovernancePostDto, viewModel: GovernanceViewModel) {
                         onClick = { viewModel.setDialogAction(GovernanceActionType.REVOKE_POST, post.id) },
                         modifier = Modifier.height(36.dp),
                         shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEF2F2), contentColor = Color(0xFFDC2626)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFCE8E6), contentColor = Color(0xFFEA4335)),
                         contentPadding = PaddingValues(horizontal = 12.dp)
                     ) {
                         Text("强制下架", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
@@ -441,9 +441,9 @@ fun PostCard(post: GovernancePostDto, viewModel: GovernanceViewModel) {
                     Text(
                         text = "状态: ${post.status}",
                         fontSize = 12.sp,
-                        color = Color(0xFFDC2626),
+                        color = Color(0xFFEA4335),
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.background(Color(0xFFFEF2F2), RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)
+                        modifier = Modifier.background(Color(0xFFFCE8E6), RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
             }
@@ -470,7 +470,7 @@ fun GovernanceDialog(
         title = {
             Text(
                 text = "二次确认：$dialogTitle", 
-                color = Color(0xFFE53935),
+                color = Color(0xFF1A73E8),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -491,7 +491,7 @@ fun GovernanceDialog(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFE53935),
+                        focusedBorderColor = Color(0xFF1A73E8),
                         unfocusedBorderColor = Color.LightGray
                     )
                 )
@@ -506,7 +506,7 @@ fun GovernanceDialog(
                     )
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFE53935),
+                    containerColor = Color(0xFF1A73E8),
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(12.dp),

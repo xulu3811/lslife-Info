@@ -86,7 +86,7 @@ fun CategoryDetailScreen(
                 }
             )
         },
-        containerColor = Color(0xFFF5F6F8)
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -154,7 +154,7 @@ fun CategoryDetailScreen(
         ModalBottomSheet(
             onDismissRequest = { showFilterBottomSheet = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             FilterBottomSheetContent(
                 isServiceCategory = isServiceCategory,
@@ -205,7 +205,7 @@ fun ModernCategoryHeader(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "返回",
-                        tint = Color(0xFF1A1A1A)
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
 
@@ -214,7 +214,7 @@ fun ModernCategoryHeader(
                 // 右侧主体：药丸形三合一组件
                 Surface(
                     shape = CircleShape,
-                    color = Color(0xFFF4F5F7),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier
                         .weight(1f)
                         .height(44.dp)
@@ -235,13 +235,13 @@ fun ModernCategoryHeader(
                             Icon(
                                 imageVector = Icons.Filled.Search,
                                 contentDescription = "搜索",
-                                tint = Color(0xFF8E8E93),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "搜索 $categoryName...",
-                                color = Color(0xFF8E8E93),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Normal,
                                 maxLines = 1,
@@ -254,14 +254,14 @@ fun ModernCategoryHeader(
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(CircleShape)
-                                .background(Color.White)
+                                .background(MaterialTheme.colorScheme.surface)
                                 .clickable { onFilterClick() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Tune,
                                 contentDescription = "筛选",
-                                tint = Color(0xFF1A1A1A),
+                                tint = MaterialTheme.colorScheme.onBackground,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -286,25 +286,19 @@ fun ModernCategoryHeader(
                     val isSelected = selectedSubCategoryId == subCat.id
 
                     if (isSelected) {
-                        // 选中态：深邃黑背景 + 3D 弥散软阴影悬浮感
+                        // 选中态：Google M3 风格 (浅蓝底色 + 主题蓝文字，无阴影)
                         Box(
                             modifier = Modifier
                                 .height(32.dp)
-                                .shadow(
-                                    elevation = 4.dp,
-                                    shape = CircleShape,
-                                    spotColor = Color.Black.copy(alpha = 0.15f),
-                                    ambientColor = Color.Black.copy(alpha = 0.10f)
-                                )
                                 .clip(CircleShape)
-                                .background(Color(0xFF1A1A1A))
+                                .background(Color(0xFFE8F0FE))
                                 .clickable { onSubCategorySelect(subCat.id) }
                                 .padding(horizontal = 16.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = subCat.name,
-                                color = Color.White,
+                                color = Color(0xFF1A73E8),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -321,7 +315,7 @@ fun ModernCategoryHeader(
                         ) {
                             Text(
                                 text = subCat.name,
-                                color = Color(0xFF666666),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -356,15 +350,15 @@ private fun FilterBottomSheetContent(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Text("全城筛选与排序", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
+        Text("全城筛选与排序", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("区域范围", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF666666))
+            Text("区域范围", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
             OptGrid(options = areaOptions, selected = selectedArea, onSelect = { selectedArea = it })
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("排序规则", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF666666))
+            Text("排序规则", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
             OptGrid(options = sortOptions, selected = selectedSort, onSelect = { selectedSort = it })
         }
 
@@ -372,7 +366,7 @@ private fun FilterBottomSheetContent(
 
         Button(
             onClick = onDismiss,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A1A1A)),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onBackground),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
@@ -400,14 +394,14 @@ private fun OptGrid(
             Box(
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(if (isSel) Color(0xFF1A1A1A) else Color(0xFFF4F5F7))
+                    .background(if (isSel) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.surfaceVariant)
                     .clickable { onSelect(option) }
                     .padding(horizontal = 14.dp, vertical = 7.dp)
             ) {
                 Text(
                     text = option,
                     fontSize = 12.sp,
-                    color = if (isSel) Color.White else Color(0xFF555555),
+                    color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
                 )
             }
@@ -449,7 +443,7 @@ fun ServiceListFeedCard(
                 modifier = Modifier
                     .size(76.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF7F8FA))
+                    .background(MaterialTheme.colorScheme.background)
             )
             
             Spacer(modifier = Modifier.width(14.dp))
@@ -460,28 +454,28 @@ fun ServiceListFeedCard(
                     text = post.title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A1A1A),
+                    color = MaterialTheme.colorScheme.onBackground,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.background(Color(0xFFF4F5F7), RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 3.dp)) {
-                        Text("上门快", color = Color(0xFF1A1A1A), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Box(modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 3.dp)) {
+                        Text("上门快", color = MaterialTheme.colorScheme.onBackground, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.width(6.dp))
-                    Box(modifier = Modifier.background(Color(0xFFFFF7E6), RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 3.dp)) {
+                    Box(modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 3.dp)) {
                         Text("资质认证", color = Color(0xFFFA8C16), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.LocationOn, contentDescription = null, tint = Color(0xFF999999), modifier = Modifier.size(12.dp))
+                    Icon(Icons.Filled.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.6f), modifier = Modifier.size(12.dp))
                     Spacer(modifier = Modifier.width(2.dp))
                     Text(
                         text = "距您 ${(1..5).random()}.${(1..9).random()}km",
                         fontSize = 12.sp,
-                        color = Color(0xFF999999)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.6f)
                     )
                 }
             }
@@ -494,7 +488,7 @@ fun ServiceListFeedCard(
                     onClick = onChat,
                     modifier = Modifier
                         .size(40.dp)
-                        .background(Color(0xFFFFF1F0), CircleShape) // Light red/orange tint for chat
+                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape) // Light red/orange tint for chat
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Chat,
@@ -507,12 +501,12 @@ fun ServiceListFeedCard(
                     onClick = onCall,
                     modifier = Modifier
                         .size(40.dp)
-                        .background(Color(0xFFF4F5F7), CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Call,
                         contentDescription = "呼叫",
-                        tint = Color(0xFF1A1A1A),
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(20.dp)
                     )
                 }

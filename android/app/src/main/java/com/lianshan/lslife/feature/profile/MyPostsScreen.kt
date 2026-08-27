@@ -116,7 +116,11 @@ private fun MyPostCard(
         else -> StatusTone.Neutral
     }
 
-    SoftCard {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.ui.graphics.Color(0xFFE8EAED)),
+        elevation = CardDefaults.cardElevation(0.dp)
+    ) {
         Column(modifier = Modifier.padding(Dimens.md).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.md)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.md)) {
                 NetworkImage(
@@ -157,27 +161,31 @@ private fun MyPostCard(
             Divider(color = scheme.outlineVariant.copy(alpha = 0.5f))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = onEdit) {
+                val GoogleBlue = androidx.compose.ui.graphics.Color(0xFF1A73E8)
+                val GoogleRed = androidx.compose.ui.graphics.Color(0xFFEA4335)
+                val GoogleGrey = androidx.compose.ui.graphics.Color(0xFF5F6368)
+
+                TextButton(onClick = onEdit, colors = ButtonDefaults.textButtonColors(contentColor = GoogleBlue)) {
                     Icon(Icons.Filled.Edit, null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("修改")
                 }
                 
                 if (post.status == "published" || post.status == "PUBLISHED" || post.status == "pending_review" || post.status == "MANUAL_REVIEWING" || post.status == "AI_REVIEWING") {
-                    TextButton(onClick = onDelist, colors = ButtonDefaults.textButtonColors(contentColor = scheme.onSurfaceVariant)) {
+                    TextButton(onClick = onDelist, colors = ButtonDefaults.textButtonColors(contentColor = GoogleGrey)) {
                         Icon(Icons.Filled.VisibilityOff, null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
                         Text("下架")
                     }
                 } else if (post.status == "removed" || post.status == "REMOVED" || post.status == "rejected" || post.status == "REJECTED") {
-                    TextButton(onClick = onRelist, colors = ButtonDefaults.textButtonColors(contentColor = scheme.primary)) {
+                    TextButton(onClick = onRelist, colors = ButtonDefaults.textButtonColors(contentColor = GoogleBlue)) {
                         Icon(Icons.Filled.Publish, null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
                         Text("重新发布")
                     }
                 }
 
-                TextButton(onClick = onDelete, colors = ButtonDefaults.textButtonColors(contentColor = scheme.error)) {
+                TextButton(onClick = onDelete, colors = ButtonDefaults.textButtonColors(contentColor = GoogleGrey)) {
                     Icon(Icons.Filled.Delete, null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("删除")

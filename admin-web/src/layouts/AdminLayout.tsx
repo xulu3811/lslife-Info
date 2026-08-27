@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, MessageSquareWarning, Receipt, Settings, LogOut, UserCheck, Store, ShoppingBag, Layers, PackageOpen } from 'lucide-react';
+import { LayoutDashboard, Users, MessageSquareWarning, Settings, LogOut, UserCheck, Store, Layers, PackageOpen } from 'lucide-react';
 import '../index.css';
 
 const menuItems = [
@@ -8,9 +8,7 @@ const menuItems = [
   { path: '/kyc', label: '实名认证审核', icon: <UserCheck size={20} /> },
   { path: '/content', label: '内容审核', icon: <MessageSquareWarning size={20} /> },
   { path: '/categories', label: '类目管理', icon: <Layers size={20} /> },
-  { path: '/products', label: '商品管控', icon: <ShoppingBag size={20} /> },
   { path: '/merchants', label: '商家管理', icon: <Store size={20} /> },
-  { path: '/orders', label: '资金与订单', icon: <Receipt size={20} /> },
   { path: '/app-version', label: 'App 版本管理', icon: <PackageOpen size={20} /> },
   { path: '/settings', label: '系统设置', icon: <Settings size={20} /> },
 ];

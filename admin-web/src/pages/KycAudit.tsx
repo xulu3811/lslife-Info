@@ -10,7 +10,7 @@ export default function KycAudit() {
   const fetchUsers = () => {
     setLoading(true);
     api.get(`/admin/kyc?status=${tab}`)
-      .then(res => setUsers(res.data.data?.list || []))
+      .then(res => setUsers(Array.isArray(res.data.data) ? res.data.data : []))
       .catch(console.error)
       .finally(() => setLoading(false));
   };
@@ -95,6 +95,29 @@ export default function KycAudit() {
                   <span>身份证哈希: <span className="font-mono text-muted">{user.idCardHash || '无'}</span></span>
                   <span>最近更新: {new Date(user.updatedAt).toLocaleString()}</span>
                 </div>
+                
+                {tab === 'pending' && (
+                  <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+                    {user.idCardFrontImage && (
+                      <div className="flex-col gap-1 items-center">
+                        <span className="text-xs text-secondary font-medium">正面照</span>
+                        <img src={user.idCardFrontImage} alt="正面照" className="h-32 object-contain bg-white/20 rounded-md p-1" style={{ border: '1px dashed var(--surface-border)' }} />
+                      </div>
+                    )}
+                    {user.idCardBackImage && (
+                      <div className="flex-col gap-1 items-center">
+                        <span className="text-xs text-secondary font-medium">反面照</span>
+                        <img src={user.idCardBackImage} alt="反面照" className="h-32 object-contain bg-white/20 rounded-md p-1" style={{ border: '1px dashed var(--surface-border)' }} />
+                      </div>
+                    )}
+                    {user.idCardHandheldImage && (
+                      <div className="flex-col gap-1 items-center">
+                        <span className="text-xs text-secondary font-medium">手持照</span>
+                        <img src={user.idCardHandheldImage} alt="手持照" className="h-32 object-contain bg-white/20 rounded-md p-1" style={{ border: '1px dashed var(--surface-border)' }} />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>

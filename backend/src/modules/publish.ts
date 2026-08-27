@@ -180,11 +180,11 @@ router.post(
           if (todayPostsCount >= 5) throw new ApiError(403, '免费版商家今日发布数量已达上限 (5条)');
         }
       } else {
-        if (activePostsCount >= 3 && !isUrgent) {
-          throw new ApiError(403, '在架信息已达个人免费上限 (3条)，请使用急售标签发布或下架其他信息。');
+        if (activePostsCount >= 10 && !isUrgent) {
+          throw new ApiError(403, '在架信息已达个人免费上限 (10条)，请使用急售标签发布或下架其他信息。');
         }
-        if (todayPostsCount >= 2 && !isUrgent) {
-          throw new ApiError(403, '今日发布数量已达免费上限 (2条)，请使用急售标签继续发布。');
+        if (todayPostsCount >= 10 && !isUrgent) {
+          throw new ApiError(403, '今日发布数量已达免费上限 (10条)，请使用急售标签继续发布。');
         }
       }
     }
@@ -222,10 +222,22 @@ router.post(
     }
 
     const moderation = moderateContent(title, body.description);
-    
-    // 触发全局高频违规词熔断，转入人工
-    if (/(无抵押贷款|兼职刷单)/.test(title + body.description)) {
+
+    if (/(兼职|上门|日结)/.test(title + body.description)) {
       moderation.status = 'MANUAL_REVIEWING';
+    }
+
+    if (moderation.matchedWords && moderation.matchedWords.length > 0) {
+      await prisma.moderationLog.create({
+        data: {
+          userId: req.userId!,
+          action: 'PUBLISH_POST',
+          content: title + " " + body.description,
+          matchedWords: moderation.matchedWords.join(','),
+          level: moderation.level || 0,
+          result: moderation.status
+        }
+      });
     }
 
     if (!moderation.pass && moderation.status === 'REJECTED') {
@@ -252,7 +264,7 @@ router.post(
           district: body.district,
           town: body.town,
           streetAddress: body.streetAddress,
-          attributes: JSON.stringify(body.attributes),
+          attributes: body.attributes,
           status: moderation.status,
           reviewNote: moderation.note,
           topic: body.topic ?? null,
@@ -275,11 +287,18 @@ router.post(
             data: { userId: user.id, changeAmount: -1, reason: `POST_CONSUME_URGENT` }
           });
         } else {
-          const usedFree = user.freeQuota > 0;
-          await tx.user.update({
-            where: { id: user.id },
-            data: usedFree ? { freeQuota: { decrement: 1 } } : { paidQuota: { decrement: 1 } }
-          });
+          const remainingFree = (req as any).remainingFree ?? 0;
+          const usedFree = remainingFree > 0;
+          if (!usedFree) {
+            const updated = await tx.user.updateMany({
+              where: { id: user.id, paidQuota: { gt: 0 } },
+              data: { paidQuota: { decrement: 1 } }
+            });
+            if (updated.count === 0) {
+              // 并发抢占失败，没有足够的 paidQuota
+              throw new ApiError(402, '发布配额不足，请升级特权或购买加油包', 40201);
+            }
+          }
 
           await tx.quotaLedger.create({
             data: {
@@ -317,7 +336,7 @@ router.post(
       {
         ...post,
         images: JSON.parse(post.images) as string[],
-        attributes: JSON.parse(post.attributes) as Record<string, string>,
+        attributes: (post.attributes as any) as Record<string, string>,
       },
       message,
     );
@@ -573,7 +592,7 @@ router.get(
         
         for (const p of allMatchingPosts) {
           try {
-            const attrs = JSON.parse(p.attributes) as Record<string, string>;
+            const attrs = (p.attributes as any) as Record<string, string>;
             for (const [k, v] of Object.entries(attrs)) {
               if (!v || v.trim() === '') continue;
               if (!aggregations[k]) aggregations[k] = {};
@@ -594,7 +613,7 @@ router.get(
         ...p,
         user: mapPostUser(p.user),
         images: JSON.parse(p.images) as string[],
-        attributes: JSON.parse(p.attributes) as Record<string, string>
+        attributes: (p.attributes as any) as Record<string, string>
       })),
     });
   }),
@@ -659,7 +678,7 @@ router.get(
           posts: posts.map((p: any) => ({
             ...p,
             images: JSON.parse(p.images) as string[],
-            attributes: JSON.parse(p.attributes) as Record<string, string>,
+            attributes: (p.attributes as any) as Record<string, string>,
           }))
         });
       } else {
@@ -732,7 +751,7 @@ router.get(
           isFavorite: true,
           user: mapPostUser(p.user),
           images: JSON.parse(p.images || '[]') as string[],
-          attributes: JSON.parse(p.attributes || '{}') as Record<string, string>,
+          attributes: (p.attributes as any) as Record<string, string>,
         };
       });
 
@@ -782,7 +801,7 @@ router.get(
           isFavorite: false, // Could be hydrated if needed, but not strictly required for footprint list
           user: mapPostUser(p.user),
           images: JSON.parse(p.images || '[]') as string[],
-          attributes: JSON.parse(p.attributes || '{}') as Record<string, string>,
+          attributes: (p.attributes as any) as Record<string, string>,
         };
       });
 
@@ -835,7 +854,7 @@ router.get(
     let isFollowing = false;
     if (req.userId) {
       const fav = await prisma.favorite.findUnique({
-        where: { userId_postId: { userId: req.userId, postId: post.id } }
+        where: { userId_postId: { userId: req.userId!, postId: post.id } }
       });
       isFavorite = !!fav;
 
@@ -883,7 +902,7 @@ router.get(
       isFavorite,
       isFollowing,
       images: JSON.parse(post.images) as string[],
-      attributes: JSON.parse(post.attributes) as Record<string, string>,
+      attributes: (post.attributes as any) as Record<string, string>,
     });
   }),
 );
@@ -960,6 +979,24 @@ router.put(
 
     const title = deriveTitle(body.title, body.description);
     const moderation = moderateContent(title, body.description);
+
+    if (/(兼职|上门|日结)/.test(title + body.description)) {
+      moderation.status = 'MANUAL_REVIEWING';
+    }
+
+    if (moderation.matchedWords && moderation.matchedWords.length > 0) {
+      await prisma.moderationLog.create({
+        data: {
+          userId: req.userId!,
+          action: 'PUBLISH_POST',
+          content: title + " " + body.description,
+          matchedWords: moderation.matchedWords.join(','),
+          level: moderation.level || 0,
+          result: moderation.status
+        }
+      });
+    }
+
     if (!moderation.pass && moderation.status === 'REJECTED') {
       throw new ApiError(400, `内容审核未通过: ${moderation.note}`);
     }
@@ -979,7 +1016,7 @@ router.put(
         streetAddress: body.streetAddress,
         tradeMode: body.tradeMode,
         linkedCommerceId: body.linkedCommerceId !== undefined ? (body.linkedCommerceId ?? null) : undefined,
-        attributes: JSON.stringify(body.attributes),
+        attributes: body.attributes,
         contactPhone: body.contactPhone ?? null,
         status: moderation.status,
         reviewNote: moderation.note,
@@ -1006,7 +1043,7 @@ router.put(
       {
         ...updatedPost,
         images: JSON.parse(updatedPost.images) as string[],
-        attributes: JSON.parse(updatedPost.attributes) as Record<string, string>,
+        attributes: (updatedPost.attributes as any) as Record<string, string>,
       },
       message,
     );
@@ -1032,7 +1069,7 @@ router.put(
       {
         ...updatedPost,
         images: JSON.parse(updatedPost.images) as string[],
-        attributes: JSON.parse(updatedPost.attributes) as Record<string, string>,
+        attributes: (updatedPost.attributes as any) as Record<string, string>,
       },
       status === 'removed' ? '已成功下架' : '已重新提交审核',
     );

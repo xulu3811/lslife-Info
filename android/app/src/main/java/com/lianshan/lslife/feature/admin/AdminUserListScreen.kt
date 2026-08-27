@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -100,18 +101,13 @@ fun AdminUserListScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(12.dp),
-                            spotColor = Color(0x1A000000),
-                            ambientColor = Color(0x1A000000)
-                        ),
+                        .height(52.dp),
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = CircleShape,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        disabledContainerColor = Color.White,
+                        focusedContainerColor = Color(0xFFF1F3F4),
+                        unfocusedContainerColor = Color(0xFFF1F3F4),
+                        disabledContainerColor = Color(0xFFF1F3F4),
                         focusedBorderColor = Color.Transparent,
                         unfocusedBorderColor = Color.Transparent,
                     ),
@@ -134,9 +130,10 @@ fun AdminUserListScreen(
                 ) {
                     if (state.items.isEmpty()) {
                         item {
-                            EmptyState(
+                                EmptyState(
                                 title = "未找到用户",
                                 subtitle = "换个关键词搜搜看吧~",
+                                icon = Icons.Filled.PersonSearch,
                                 modifier = Modifier.fillMaxWidth().height(400.dp)
                             )
                         }
@@ -185,7 +182,7 @@ fun AdminUserListScreen(
                         fontSize = 16.sp,
                         modifier = Modifier.padding(16.dp)
                     )
-                    Divider(color = Color(0xFFEEEEEE))
+                    Divider(color = Color(0xFFF1F3F4))
                     
                     val statusOptions = listOf(
                         "active" to "恢复正常",
@@ -226,7 +223,8 @@ fun AdminUserCard(
     Surface(
         color = Color.White,
         shape = RoundedCornerShape(12.dp),
-        shadowElevation = 2.dp,
+        shadowElevation = 0.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.ui.graphics.Color(0xFFE8EAED)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -241,7 +239,7 @@ fun AdminUserCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFEEEEEE))
+                    .background(Color(0xFFF1F3F4))
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -255,7 +253,7 @@ fun AdminUserCard(
                 Text(
                     text = "手机号: ${user.phone}",
                     fontSize = 13.sp,
-                    color = Color(0xFF666666)
+                    color = Color(0xFF5F6368)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -263,9 +261,9 @@ fun AdminUserCard(
                         modifier = Modifier
                             .background(
                                 color = when (user.status) {
-                                    "active" -> Color(0xFFE8F5E9)
-                                    "muted" -> Color(0xFFFFF3E0)
-                                    else -> Color(0xFFFFEBEE)
+                                    "active" -> Color(0xFFE6F4EA)
+                                    "muted" -> Color(0xFFFEF7E0)
+                                    else -> Color(0xFFFCE8E6)
                                 },
                                 shape = RoundedCornerShape(4.dp)
                             )
@@ -279,9 +277,9 @@ fun AdminUserCard(
                             },
                             fontSize = 11.sp,
                             color = when (user.status) {
-                                "active" -> Color(0xFF2E7D32)
-                                "muted" -> Color(0xFFEF6C00)
-                                else -> Color(0xFFC62828)
+                                "active" -> Color(0xFF34A853)
+                                "muted" -> Color(0xFFFBBC05)
+                                else -> Color(0xFFEA4335)
                             }
                         )
                     }
@@ -289,12 +287,12 @@ fun AdminUserCard(
                     Text(
                         text = "注册: ${user.createdAt.take(10)}",
                         fontSize = 11.sp,
-                        color = Color(0xFF999999)
+                        color = Color(0xFF5F6368)
                     )
                 }
             }
             IconButton(onClick = onActionClick) {
-                Icon(Icons.Filled.MoreVert, contentDescription = "操作", tint = Color(0xFF999999))
+                Icon(Icons.Filled.MoreVert, contentDescription = "操作", tint = Color(0xFF5F6368))
             }
         }
     }

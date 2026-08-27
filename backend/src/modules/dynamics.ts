@@ -49,7 +49,21 @@ router.post(
     let evidenceHash = null;
 
     try {
-      const moderationResult = await moderateContent(body.category, body.content);
+      const moderationResult = moderateContent(body.category || "", body.content);
+      
+      if (moderationResult.matchedWords && moderationResult.matchedWords.length > 0) {
+        await prisma.moderationLog.create({
+          data: {
+            userId,
+            action: 'PUBLISH_DYNAMIC',
+            content: (body.category || "") + " " + body.content,
+            matchedWords: moderationResult.matchedWords.join(','),
+            level: moderationResult.level || 0,
+            result: moderationResult.status
+          }
+        });
+      }
+
       if (moderationResult.pass) {
         status = 'PUBLISHED';
       } else {

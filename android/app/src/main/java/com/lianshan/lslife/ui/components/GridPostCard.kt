@@ -85,7 +85,7 @@ fun GridPostCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     // Avatar
-                    UserAvatar(url = post.user?.avatar, nickname = post.user?.nickname, size = 24.dp)
+                    GoogleAvatar(url = post.user?.avatar, size = 24.dp)
                     
                     // Buttons
                     Row(

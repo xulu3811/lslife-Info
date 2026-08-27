@@ -132,7 +132,7 @@ fun AdminApprovalDashboardScreen(
                 text = "审批业务分类",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF666666),
+                color = Color(0xFF5F6368),
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 8.dp)
             )
 
@@ -140,7 +140,8 @@ fun AdminApprovalDashboardScreen(
             Surface(
                 color = Color.White,
                 shape = RoundedCornerShape(12.dp),
-                shadowElevation = 0.5.dp,
+                shadowElevation = 0.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.ui.graphics.Color(0xFFE8EAED)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
@@ -151,28 +152,32 @@ fun AdminApprovalDashboardScreen(
                         title = "商品/服务上架与修改",
                         count = state.pendingPosts,
                         onClick = onOpenPostReview,
-                        showDivider = true
+                        showDivider = true,
+                        iconTint = Color(0xFFFBBC05) // Google Yellow
                     )
                     ApprovalMenuRow(
                         icon = Icons.Outlined.AssignmentInd,
                         title = "用户个人信息修改",
                         count = state.pendingProfile,
                         onClick = onOpenProfileReview,
-                        showDivider = true
+                        showDivider = true,
+                        iconTint = Color(0xFF1A73E8) // Google Blue
                     )
                     ApprovalMenuRow(
                         icon = Icons.Outlined.HowToReg,
                         title = "个人实名认证",
                         count = state.pendingKyc,
                         onClick = onOpenKycReview,
-                        showDivider = true
+                        showDivider = true,
+                        iconTint = Color(0xFF1A73E8) // Google Blue
                     )
                     ApprovalMenuRow(
                         icon = Icons.Outlined.Storefront,
                         title = "商家入驻/店铺认证",
                         count = state.pendingMerchant,
                         onClick = onOpenMerchantCertReview,
-                        showDivider = false
+                        showDivider = false,
+                        iconTint = Color(0xFF34A853) // Google Green
                     )
                 }
             }
@@ -187,6 +192,7 @@ private fun ApprovalMenuRow(
     count: Int,
     onClick: () -> Unit,
     showDivider: Boolean = true,
+    iconTint: Color = MaterialTheme.colorScheme.primary
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -200,7 +206,7 @@ private fun ApprovalMenuRow(
             Icon(
                 icon,
                 contentDescription = title,
-                tint = MaterialTheme.colorScheme.onBackground,
+                tint = iconTint,
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -225,14 +231,14 @@ private fun ApprovalMenuRow(
                         Box(
                             modifier = Modifier
                                 .size(5.dp)
-                                .background(Color(0xFFE53935), CircleShape)
+                                .background(Color(0xFF1A73E8), CircleShape)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "${count}条待审",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFFE53935)
+                            color = Color(0xFF1A73E8)
                         )
                     }
                 }
@@ -240,7 +246,7 @@ private fun ApprovalMenuRow(
                 Text(
                     text = "无待审",
                     fontSize = 12.sp,
-                    color = Color(0xFF999999),
+                    color = Color(0xFF5F6368),
                     modifier = Modifier.padding(end = 4.dp)
                 )
             }

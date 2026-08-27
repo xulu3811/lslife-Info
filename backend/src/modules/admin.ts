@@ -136,6 +136,39 @@ router.put(
   })
 );
 
+// ================= 系统安全控制中心 =================
+router.post(
+  '/security/password',
+  asyncHandler(async (req, res) => {
+    const { currentPassword, newPassword } = z.object({
+      currentPassword: z.string().min(1),
+      newPassword: z.string().min(8)
+    }).parse(req.body);
+
+    const admin = await prisma.adminUser.findUnique({ where: { id: req.userId } });
+    if (!admin) throw new ApiError(404, '管理员账号不存在');
+
+    const isValid = await bcrypt.compare(currentPassword, admin.password);
+    if (!isValid) throw new ApiError(400, '旧密码不正确');
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.adminUser.update({
+      where: { id: req.userId },
+      data: { password: hashedPassword }
+    });
+
+    return ok(res, null, '管理密码更新成功');
+  })
+);
+
+router.post(
+  '/security/force-logout-all',
+  asyncHandler(async (req, res) => {
+    broadcastToAll({ event: 'FORCE_LOGOUT', message: '由于系统安全升级，您的登录已失效，请重新登录。' });
+    return ok(res, null, '全局注销指令下达成功');
+  })
+);
+
 router.get(
   '/posts',
   asyncHandler(async (req, res) => {
@@ -159,7 +192,7 @@ router.get(
 
     return ok(
       res,
-      posts.map((p) => ({ ...p, images: JSON.parse(p.images), attributes: JSON.parse(p.attributes) })),
+      posts.map((p) => ({ ...p, images: JSON.parse(p.images), attributes: (p.attributes as any) })),
     );
   }),
 );
@@ -211,6 +244,9 @@ router.get(
         nickname: true,
         realName: true,
         idCardHash: true,
+        idCardFrontImage: true,
+        idCardBackImage: true,
+        idCardHandheldImage: true,
         realNameStatus: true,
         updatedAt: true,
       },
@@ -449,6 +485,9 @@ router.get(
           avatar: true,
           status: true,
           createdAt: true,
+          membershipTier: true,
+          walletBalance: true,
+          realNameStatus: true,
         },
       }),
       prisma.user.count({ where }),
@@ -607,6 +646,40 @@ router.post(
     });
 
     return ok(res, updated, '举报处理完成');
+  })
+);
+
+// ================= 商家管理 =================
+router.get(
+  '/merchants',
+  asyncHandler(async (req, res) => {
+    const { search, status } = req.query as Record<string, string>;
+    let where: any = {};
+    if (status) where.status = status;
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { phone: { contains: search } }
+      ];
+    }
+    const merchants = await prisma.merchant.findMany({
+      where,
+      orderBy: { createdAt: 'desc' }
+    });
+    return ok(res, { list: merchants });
+  })
+);
+
+router.post(
+  '/merchants/:id/status',
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { status } = z.object({ status: z.string() }).parse(req.body);
+    const merchant = await prisma.merchant.update({
+      where: { id },
+      data: { status }
+    });
+    return ok(res, merchant, '商户状态已更新');
   })
 );
 

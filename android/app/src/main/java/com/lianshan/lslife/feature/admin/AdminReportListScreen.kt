@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.admin
+﻿package com.lianshan.lslife.feature.admin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -39,7 +41,7 @@ fun AdminReportListScreen(
     val snackbar = remember { SnackbarHostState() }
 
     var topLevelTab by remember { mutableIntStateOf(0) }
-    val topTabs = listOf("举报处理", "资源治理")
+    val topTabs = listOf("举报处理", "资源治理", "风控词库", "拦截记录")
 
     val tabs = listOf(
         "PENDING" to "待处理",
@@ -114,7 +116,7 @@ fun AdminReportListScreen(
                         height = 3.dp
                     )
                 },
-                divider = { Divider(color = Color(0xFFEEEEEE)) }
+                divider = { Divider(color = Color(0xFFF1F3F4)) }
             ) {
                 tabs.forEach { (status, label) ->
                     Tab(
@@ -124,7 +126,7 @@ fun AdminReportListScreen(
                             Text(
                                 text = label,
                                 fontWeight = if (state.currentTab == status) FontWeight.Bold else FontWeight.Normal,
-                                color = if (state.currentTab == status) scheme.primary else Color(0xFF666666)
+                                color = if (state.currentTab == status) scheme.primary else Color(0xFF5F6368)
                             )
                         }
                     )
@@ -151,48 +153,27 @@ fun AdminReportListScreen(
                     }
                 }
             }
-        } else {
+        } else if (topLevelTab == 1) {
             ResourceGovernanceSection()
+        } else {
+            RiskDictionarySection(state = state, viewModel = viewModel)
         }
     }
 }
 }
 
 @Composable
-private fun ResourceGovernanceSection() {
-    var searchText by remember { mutableStateOf("") }
-    Column(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(16.dp)
-        ) {
-            OutlinedTextField(
-                value = searchText,
-                onValueChange = { searchText = it },
-                placeholder = { Text("搜索违规帖子标题 / 内容", color = Color.Gray, fontSize = 14.sp) },
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "搜索", tint = Color.Gray)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFF4F5F7),
-                    unfocusedContainerColor = Color(0xFFF4F5F7),
-                    disabledContainerColor = Color(0xFFF4F5F7),
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                )
-            )
-        }
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color(0xFFCBD5E1))
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(if (searchText.isEmpty()) "输入关键词全站检索异常帖子" else "未找到与 \"${searchText}\" 相关的资源", color = Color.Gray, fontSize = 14.sp)
-            }
+private fun ResourceGovernanceSection(
+    governanceViewModel: com.lianshan.lslife.feature.admin.GovernanceViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+) {
+    val state by governanceViewModel.state.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
+    Box(modifier = Modifier.fillMaxSize()) {
+        com.lianshan.lslife.feature.admin.PostGovernanceTab(state, governanceViewModel, context)
+        
+        if (state.activeDialogAction != com.lianshan.lslife.feature.admin.GovernanceActionType.NONE) {
+            com.lianshan.lslife.feature.admin.GovernanceDialog(state, governanceViewModel, context)
         }
     }
 }
@@ -205,7 +186,8 @@ fun ReportTicketCard(
     Surface(
         color = Color.White,
         shape = RoundedCornerShape(12.dp),
-        shadowElevation = 2.dp,
+        shadowElevation = 0.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.ui.graphics.Color(0xFFE8EAED)),
         modifier = Modifier.fillMaxWidth().clickable { onClick() }
     ) {
         Column(
@@ -217,7 +199,7 @@ fun ReportTicketCard(
                 Box(
                     modifier = Modifier
                         .background(
-                            color = if (report.targetType == "POST") Color(0xFFE3F2FD) else Color(0xFFF3E5F5),
+                            color = if (report.targetType == "POST") Color(0xFFE8F0FE) else Color(0xFFFCE8E6),
                             shape = RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 6.dp, vertical = 2.dp)
@@ -225,14 +207,14 @@ fun ReportTicketCard(
                     Text(
                         text = if (report.targetType == "POST") "帖子违规" else "用户违规",
                         fontSize = 11.sp,
-                        color = if (report.targetType == "POST") Color(0xFF1565C0) else Color(0xFF6A1B9A)
+                        color = if (report.targetType == "POST") Color(0xFF1A73E8) else Color(0xFFEA4335)
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = report.createdAt.replace("T", " ").take(16),
                     fontSize = 12.sp,
-                    color = Color(0xFF999999)
+                    color = Color(0xFF5F6368)
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
@@ -243,9 +225,9 @@ fun ReportTicketCard(
                     },
                     fontSize = 12.sp,
                     color = when (report.status) {
-                        "PENDING" -> Color(0xFFEF6C00)
-                        "RESOLVED" -> Color(0xFF2E7D32)
-                        else -> Color(0xFF999999)
+                        "PENDING" -> Color(0xFFFBBC05)
+                        "RESOLVED" -> Color(0xFF34A853)
+                        else -> Color(0xFF5F6368)
                     }
                 )
             }
@@ -262,7 +244,7 @@ fun ReportTicketCard(
             Text(
                 text = "举报理由：${report.reason}",
                 fontSize = 14.sp,
-                color = Color(0xFF666666),
+                color = Color(0xFF5F6368),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -276,14 +258,253 @@ fun ReportTicketCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFEEEEEE))
+                        .background(Color(0xFFF1F3F4))
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "举报人：${report.reporter?.nickname ?: "匿名"} (${report.reporter?.phone ?: ""})",
                     fontSize = 12.sp,
-                    color = Color(0xFF999999)
+                    color = Color(0xFF5F6368)
                 )
+            }
+        }
+    }
+}
+@Composable
+private fun RiskDictionarySection(state: AdminReportListState, viewModel: AdminReportListViewModel) {
+    LaunchedEffect(Unit) { viewModel.loadWords() }
+    
+    var showAddDialog by remember { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
+    LaunchedEffect(state.toastMessage) {
+        state.toastMessage?.let {
+            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_SHORT).show()
+            viewModel.clearToast()
+        }
+    }
+
+    val launcher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            viewModel.importWordsFromUri(context, uri)
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("本地 DFA 风控词库", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                OutlinedButton(
+                    onClick = { launcher.launch("text/plain") },
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp)
+                ) {
+                    Text("导入TXT", fontSize = 13.sp)
+                }
+                Spacer(Modifier.width(8.dp))
+                Button(
+                    onClick = { showAddDialog = true },
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp)
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("添加违禁词", fontSize = 13.sp)
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        if (state.wordsLoading) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else if (state.words.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("词库为空", color = Color.Gray)
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(state.words) { word ->
+                    Surface(
+                        color = Color.White,
+                        shape = RoundedCornerShape(8.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F3F4)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(word.word, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF333333))
+                                Spacer(Modifier.height(4.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    val levelText = if(word.level >= 3) "严重违禁 (直拒)" else "可疑 (需人工审)"
+                                    val levelColor = if(word.level >= 3) Color(0xFFEA4335) else Color(0xFFFBBC05)
+                                    Text(levelText, fontSize = 12.sp, color = levelColor)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("添加于: ${word.createdAt.take(10)}", fontSize = 11.sp, color = Color.Gray)
+                                }
+                            }
+                            IconButton(onClick = { viewModel.deleteWord(word.id) }) {
+                                Icon(Icons.Filled.Delete, contentDescription = "删除", tint = Color.Gray)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showAddDialog) {
+        var inputWord by remember { mutableStateOf("") }
+        var inputLevel by remember { mutableIntStateOf(3) }
+        
+        AlertDialog(
+            onDismissRequest = { showAddDialog = false },
+            title = { Text("添加风控词汇") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = inputWord,
+                        onValueChange = { inputWord = it },
+                        label = { Text("词汇内容 (例如：冰毒)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Text("风控等级:", fontSize = 14.sp)
+                    Spacer(Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(selected = inputLevel == 3, onClick = { inputLevel = 3 })
+                        Text("严重违禁 (命中即拦截)")
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(selected = inputLevel == 2, onClick = { inputLevel = 2 })
+                        Text("可疑 (转人工复核)")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (inputWord.isNotBlank()) {
+                        viewModel.addWord(inputWord.trim(), inputLevel)
+                        showAddDialog = false
+                    }
+                }) {
+                    Text("确定")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddDialog = false }) {
+                    Text("取消")
+                }
+            },
+            containerColor = Color.White
+        )
+    }
+}
+
+
+@Composable
+fun ModerationLogsSection(
+    state: AdminReportListState,
+    viewModel: AdminReportListViewModel
+) {
+    LaunchedEffect(Unit) {
+        viewModel.loadModerationLogs()
+    }
+    val scheme = MaterialTheme.colorScheme
+
+    if (state.logsLoading) {
+        LoadingBox(modifier = Modifier.fillMaxSize())
+        return
+    }
+
+    if (state.logs.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("无拦截记录", color = Color.Gray, fontSize = 16.sp)
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(state.logs) { log ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "用户: " + (log.user?.nickname ?: "未知") + " (" + (log.user?.phone ?: "") + ")",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = Color(0xFF3C4043)
+                            )
+                            val badgeColor = if (log.result == "REJECTED") Color(0xFFEA4335) else scheme.primary
+                            val badgeText = if (log.result == "REJECTED") "已拦截 (Lv.3)" else "人工审核 (Lv.2)"
+                            Box(
+                                modifier = Modifier
+                                    .background(badgeColor.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(badgeText, color = badgeColor, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = log.content,
+                            fontSize = 14.sp,
+                            color = Color(0xFF5F6368),
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        Divider(color = Color(0xFFF1F3F4))
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        Text(
+                            text = "命中违禁词: " + log.matchedWords,
+                            fontSize = 13.sp,
+                            color = scheme.error,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "拦截时间: " + log.createdAt.replace("T", " ").substring(0, 16),
+                            fontSize = 12.sp,
+                            color = Color(0xFF9AA0A6),
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
             }
         }
     }

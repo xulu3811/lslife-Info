@@ -113,50 +113,31 @@ fun InfoPublishCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     // Left: Avatar only (no nickname)
-                    if (post.user?.avatar != null) {
-                        AsyncImage(
-                            model = post.user.avatar,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(26.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .size(26.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFF4F5F7)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Filled.Person, contentDescription = null, tint = Color(0xFF999999), modifier = Modifier.size(16.dp))
-                        }
-                    }
+                    GoogleAvatar(url = post.user?.avatar, size = 26.dp)
 
                     // Right: Call and Chat Buttons
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        // Enhanced Call Button
+                        // Enhanced Chat Button (Left)
                         Box(
                             modifier = Modifier
                                 .size(30.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFF0F9F0))
-                                .clickable { onPhoneClick() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Filled.Phone, contentDescription = "电话", tint = Color(0xFF52C41A), modifier = Modifier.size(16.dp))
-                        }
-                        // Enhanced Chat Button
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFFFF1F0))
+                                .background(Color(0xFFE8F0FE)) // Google Blue Light
                                 .clickable { onChatClick() },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "私聊", tint = Color(0xFFFF4D4F), modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "私聊", tint = Color(0xFF1A73E8), modifier = Modifier.size(16.dp)) // Google Blue
+                        }
+                        // Enhanced Call Button (Right)
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFE6F4EA)) // Google Green Light
+                                .clickable { onPhoneClick() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.Phone, contentDescription = "电话", tint = Color(0xFF34A853), modifier = Modifier.size(16.dp)) // Google Green
                         }
                     }
                 }

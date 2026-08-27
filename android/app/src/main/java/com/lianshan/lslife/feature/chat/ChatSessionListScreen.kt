@@ -63,24 +63,6 @@ fun ChatSessionListScreen(
                         style = MaterialTheme.typography.titleMedium
                     ) 
                 },
-                actions = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(end = 12.dp)
-                    ) {
-                        Text(
-                            text = "后台接收",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Switch(
-                            checked = state.keepAlive,
-                            onCheckedChange = { viewModel.toggleKeepAlive(it) },
-                            modifier = Modifier.scale(0.7f)
-                        )
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
                 )
@@ -193,7 +175,7 @@ fun ChatSessionItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(if (isPinned) Color(0xFFF4F5F7) else MaterialTheme.colorScheme.background)
+            .background(if (isPinned) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.background)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
@@ -235,8 +217,15 @@ fun ChatSessionItem(
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))
+            val displayMessage = if (session.lastMessage.startsWith("http") && (session.lastMessage.contains("chat_imgs") || session.lastMessage.matches(Regex(".*\\.(jpg|jpeg|png|gif|webp)(\\?.*)?", RegexOption.IGNORE_CASE)))) {
+                "[图片]"
+            } else if (session.lastMessage.startsWith("http") && (session.lastMessage.contains("chat_audio") || session.lastMessage.matches(Regex(".*\\.(mp3|m4a|wav|aac|ogg)(\\?.*)?", RegexOption.IGNORE_CASE)))) {
+                "[语音]"
+            } else {
+                session.lastMessage
+            }
             Text(
-                text = session.lastMessage,
+                text = displayMessage,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,

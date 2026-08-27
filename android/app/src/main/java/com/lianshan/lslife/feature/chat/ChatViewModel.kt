@@ -20,6 +20,9 @@ data class ChatUiState(
     val messages: List<LocalMessageEntity> = emptyList(),
     val error: String? = null,
     val currentUserId: String = "",
+    val currentUserName: String = "",
+    val currentUserAvatar: String? = null,
+    val targetAvatar: String? = null,
     val isFriend: Boolean = true
 )
 
@@ -37,6 +40,7 @@ class ChatViewModel @Inject constructor(
     private var currentConvId: String = ""
     private var targetUserId: String = ""
     private var targetPostId: String? = null
+    private var postCardSent: Boolean = false
 
     private val _inputText = MutableStateFlow("")
     val inputText: StateFlow<String> = _inputText.asStateFlow()
@@ -50,7 +54,13 @@ class ChatViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             authRepository.me().onSuccess { user ->
-                _state.update { it.copy(currentUserId = user.id) }
+                _state.update { 
+                    it.copy(
+                        currentUserId = user.id,
+                        currentUserName = user.nickname.takeIf { n -> !n.isNullOrBlank() } ?: "我",
+                        currentUserAvatar = user.avatar
+                    )
+                }
             }
         }
         
@@ -118,10 +128,24 @@ class ChatViewModel @Inject constructor(
                     imRepository.activeChatSessionId = currentConvId
                     subscribeToMessages(currentConvId)
                     imRepository.markSessionRead(currentConvId)
+                    _state.update { it.copy(targetAvatar = existingConv.peerAvatar) }
+                } else {
+                    // Try to fetch target profile if new and no local conv
+                    lsRepository.getUserPublicProfile(toUserId).onSuccess { profile ->
+                        _state.update { it.copy(targetAvatar = profile.avatar) }
+                    }
                 }
             } else {
                 imRepository.activeChatSessionId = convId
                 imRepository.markSessionRead(convId)
+                val conv = imDao.getConversation(convId)
+                if (conv != null) {
+                    _state.update { it.copy(targetAvatar = conv.peerAvatar) }
+                } else {
+                    lsRepository.getUserPublicProfile(toUserId).onSuccess { profile ->
+                        _state.update { it.copy(targetAvatar = profile.avatar) }
+                    }
+                }
             }
 
             val resolvedConvId = currentConvId
@@ -138,6 +162,30 @@ class ChatViewModel @Inject constructor(
                     _state.update { it.copy(isFriend = isF) }
                 }
             } catch (e: Exception) {}
+
+            // Send product card automatically if initPostId is provided
+            if (!initPostId.isNullOrEmpty() && !postCardSent) {
+                postCardSent = true
+                try {
+                    val postRes = api.post(initPostId)
+                    if (postRes.code == 0 && postRes.data != null) {
+                        val post = postRes.data
+                        val title = post.title
+                        val image = post.images.firstOrNull() ?: ""
+                        
+                        val json = org.json.JSONObject().apply {
+                            put("id", post.id)
+                            put("title", title)
+                            put("price", post.price ?: 0.0)
+                            put("image", image)
+                        }.toString()
+                        
+                        sendMessage(json, "POST_CARD")
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
 

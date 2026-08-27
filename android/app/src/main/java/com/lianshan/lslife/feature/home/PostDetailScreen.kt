@@ -203,12 +203,12 @@ fun PostDetailScreen(
                                 },
                                 modifier = Modifier.weight(1f).height(40.dp),
                                 shape = RoundedCornerShape(20.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5000)),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4285F4)), // Google Blue
                                 contentPadding = PaddingValues(horizontal = 4.dp)
                             ) {
                                 Icon(Icons.Filled.Chat, null, modifier = Modifier.size(15.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("私聊/联系TA", fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1)
+                                Text("私聊", fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1)
                             }
                             Button(
                                 onClick = {
@@ -221,19 +221,19 @@ fun PostDetailScreen(
                                 },
                                 modifier = Modifier.weight(1f).height(40.dp),
                                 shape = RoundedCornerShape(20.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF07C160)),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF34A853)), // Google Green
                                 contentPadding = PaddingValues(horizontal = 4.dp)
                             ) {
                                 Icon(Icons.Filled.Phone, null, modifier = Modifier.size(15.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("拨打电话", fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1)
+                                Text("电话", fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1)
                             }
                         }
                     }
                 }
             }
         },
-        containerColor = Color(0xFFF7F8FA) // Slightly gray background
+        containerColor = MaterialTheme.colorScheme.background // Slightly gray background
     ) { padding ->
         when {
             state.loading && state.post == null -> {
@@ -251,7 +251,7 @@ fun PostDetailScreen(
                     if (post.images.isNotEmpty()) {
                         item {
                             val pagerState = rememberPagerState(pageCount = { post.images.size })
-                            Box(modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f).background(Color.White)) {
+                            Box(modifier = Modifier.fillMaxWidth().aspectRatio(4f / 3f).background(MaterialTheme.colorScheme.surface)) {
                                 HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
                                     AsyncImage(
                                         model = post.images[page],
@@ -295,7 +295,7 @@ fun PostDetailScreen(
                                         ambientColor = Color(0x0A000000)
                                     ),
                                 shape = RoundedCornerShape(12.dp),
-                                color = Color(0xFFFFF8E1) // Light amber
+                                color = MaterialTheme.colorScheme.surfaceVariant // Light amber
                             ) {
                                 Row(
                                     modifier = Modifier.padding(Dimens.lg),
@@ -332,7 +332,7 @@ fun PostDetailScreen(
                                         ambientColor = Color(0x0A000000)
                                     ),
                                 shape = RoundedCornerShape(12.dp),
-                                color = Color(0xFFFFF4F4)
+                                color = MaterialTheme.colorScheme.surfaceVariant
                             ) {
                                 Column(modifier = Modifier.padding(Dimens.lg)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -419,8 +419,8 @@ fun PostDetailScreen(
                                     Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .border(width = 0.5.dp, color = Color(0xFFEEEEEE), shape = RoundedCornerShape(8.dp))
-                                            .background(Color.White, RoundedCornerShape(8.dp))
+                                            .border(width = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant, shape = RoundedCornerShape(8.dp))
+                                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
                                     ) {
                                         post.attributes.entries.forEachIndexed { index, (key, element) ->
                                             val schema = schemaMap[key]
@@ -456,13 +456,13 @@ fun PostDetailScreen(
                                                         modifier = Modifier
                                                             .width(100.dp)
                                                             .fillMaxHeight()
-                                                            .background(Color(0xFFF7F8FA))
+                                                            .background(MaterialTheme.colorScheme.background)
                                                             .padding(horizontal = 12.dp, vertical = 12.dp),
                                                         contentAlignment = Alignment.CenterStart
                                                     ) {
                                                         Text(
                                                             text = label,
-                                                            color = Color(0xFF666666),
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                             style = MaterialTheme.typography.bodyMedium,
                                                             fontSize = 13.sp
                                                         )
@@ -503,7 +503,7 @@ fun PostDetailScreen(
                                                             val displayValue = if (schema?.unit?.isNotBlank() == true) "$valueStr ${schema.unit}" else valueStr
                                                             Text(
                                                                 text = displayValue,
-                                                                color = Color(0xFF333333),
+                                                                color = MaterialTheme.colorScheme.onBackground,
                                                                 fontWeight = FontWeight.Bold,
                                                                 style = MaterialTheme.typography.bodyMedium,
                                                                 fontSize = 13.sp
@@ -512,7 +512,7 @@ fun PostDetailScreen(
                                                     }
                                                 }
                                                 if (index < post.attributes.size - 1) {
-                                                    androidx.compose.material3.Divider(color = Color(0xFFEEEEEE), thickness = 0.5.dp)
+                                                    androidx.compose.material3.Divider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                                                 }
                                             }
                                         }
@@ -529,7 +529,7 @@ fun PostDetailScreen(
                                 modifier = Modifier.padding(Dimens.lg),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                UserAvatar(url = post.user?.avatar, nickname = post.user?.nickname, size = 36.dp)
+                                com.lianshan.lslife.ui.components.GoogleAvatar(url = post.user?.avatar, size = 36.dp)
                                 Spacer(Modifier.width(Dimens.md))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(post.user?.nickname ?: "连山用户", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
@@ -547,7 +547,7 @@ fun PostDetailScreen(
                                     onClick = { viewModel.toggleFollow(post.user?.id ?: "") },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = if (isFollowing) Color(0xFFF5F5F5) else Color(0xFFFF2442),
-                                        contentColor = if (isFollowing) Color(0xFF999999) else Color.White
+                                        contentColor = if (isFollowing) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.6f) else Color.White
                                     ),
                                     shape = RoundedCornerShape(16.dp),
                                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),

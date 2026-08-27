@@ -47,11 +47,13 @@ export function createApp() {
 
   app.use('/uploads', express.static(uploadsDir));
   app.use('/chat_imgs', express.static(path.resolve(__dirname, '../public/chat_imgs')));
+  app.use('/chat_audio', express.static(path.resolve(__dirname, '../public/chat_audio')));
   app.use('/assets', express.static(assetsDir));
   app.use('/public', express.static(publicDir));
   app.use('/apks', express.static(apksDir));
   app.use('/api/uploads', express.static(uploadsDir));
   app.use('/api/chat_imgs', express.static(path.resolve(__dirname, '../public/chat_imgs')));
+  app.use('/api/chat_audio', express.static(path.resolve(__dirname, '../public/chat_audio')));
   app.use('/api/assets', express.static(assetsDir));
   app.use('/api/public', express.static(publicDir));
   app.use('/api/apks', express.static(apksDir));

@@ -146,7 +146,7 @@ fun GallerySkinFeedCard(post: Post, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(10.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(0.5.dp, Color(0xFFEEEEEE)),
         shadowElevation = 0.dp
     ) {

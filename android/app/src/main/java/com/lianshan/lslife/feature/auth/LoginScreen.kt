@@ -104,72 +104,50 @@ fun LoginScreen(
             // 黄金纵向留白：顶部与状态栏舒适间距
             Spacer(Modifier.height(32.dp))
 
-            // 1. 居中品牌形象展示区 (Joybuy 极简艺术感中轴)
+            // 1. 居中品牌形象展示区 (Google Style)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(horizontal = 24.dp)
             ) {
-                // 3D 质感品牌微标 (52dp 渐变红圆角徽章)
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(14.dp),
-                            spotColor = Color(0x3DE02020),
-                            ambientColor = Color(0x1AE02020)
-                        )
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(
-                            Brush.linearGradient(
-                                listOf(Color(0xFFFF4136), Color(0xFFE02020))
-                            )
-                        )
-                        .border(0.5.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(14.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "连",
-                        color = Color.White,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 25.sp,
-                        letterSpacing = 0.sp
-                    )
-                }
+                // 新的 Google 风格图标
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(id = com.lianshan.lslife.R.drawable.img_google_logo),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(72.dp)
+                )
 
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(16.dp))
 
                 // 品牌主标题
                 Text(
                     text = "同城•连山",
-                    fontSize = 21.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Medium,
                     letterSpacing = 0.5.sp,
                     color = scheme.onBackground
                 )
 
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(8.dp))
 
                 // 品牌副标题
                 Text(
                     text = "智慧分类信息 · 贴心同城生活服务",
-                    fontSize = 12.5.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
-                    color = Color(0xFF8E8E93)
+                    color = Color(0xFF5F6368) // Google Gray
                 )
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(32.dp))
 
-            // 2. Joybuy 3D Soft UI 浮层交互卡片 (适中比例、舒展布局)
+            // 2. Google Style Login Card
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(8.dp),
                 color = scheme.surface,
-                shadowElevation = 3.dp,
-                border = BorderStroke(0.6.dp, Color(0xFFEEEEF0))
+                border = BorderStroke(1.dp, Color(0xFFDADCE0))
             ) {
                 Column(
                     modifier = Modifier.padding(horizontal = 18.dp, vertical = 22.dp),
@@ -204,7 +182,7 @@ fun LoginScreen(
                                     .width(22.dp)
                                     .height(2.5.dp)
                                     .clip(CircleShape)
-                                    .background(if (!isRegister) PrimaryRed else Color.Transparent)
+                                    .background(if (!isRegister) Color(0xFF1A73E8) else Color.Transparent)
                             )
                         }
 
@@ -228,7 +206,7 @@ fun LoginScreen(
                                     .width(22.dp)
                                     .height(2.5.dp)
                                     .clip(CircleShape)
-                                    .background(if (isRegister) PrimaryRed else Color.Transparent)
+                                    .background(if (isRegister) Color(0xFF1A73E8) else Color.Transparent)
                             )
                         }
                     }
@@ -286,39 +264,33 @@ fun LoginScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    // 主提交行动按钮 (Joybuy 渐变红微浮层按钮)
+                    // 主提交行动按钮 (Google Blue Pill Button)
                     Button(
                         onClick = viewModel::submit,
                         enabled = !state.loading,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(46.dp)
-                            .shadow(
-                                elevation = 4.dp,
-                                shape = RoundedCornerShape(12.dp),
-                                spotColor = Color(0x3DE52E25),
-                                ambientColor = Color(0x1AE52E25)
-                            ),
-                        shape = RoundedCornerShape(12.dp),
+                            .height(48.dp),
+                        shape = CircleShape,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = PrimaryRed,
+                            containerColor = Color(0xFF1A73E8),
                             contentColor = Color.White
                         ),
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         if (state.loading) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
+                                modifier = Modifier.size(20.dp),
                                 strokeWidth = 2.dp,
                                 color = Color.White
                             )
                         } else {
                             Text(
-                                text = if (isRegister) "注 册 并 登 录" else "登 录",
-                                fontSize = 15.5.sp,
-                                fontWeight = FontWeight.SemiBold,
+                                text = if (isRegister) "注册并登录" else "登录",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
                                 letterSpacing = 1.sp
                             )
                         }
@@ -329,20 +301,20 @@ fun LoginScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 4.dp, start = 2.dp, end = 2.dp),
+                                .padding(top = 8.dp, start = 4.dp, end = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
                                     text = "没有账号？",
-                                    fontSize = 12.sp,
-                                    color = Color(0xFF9E9E9E)
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF5F6368)
                                 )
                                 Text(
                                     text = "立即注册",
-                                    fontSize = 12.5.sp,
-                                    color = PrimaryRed,
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF1A73E8),
                                     fontWeight = FontWeight.Medium,
                                     modifier = Modifier.clickable { viewModel.switchMode(AuthMode.Register) }
                                 )
@@ -350,8 +322,8 @@ fun LoginScreen(
 
                             Text(
                                 text = "忘记密码？",
-                                fontSize = 12.5.sp,
-                                color = Color(0xFF666666),
+                                fontSize = 13.sp,
+                                color = Color(0xFF1A73E8),
                                 fontWeight = FontWeight.Medium,
                                 modifier = Modifier.clickable { onForgotPasswordClick() }
                             )
@@ -360,19 +332,19 @@ fun LoginScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 4.dp),
+                                .padding(top = 8.dp),
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = "已有账号？",
-                                fontSize = 12.sp,
-                                color = Color(0xFF9E9E9E)
+                                fontSize = 13.sp,
+                                color = Color(0xFF5F6368)
                             )
                             Text(
                                 text = "直接登录",
-                                fontSize = 12.5.sp,
-                                color = PrimaryRed,
+                                fontSize = 13.sp,
+                                color = Color(0xFF1A73E8),
                                 fontWeight = FontWeight.Medium,
                                 modifier = Modifier.clickable { viewModel.switchMode(AuthMode.Login) }
                             )
@@ -414,29 +386,29 @@ private fun JoybuyLuxuryInputField(
     val scheme = MaterialTheme.colorScheme
     val isDark = scheme.background.hashCode() != Color.White.hashCode()
 
-    val bgColor = if (isDark) Color(0xFF242426) else Color(0xFFF7F8FA)
-    val borderColor = if (isDark) Color(0xFF38383A) else Color(0xFFEEEEEE)
-    val iconColor = Color(0xFF9E9E9E)
+    val bgColor = Color.Transparent
+    val borderColor = if (isDark) Color(0xFF5F6368) else Color(0xFFDADCE0)
+    val iconColor = if (isDark) Color(0xFF9AA0A6) else Color(0xFF5F6368)
     val textColor = scheme.onBackground
-    val hintColor = Color(0xFFA8A8B0)
+    val hintColor = if (isDark) Color(0xFF9AA0A6) else Color(0xFF80868B)
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(46.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .height(52.dp)
+            .clip(RoundedCornerShape(4.dp))
             .background(bgColor)
-            .border(0.6.dp, borderColor, RoundedCornerShape(12.dp))
-            .padding(horizontal = 13.dp),
+            .border(1.dp, borderColor, RoundedCornerShape(4.dp))
+            .padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = leadingIcon,
             contentDescription = null,
             tint = iconColor,
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(20.dp)
         )
-        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Box(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.CenterStart
@@ -445,7 +417,7 @@ private fun JoybuyLuxuryInputField(
                 Text(
                     text = placeholder,
                     color = hintColor,
-                    fontSize = 13.5.sp,
+                    fontSize = 15.sp,
                     maxLines = 1
                 )
             }
@@ -455,10 +427,10 @@ private fun JoybuyLuxuryInputField(
                 singleLine = true,
                 textStyle = TextStyle(
                     color = textColor,
-                    fontSize = 14.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Normal
                 ),
-                cursorBrush = SolidColor(PrimaryRed),
+                cursorBrush = SolidColor(Color(0xFF1A73E8)),
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
                 visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
                 modifier = Modifier.fillMaxWidth()

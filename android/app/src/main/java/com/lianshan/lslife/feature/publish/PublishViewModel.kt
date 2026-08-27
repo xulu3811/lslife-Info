@@ -368,9 +368,10 @@ class PublishViewModel @Inject constructor(
                 }
             }
 
+            val addressParts = s.locationRegion.split("-")
             val req = CreatePostRequest(
                 category = s.categoryId,
-                title = s.title.ifBlank { "同城优质发布" },
+                title = s.title.ifBlank { "分类同城信息发布" },
                 description = s.description,
                 useUrgentTag = s.useUrgentTag,
                 price = s.price.toDoubleOrNull(),
@@ -382,7 +383,11 @@ class PublishViewModel @Inject constructor(
                 merchantId = s.merchantId,
                 listingType = s.listingType,
                 attributes = mergedAttributes,
-                town = s.locationRegion + if (s.locationDetail.isNotBlank()) " " + s.locationDetail else "",
+                province = addressParts.getOrNull(0),
+                city = addressParts.getOrNull(1),
+                district = addressParts.getOrNull(2),
+                town = addressParts.getOrNull(3),
+                streetAddress = s.locationDetail.takeIf { it.isNotBlank() }
             )
             
             val result = if (s.editingPostId != null) {

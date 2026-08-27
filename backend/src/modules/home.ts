@@ -87,7 +87,7 @@ router.get(
     const mapPost = (p: any) => ({
       ...p,
       images: JSON.parse(p.images) as string[],
-      attributes: JSON.parse(p.attributes) as Record<string, string>,
+      attributes: (p.attributes as any) as Record<string, string>,
     });
 
     return ok(res, {

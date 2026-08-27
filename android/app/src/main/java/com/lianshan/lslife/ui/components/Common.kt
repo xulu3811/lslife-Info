@@ -39,6 +39,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
@@ -127,10 +128,10 @@ fun EmptyState(
                 modifier = Modifier
                     .size(72.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(Color(0xFFF1F3F4)), // Google Grey Light
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
+                Icon(icon, null, tint = Color(0xFF5F6368), modifier = Modifier.size(32.dp)) // Google Grey
             }
             Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             if (subtitle != null) {
@@ -582,6 +583,51 @@ fun UserAvatar(
                     modifier = Modifier.size(size * 0.6f)
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun GoogleAvatar(
+    url: String?,
+    modifier: Modifier = Modifier,
+    size: androidx.compose.ui.unit.Dp = 20.dp
+) {
+    val googleRingBrush = androidx.compose.ui.graphics.Brush.sweepGradient(
+        colors = listOf(
+            Color(0xFF4285F4), // Blue
+            Color(0xFFEA4335), // Red
+            Color(0xFFFBBC05), // Yellow
+            Color(0xFF34A853), // Green
+            Color(0xFF4285F4)  // Blue
+        )
+    )
+
+    Box(
+        modifier = modifier
+            .size(size)
+            .background(googleRingBrush, CircleShape)
+            .padding(1.5.dp) // Border thickness
+            .background(Color.White, CircleShape) // Gap color
+            .padding(1.dp) // Gap thickness
+            .clip(CircleShape)
+            .background(Color(0xFFF1F3F4)), // Avatar background
+        contentAlignment = Alignment.Center
+    ) {
+        if (!url.isNullOrBlank()) {
+            AsyncImage(
+                model = url,
+                contentDescription = "Avatar",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = null,
+                tint = Color(0xFF999999),
+                modifier = Modifier.size(size * 0.6f)
+            )
         }
     }
 }

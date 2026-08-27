@@ -179,6 +179,7 @@ class MerchantCertifyViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = CertifyState.Loading
             try {
+                val addressParts = storeAddressRegion.value.split("-")
                 val req = MerchantCertifyRequest(
                     certType = certType.value,
                     storeName = storeName.value,
@@ -187,7 +188,12 @@ class MerchantCertifyViewModel @Inject constructor(
                     contactPhone = contactPhone.value,
                     businessLicenseUrl = businessLicenseUrl.value.ifBlank { null },
                     storePhotos = storePhotos.value,
-                    isDraft = false
+                    isDraft = false,
+                    province = addressParts.getOrNull(0),
+                    city = addressParts.getOrNull(1),
+                    district = addressParts.getOrNull(2),
+                    town = addressParts.getOrNull(3),
+                    streetAddress = storeAddressDetail.value.takeIf { it.isNotBlank() }
                 )
                 val result = repository.submitMerchantCertification(req)
                 result.fold(

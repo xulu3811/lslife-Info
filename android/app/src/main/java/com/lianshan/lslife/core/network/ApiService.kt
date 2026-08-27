@@ -386,4 +386,31 @@ interface ApiService {
     suspend fun searchGovernancePosts(
         @Query("keyword") keyword: String
     ): ApiEnvelope<List<GovernancePostDto>>
+
+    @GET("admin/sensitive-words")
+    suspend fun getSensitiveWords(
+        @Query("page") page: Int,
+        @Query("pageSize") pageSize: Int
+    ): ApiEnvelope<SensitiveWordsResponse>
+
+    @POST("admin/sensitive-words")
+    suspend fun addSensitiveWord(
+        @Body body: SensitiveWordRequest
+    ): ApiEnvelope<SensitiveWord>
+
+    @POST("admin/sensitive-words/import")
+    suspend fun importSensitiveWords(
+        @Body body: ImportSensitiveWordsRequest
+    ): ApiEnvelope<ImportSensitiveWordsResponse>
+
+        @DELETE("admin/sensitive-words/{id}")
+    suspend fun deleteSensitiveWord(
+        @Path("id") id: String
+    ): ApiEnvelope<kotlinx.serialization.json.JsonObject>
+
+    @GET("admin/moderation-logs")
+    suspend fun getModerationLogs(
+        @Query("page") page: Int,
+        @Query("pageSize") pageSize: Int
+    ): ApiEnvelope<ModerationLogsResponse>
 }

@@ -1,51 +1,51 @@
 import { env } from '../config/env.js';
-
-/** 明确违规词（整词/短语），避免单字误伤如「香蕉」 */
-const BLOCK_WORDS = [
-  '黄赌毒',
-  '色情',
-  '嫖娼',
-  '赌场',
-  '毒品',
-  '冰毒',
-  '海洛因',
-  '代考',
-  '办证',
-  '洗钱',
-  '走私',
-  '刷单返利',
-  '原味内裤',
-];
-
-/** 可疑内容进入人工审核 */
-const REVIEW_WORDS = ['发票', '套现', '枪手', '代练账号'];
+import { dfaEngine } from './dfa.js';
 
 export interface ModerationResult {
   pass: boolean;
-  status: 'PUBLISHED' | 'AI_REVIEWING' | 'MANUAL_REVIEWING' | 'REJECTED';
+  status: 'PUBLISHED' | 'MANUAL_REVIEWING' | 'REJECTED' | 'AI_REVIEWING';
   note?: string;
+  matchedWords?: string[];
+  level?: number;
 }
 
 /**
- * 内容审核（本地词表 DFA）。
- * - 命中 BLOCK → REJECTED（直接拒绝）
- * - 命中 REVIEW → MANUAL_REVIEWING（进入人工审核）
- * - 其余 → AI_REVIEWING（进入异步 AI 深度审查队列）
+ * 文本风控初筛 (本地 DFA)
  */
 export function moderateContent(title: string, description: string): ModerationResult {
   if (!env.contentModerationEnabled) {
     return { pass: true, status: 'PUBLISHED' };
   }
+  
   const text = `${title} ${description}`;
-  const blocked = BLOCK_WORDS.find((w) => text.includes(w));
-  if (blocked) {
-    return { pass: false, status: 'REJECTED', note: `命中本地违规词: ${blocked}` };
+  
+  const dfaResult = dfaEngine.match(text);
+  
+  if (dfaResult.matched) {
+    const blockedWords = dfaResult.words.filter(w => w.level >= 3);
+    if (blockedWords.length > 0) {
+      return { 
+        pass: false, 
+        status: 'REJECTED', 
+        note: `触发严重违禁词: ${blockedWords.map(w => w.word).join(', ')}`,
+        matchedWords: blockedWords.map(w => w.word),
+        level: 3
+      };
+    }
+    
+    const reviewWords = dfaResult.words.filter(w => w.level === 2);
+    if (reviewWords.length > 0) {
+      return { 
+        pass: true, 
+        status: 'MANUAL_REVIEWING', 
+        note: `包含可疑词汇: ${reviewWords.map(w => w.word).join(', ')}`,
+        matchedWords: reviewWords.map(w => w.word),
+        level: 2
+      };
+    }
   }
-  const review = REVIEW_WORDS.find((w) => text.includes(w));
-  if (review) {
-    return { pass: true, status: 'MANUAL_REVIEWING', note: `本地可疑内容待审: ${review}` };
-  }
-  return { pass: true, status: 'AI_REVIEWING', note: '等待 AI 深度审核' };
+  
+  return { pass: true, status: 'AI_REVIEWING', note: '等待 AI 引擎复核' };
 }
 
 import { getAiProvider } from './ai.js';

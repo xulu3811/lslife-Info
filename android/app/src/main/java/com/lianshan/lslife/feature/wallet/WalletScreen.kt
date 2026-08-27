@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,7 +26,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,18 +35,24 @@ import com.lianshan.lslife.core.model.RechargePackage
 import com.lianshan.lslife.core.model.WalletLog
 import com.lianshan.lslife.ui.components.LoadingBox
 import com.lianshan.lslife.ui.components.PaymentBottomSheet
-import com.lianshan.lslife.ui.components.SoftCard
-import com.lianshan.lslife.ui.theme.PrimaryRed
-import com.lianshan.lslife.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
-/**
- * 我的钱包页面 (Joybuy 欧美简约风格 3D Soft UI 重构版)
- * 遵循规范:
- * 1. 12dp/14dp 优雅圆角与 0.5dp 细致高亮线框
- * 2. 18dp 纯净线性矢量图标与清爽浅色微容器
- * 3. 资产卡片 + 3 栏服务保障 + 充值套餐微选择矩阵 + 吸底结算栏
- */
+// Google Primary Colors
+private val GoogleBlue = Color(0xFF4285F4)
+private val GoogleRed = Color(0xFFEA4335)
+private val GoogleYellow = Color(0xFFFBBC05)
+private val GoogleGreen = Color(0xFF34A853)
+
+// Google Tonal Backgrounds
+private val GoogleBlueLight = Color(0xFFE8F0FE)
+private val GoogleRedLight = Color(0xFFFCE8E6)
+private val GoogleYellowLight = Color(0xFFFEF7E0)
+private val GoogleGreenLight = Color(0xFFE6F4EA)
+
+private val GoogleGreyBorder = Color(0xFFDADCE0)
+private val GoogleTextPrimary = Color(0xFF202124)
+private val GoogleTextSecondary = Color(0xFF5F6368)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WalletScreen(
@@ -56,7 +62,6 @@ fun WalletScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val virtualCoinName = stringResource(id = R.string.virtual_coin_name)
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     var showPaymentSheet by remember { mutableStateOf(false) }
     var showLogsSheet by remember { mutableStateOf(false) }
@@ -79,15 +84,15 @@ fun WalletScreen(
         ?: uiState.packages.firstOrNull()
 
     Scaffold(
-        containerColor = Color(0xFFF8FAFC),
+        containerColor = MaterialTheme.colorScheme.background, // Google App default background
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         "我的钱包",
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1E293B)
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 },
                 navigationIcon = {
@@ -95,8 +100,8 @@ fun WalletScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "返回",
-                            tint = Color(0xFF334155),
-                            modifier = Modifier.size(20.dp)
+                            tint = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 },
@@ -108,9 +113,9 @@ fun WalletScreen(
                         }
                     ) {
                         Icon(
-                            Icons.Outlined.ReceiptLong,
+                            Icons.AutoMirrored.Outlined.ReceiptLong,
                             contentDescription = null,
-                            tint = Color(0xFF475569),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(Modifier.width(4.dp))
@@ -118,11 +123,11 @@ fun WalletScreen(
                             "账单明细",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF475569)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -131,13 +136,12 @@ fun WalletScreen(
                 Surface(
                     shadowElevation = 8.dp,
                     color = Color.White,
-                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
-                    border = BorderStroke(0.5.dp, Color(0xFFE2E8F0))
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 12.dp)
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
                             .navigationBarsPadding(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -147,33 +151,33 @@ fun WalletScreen(
                                 Text(
                                     "实付: ",
                                     fontSize = 12.sp,
-                                    color = Color(0xFF64748B)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
                                     "¥${"%.2f".format(selectedPackage.price)}",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = PrimaryRed
+                                    color = GoogleRed
                                 )
                             }
                             Text(
                                 "到账 ${selectedPackage.coinsAmount + selectedPackage.bonusCoins} $virtualCoinName",
-                                fontSize = 10.5.sp,
-                                color = Color(0xFF94A3B8)
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
                         Button(
                             onClick = { showPaymentSheet = true },
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
+                            colors = ButtonDefaults.buttonColors(containerColor = GoogleBlue),
                             shape = RoundedCornerShape(20.dp),
                             contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp),
-                            modifier = Modifier.height(42.dp)
+                            modifier = Modifier.height(40.dp)
                         ) {
                             Text(
                                 "立即充值",
                                 fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
+                                fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
                         }
@@ -192,11 +196,17 @@ fun WalletScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 一、 Joybuy 3D Soft UI 资产总览卡
-            SoftCard(modifier = Modifier.fillMaxWidth()) {
+            // Google Card - Asset Overview
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -210,119 +220,91 @@ fun WalletScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .size(34.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFFFEF2F2)),
+                                    .size(28.dp)
+                                    .clip(CircleShape)
+                                    .background(GoogleBlueLight),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Outlined.AccountBalanceWallet,
                                     contentDescription = null,
-                                    tint = PrimaryRed,
-                                    modifier = Modifier.size(18.dp)
+                                    tint = GoogleBlue,
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
-                            Spacer(Modifier.width(10.dp))
+                            Spacer(Modifier.width(8.dp))
                             Text(
                                 "$virtualCoinName 当前余额",
-                                fontSize = 13.5.sp,
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Color(0xFF64748B)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-
                         Text(
                             "1 $virtualCoinName = 1.00元",
                             fontSize = 11.sp,
-                            color = Color(0xFF94A3B8)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
-                    Spacer(Modifier.height(14.dp))
+                    Spacer(Modifier.height(8.dp))
 
                     Row(
-                        verticalAlignment = Alignment.Bottom,
-                        modifier = Modifier.padding(start = 2.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
                     ) {
-                        AnimatedContent(targetState = uiState.coinBalance, label = "") { balance ->
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            AnimatedContent(targetState = uiState.coinBalance, label = "") { balance ->
+                                Text(
+                                    text = balance.toString(),
+                                    fontSize = 28.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = GoogleBlue
+                                )
+                            }
+                            Spacer(Modifier.width(4.dp))
                             Text(
-                                text = balance.toString(),
-                                fontSize = 32.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF0F172A)
+                                text = virtualCoinName,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = GoogleBlue,
+                                modifier = Modifier.padding(bottom = 4.dp)
                             )
                         }
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = virtualCoinName,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF64748B),
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
-
-                    Spacer(Modifier.height(14.dp))
-
-                    // 底部安全通道微胶囊
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFF8FAFC))
-                            .padding(horizontal = 10.dp, vertical = 7.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Outlined.Security,
-                            contentDescription = null,
-                            tint = Color(0xFF16A34A),
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            "银行级 SSL 资金加密保障 · 实时入账 · 全平台通用",
-                            fontSize = 11.sp,
-                            color = Color(0xFF64748B)
-                        )
+                        
+                        // Compact Safe banner
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 4.dp)) {
+                            Icon(
+                                Icons.Outlined.Security,
+                                contentDescription = null,
+                                tint = GoogleGreen,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(Modifier.width(2.dp))
+                            Text(
+                                "SSL 资金加密保障",
+                                fontSize = 10.sp,
+                                color = GoogleGreen
+                            )
+                        }
                     }
                 }
             }
 
-            // 二、 3 栏服务与保障矩阵 (Joybuy Micro Features)
+            // 3 Features - Compact inline layout
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                WalletFeatureItem(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Outlined.Storefront,
-                    iconBg = Color(0xFFEFF6FF),
-                    iconTint = Color(0xFF2563EB),
-                    title = "全场景通用",
-                    desc = "商品购买与推广"
-                )
-                WalletFeatureItem(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Outlined.Bolt,
-                    iconBg = Color(0xFFF0FDF4),
-                    iconTint = Color(0xFF16A34A),
-                    title = "极速到账",
-                    desc = "充值完成秒级上屏"
-                )
-                WalletFeatureItem(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Outlined.ReceiptLong,
-                    iconBg = Color(0xFFFFFBEB),
-                    iconTint = Color(0xFFD97706),
-                    title = "透明对账",
-                    desc = "每笔流水精准记录"
-                )
+                WalletFeatureItemCompact(icon = Icons.Outlined.Storefront, iconTint = GoogleBlue, title = "全场景通用")
+                WalletFeatureItemCompact(icon = Icons.Outlined.Bolt, iconTint = GoogleYellow, title = "极速到账")
+                WalletFeatureItemCompact(icon = Icons.AutoMirrored.Outlined.ReceiptLong, iconTint = GoogleGreen, title = "透明对账")
             }
 
-            // 三、 充值套餐选择区 (Joybuy 2 栏微卡片网格)
+            // Recharge Packages
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -330,35 +312,33 @@ fun WalletScreen(
                     "选择充值套餐",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B),
-                    modifier = Modifier.padding(start = 2.dp)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     "充值档位越多赠送越多",
-                    fontSize = 11.5.sp,
-                    color = Color(0xFF94A3B8)
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            // 套餐网格展示
-            val chunkedPackages = uiState.packages.chunked(2)
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            val chunkedPackages = uiState.packages.chunked(3)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 chunkedPackages.forEach { rowPackages ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         rowPackages.forEach { pkg ->
                             val isSelected = uiState.selectedPackageId == pkg.id
                             val discount = (pkg.coinsAmount - pkg.price).toInt()
                             val badge = when {
-                                pkg.bonusCoins > 0 -> "赠 ${pkg.bonusCoins} 币"
+                                pkg.bonusCoins > 0 -> "赠 ${pkg.bonusCoins}"
                                 discount > 0 -> "省 ${discount} 元"
                                 pkg.coinsAmount >= 100 -> "热销"
                                 else -> null
                             }
 
-                            JoybuyPackageCard(
+                            GooglePackageCard(
                                 modifier = Modifier.weight(1f),
                                 pkg = pkg,
                                 virtualCoinName = virtualCoinName,
@@ -367,50 +347,39 @@ fun WalletScreen(
                                 onClick = { viewModel.selectPackage(pkg.id) }
                             )
                         }
-                        if (rowPackages.size == 1) {
-                            Spacer(Modifier.weight(1f))
+                        if (rowPackages.size < 3) {
+                            repeat(3 - rowPackages.size) {
+                                Spacer(Modifier.weight(1f))
+                            }
                         }
                     }
                 }
             }
 
-            // 四、 充值说明与协议保障
-            Spacer(Modifier.height(4.dp))
-            SoftCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        "充值须知与说明",
-                        fontSize = 12.5.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1E293B)
-                    )
-                    Text(
-                        "1. 充值成功的连山币将存入个人账户中，永久有效，不设过期时间。",
-                        fontSize = 11.sp,
-                        color = Color(0xFF64748B)
-                    )
-                    Text(
-                        "2. 连山币可用于购买同城商品、置顶推广、实物配送及开通平台增值服务。",
-                        fontSize = 11.sp,
-                        color = Color(0xFF64748B)
-                    )
-                    Text(
-                        "3. 如遇充值未到账或支付异常，可点击右上角【账单明细】核对或联系客服协助处理。",
-                        fontSize = 11.sp,
-                        color = Color(0xFF64748B)
-                    )
-                }
+            // Information (Compact)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    "充值须知与说明",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    "1. 充值成功的连山币将存入个人账户中，永久有效，不设过期时间。\n2. 可用于购买同城商品、置顶推广、实物配送及增值服务。\n3. 如遇支付异常，可点击右上角【账单明细】核对或联系客服。",
+                    fontSize = 10.sp,
+                    lineHeight = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             Spacer(Modifier.height(24.dp))
         }
 
-        // 支付渠道选择拉起面板
         if (showPaymentSheet && selectedPackage != null) {
             PaymentBottomSheet(
                 amount = selectedPackage.price,
@@ -422,7 +391,6 @@ fun WalletScreen(
             )
         }
 
-        // 账单明细 BottomSheet
         if (showLogsSheet) {
             WalletLogsBottomSheet(
                 logs = uiState.logs,
@@ -434,67 +402,30 @@ fun WalletScreen(
     }
 }
 
-/**
- * Joybuy 极简服务微卡片
- */
 @Composable
-private fun WalletFeatureItem(
-    modifier: Modifier = Modifier,
+private fun WalletFeatureItemCompact(
     icon: ImageVector,
-    iconBg: Color,
     iconTint: Color,
-    title: String,
-    desc: String
+    title: String
 ) {
-    SoftCard(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(iconBg),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    icon,
-                    contentDescription = title,
-                    tint = iconTint,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-
-            Spacer(Modifier.height(6.dp))
-
-            Text(
-                text = title,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1E293B)
-            )
-
-            Spacer(Modifier.height(2.dp))
-
-            Text(
-                text = desc,
-                fontSize = 10.sp,
-                color = Color(0xFF64748B),
-                maxLines = 1,
-                textAlign = TextAlign.Center
-            )
-        }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            icon,
+            contentDescription = title,
+            tint = iconTint,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(Modifier.width(4.dp))
+        Text(
+            text = title,
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
-/**
- * Joybuy 欧美极简充值套餐卡片
- */
 @Composable
-private fun JoybuyPackageCard(
+private fun GooglePackageCard(
     modifier: Modifier = Modifier,
     pkg: RechargePackage,
     virtualCoinName: String,
@@ -502,82 +433,85 @@ private fun JoybuyPackageCard(
     badge: String?,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) Color(0xFFFEF2F2) else Color.White)
-            .border(
-                BorderStroke(
-                    if (isSelected) 1.5.dp else 0.5.dp,
-                    if (isSelected) PrimaryRed else Color(0xFFE2E8F0)
-                ),
-                RoundedCornerShape(12.dp)
-            )
-            .clickable(onClick = onClick)
-            .padding(vertical = 14.dp, horizontal = 10.dp)
+    Card(
+        modifier = modifier.clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) GoogleBlueLight else MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(
+            if (isSelected) 2.dp else 1.dp,
+            if (isSelected) GoogleBlue else MaterialTheme.colorScheme.outlineVariant
+        ),
+        shape = RoundedCornerShape(12.dp)
     ) {
-        if (badge != null) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .clip(RoundedCornerShape(topStart = 0.dp, bottomStart = 6.dp, topEnd = 8.dp, bottomEnd = 0.dp))
-                    .background(PrimaryRed)
-                    .padding(horizontal = 5.dp, vertical = 2.dp)
-            ) {
-                Text(
-                    text = badge,
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-        }
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Row(verticalAlignment = Alignment.Bottom) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp, horizontal = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = "${pkg.coinsAmount}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isSelected) GoogleBlue else MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(Modifier.width(2.dp))
+                    Text(
+                        text = virtualCoinName,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = if (isSelected) GoogleBlue else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (pkg.bonusCoins > 0) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = "+ 赠 ${pkg.bonusCoins}",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = GoogleRed
+                    )
+                } else {
+                    Spacer(Modifier.height(2.dp))
+                    Text(text = "", fontSize = 9.sp) // placeholder for alignment
+                }
+
+                Spacer(Modifier.height(4.dp))
+
                 Text(
-                    text = "${pkg.coinsAmount}",
-                    fontSize = 18.sp,
+                    text = "¥${"%.2f".format(pkg.price)}",
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isSelected) PrimaryRed else Color(0xFF1E293B)
-                )
-                Spacer(Modifier.width(2.dp))
-                Text(
-                    text = virtualCoinName,
-                    fontSize = 11.5.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = if (isSelected) PrimaryRed else Color(0xFF64748B)
+                    color = if (isSelected) GoogleBlue else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
-            if (pkg.bonusCoins > 0) {
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = "+ 送 ${pkg.bonusCoins} $virtualCoinName",
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = PrimaryRed
-                )
+            
+            if (badge != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .clip(RoundedCornerShape(bottomStart = 8.dp, topEnd = 12.dp))
+                        .background(GoogleRed)
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = badge,
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
             }
-
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                text = "¥${"%.2f".format(pkg.price)}",
-                fontSize = 13.5.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = if (isSelected) PrimaryRed else Color(0xFF64748B)
-            )
         }
     }
 }
 
-/**
- * 账单明细 BottomSheet
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WalletLogsBottomSheet(
@@ -591,14 +525,14 @@ fun WalletLogsBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 28.dp)
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 24.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -609,19 +543,19 @@ fun WalletLogsBottomSheet(
                     "账单明细记录",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
                     Icon(
                         Icons.Outlined.Close,
                         contentDescription = "关闭",
-                        tint = Color(0xFF94A3B8),
-                        modifier = Modifier.size(18.dp)
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
 
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
 
             if (isLoading) {
                 Box(
@@ -630,7 +564,7 @@ fun WalletLogsBottomSheet(
                         .height(200.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = PrimaryRed, modifier = Modifier.size(28.dp))
+                    CircularProgressIndicator(color = GoogleBlue, modifier = Modifier.size(24.dp))
                 }
             } else if (logs.isEmpty()) {
                 Box(
@@ -641,16 +575,16 @@ fun WalletLogsBottomSheet(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
-                            Icons.Outlined.ReceiptLong,
+                            Icons.AutoMirrored.Outlined.ReceiptLong,
                             contentDescription = null,
-                            tint = Color(0xFFCBD5E1),
+                            tint = MaterialTheme.colorScheme.outlineVariant,
                             modifier = Modifier.size(36.dp)
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
                             "暂无交易明细记录",
                             fontSize = 13.sp,
-                            color = Color(0xFF94A3B8)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -660,46 +594,46 @@ fun WalletLogsBottomSheet(
                         .fillMaxWidth()
                         .weight(1f, fill = false)
                         .heightIn(max = 340.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(logs) { log ->
                         val isPositive = log.amount > 0
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFFF8FAFC))
-                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.background)
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
                                 Text(
                                     text = formatTradeType(log.tradeType),
-                                    fontSize = 13.5.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF1E293B)
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onBackground
                                 )
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     text = log.createdAt.take(16).replace("T", " "),
                                     fontSize = 11.sp,
-                                    color = Color(0xFF94A3B8)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
 
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
                                     text = if (isPositive) "+${log.amount}" else "${log.amount}",
-                                    fontSize = 15.sp,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isPositive) Color(0xFF16A34A) else PrimaryRed
+                                    color = if (isPositive) GoogleGreen else GoogleRed
                                 )
                                 Spacer(Modifier.height(2.dp))
                                 Text(
                                     text = "结余: ${log.balanceAfter} $virtualCoinName",
-                                    fontSize = 10.5.sp,
-                                    color = Color(0xFF94A3B8)
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }

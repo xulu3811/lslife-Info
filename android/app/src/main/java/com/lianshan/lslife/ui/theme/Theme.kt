@@ -13,18 +13,19 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val LightColors = lightColorScheme(
-    primary = PrimaryRed,
+    primary = androidx.compose.ui.graphics.Color(0xFF1A73E8),
     onPrimary = PureWhite,
-    primaryContainer = PrimaryRedContainer,
+    primaryContainer = androidx.compose.ui.graphics.Color(0xFFE8F0FE),
     onPrimaryContainer = PrimaryRedDark,
-    background = MilkyWhite,
+    background = Color(0xFFF8F9FA),
     onBackground = PureBlack,
     surface = SurfaceLight,
     onSurface = PureBlack,
     surfaceVariant = SurfaceVariantLight,
     onSurfaceVariant = TextSecondary,
     outline = OutlineLight,
-    error = PrimaryRed,
+    outlineVariant = OutlineVariantLight,
+    error = androidx.compose.ui.graphics.Color(0xFFEA4335),
     onError = PureWhite,
 )
 
@@ -40,6 +41,7 @@ private val DarkColors = darkColorScheme(
     surfaceVariant = SurfaceVariantDark,
     onSurfaceVariant = TextSecondaryDark,
     outline = OutlineDark,
+    outlineVariant = OutlineVariantDark,
     error = DarkPrimary,
     onError = DarkOnPrimary,
 )

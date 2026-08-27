@@ -109,7 +109,7 @@ def main():
     parser.add_argument('-i', '--input', required=True, help="Input image file, directory, or glob pattern")
     parser.add_argument('-o', '--output', required=True, help="Output directory")
     parser.add_argument('--size', type=int, default=512, help="Target canvas size (default: 512)")
-    parser.add_argument('--padding', type=int, default=24, help="Padding in pixels (default: 24)")
+    parser.add_argument('--padding', type=int, default=76, help="Padding in pixels (15% padding default: 76)")
     parser.add_argument('--method', choices=['rembg', 'floodfill', 'none'], default='rembg', help="Background removal method (default: rembg)")
     
     args = parser.parse_args()

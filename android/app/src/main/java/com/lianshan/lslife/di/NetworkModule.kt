@@ -61,4 +61,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create(ApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideAdminApiService(retrofit: Retrofit): com.lianshan.lslife.core.network.AdminApiService = retrofit.create(com.lianshan.lslife.core.network.AdminApiService::class.java)
 }
