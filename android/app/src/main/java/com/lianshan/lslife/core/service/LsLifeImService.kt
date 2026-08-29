@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.service
+package com.qingyuan.lslife.core.service
 
 import android.app.Notification
 import android.app.PendingIntent
@@ -16,13 +16,13 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.lianshan.lslife.LsLifeApplication
-import com.lianshan.lslife.MainActivity
-import com.lianshan.lslife.R
-import com.lianshan.lslife.core.data.AuthRepository
-import com.lianshan.lslife.core.data.ImRepository
-import com.lianshan.lslife.core.database.ImDao
-import com.lianshan.lslife.core.network.RealtimeClient
+import com.qingyuan.lslife.LsLifeApplication
+import com.qingyuan.lslife.MainActivity
+import com.qingyuan.lslife.R
+import com.qingyuan.lslife.core.data.AuthRepository
+import com.qingyuan.lslife.core.data.ImRepository
+import com.qingyuan.lslife.core.database.ImDao
+import com.qingyuan.lslife.core.network.RealtimeClient
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +45,7 @@ class LsLifeImService : Service() {
     @Inject lateinit var imRepository: ImRepository
     @Inject lateinit var imDao: ImDao
     @Inject lateinit var realtimeClient: RealtimeClient
-    @Inject lateinit var tokenStore: com.lianshan.lslife.core.data.TokenStore
+    @Inject lateinit var tokenStore: com.qingyuan.lslife.core.data.TokenStore
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
@@ -114,7 +114,7 @@ class LsLifeImService : Service() {
         )
 
         val notification: Notification = NotificationCompat.Builder(this, LsLifeApplication.CHANNEL_ID_FOREGROUND)
-            .setContentTitle("连山同城生活：即时通信守护中")
+            .setContentTitle("同城清远生活：即时通信守护中")
             .setContentText("保持交易沟通长连接，保护对话隐私与订单通知不漏回")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -153,10 +153,11 @@ class LsLifeImService : Service() {
                                 showTopBarPopupNotification(
                                     sessionId = sessionId,
                                     senderId = senderId,
-                                    content = when (type) {
+                                    content = when (type.uppercase()) {
                                         "IMAGE" -> "[图片]"
                                         "VOICE" -> "[语音消息]"
-                                        "post_card" -> "[商品/房源卡片]"
+                                        "POST_CARD" -> "[商品/服务]"
+                                        "LOCATION" -> "[位置]"
                                         else -> content.ifBlank { "[新消息]" }
                                     }
                                 )

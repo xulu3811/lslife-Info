@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.data
+package com.qingyuan.lslife.core.data
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users, ShoppingBag, Activity, AlertTriangle } from 'lucide-react';
+import { Users, FileText, Activity, AlertTriangle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import api from '../utils/axios';
 import { Link } from 'react-router-dom';
@@ -34,7 +34,7 @@ const StatCard = ({ title, value, trend, icon: Icon, color, linkTo }: any) => (
 export default function Dashboard() {
   const [stats, setStats] = useState({
     newUsers: 0,
-    activeOrders: 0,
+    todayPosts: 0,
     revenue: 0,
     pendingReviews: 0,
     trendData: [],
@@ -51,21 +51,21 @@ export default function Dashboard() {
   return (
     <div className="flex-col gap-6">
       <div className="grid grid-cols-4 gap-6">
-        <StatCard title="今日新增用户" value={stats.newUsers.toString()} trend={12.5} icon={Users} color="229, 57, 53" linkTo="/users" />
-        <StatCard title="活跃订单数" value={stats.activeOrders.toString()} trend={8.2} icon={ShoppingBag} color="167, 139, 250" linkTo="/orders" />
-        <StatCard title="平台流水 (元)" value={`￥${stats.revenue}`} trend={-2.4} icon={Activity} color="16, 185, 129" />
-        <StatCard title="待审核内容" value={stats.pendingReviews.toString()} trend={100} icon={AlertTriangle} color="239, 68, 68" linkTo="/content" />
+        <StatCard title="今日新增用户" value={(stats?.newUsers || 0).toString()} trend={12.5} icon={Users} color="229, 57, 53" linkTo="/users" />
+        <StatCard title="今日发帖量" value={(stats?.todayPosts || 0).toString()} trend={8.2} icon={FileText} color="167, 139, 250" linkTo="/content" />
+        <StatCard title="平台充值流水 (元)" value={`￥${stats?.revenue || 0}`} trend={-2.4} icon={Activity} color="16, 185, 129" />
+        <StatCard title="待办审批总数" value={(stats?.pendingReviews || 0).toString()} trend={10} icon={AlertTriangle} color="239, 68, 68" linkTo="/content" />
       </div>
 
       <div className="grid gap-6" style={{ gridTemplateColumns: '2fr 1fr' }}>
         <div className="glass-panel p-6" style={{ minHeight: '400px' }}>
-          <h3 className="text-lg font-semibold m-0 mb-6">平台核心指标趋势 (安全快照)</h3>
+          <h3 className="text-lg font-semibold m-0 mb-6">平台核心指标趋势 (7日快照)</h3>
           <div className="h-full" style={{ minHeight: '300px' }}>
             {stats.trendData && stats.trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={stats.trendData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <Line type="monotone" name="新增用户" dataKey="users" stroke="#e53935" strokeWidth={2} activeDot={{ r: 6 }} />
-                  <Line type="monotone" name="营收流水(元)" dataKey="revenue" stroke="#10b981" strokeWidth={2} />
+                  <Line type="monotone" name="发帖量" dataKey="posts" stroke="#8b5cf6" strokeWidth={2} />
                   <CartesianGrid stroke="#ccc" strokeDasharray="5 5" opacity={0.2} />
                   <XAxis dataKey="date" stroke="var(--secondary-text)" tick={{ fontSize: 12 }} />
                   <YAxis yAxisId="left" stroke="var(--secondary-text)" tick={{ fontSize: 12 }} />
@@ -83,17 +83,24 @@ export default function Dashboard() {
         </div>
 
         <div className="glass-panel p-6">
-          <h3 className="text-lg font-semibold m-0 mb-6">最新安全告警</h3>
+          <h3 className="text-lg font-semibold m-0 mb-6">待办审批分类</h3>
           <div className="flex-col gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="p-4" style={{ background: 'var(--danger-bg)', borderRadius: '8px', borderLeft: '4px solid var(--danger)' }}>
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold text-danger">异常异地登录拦截</span>
-                  <span className="text-xs text-secondary">10分钟前</span>
-                </div>
-                <p className="m-0 text-sm text-secondary">尝试登录账号: admin_test，来源IP: 182.xx.xx.xx (已被策略阻断)</p>
-              </div>
-            ))}
+            <div className="p-4 flex justify-between items-center" style={{ background: 'var(--panel-bg)', borderRadius: '8px', border: '1px solid var(--surface-border)' }}>
+              <span className="font-semibold text-secondary">信息发布审核</span>
+              <span className="text-lg font-bold text-danger">{stats?.details?.posts || 0}</span>
+            </div>
+            <div className="p-4 flex justify-between items-center" style={{ background: 'var(--panel-bg)', borderRadius: '8px', border: '1px solid var(--surface-border)' }}>
+              <span className="font-semibold text-secondary">用户实名认证 (KYC)</span>
+              <span className="text-lg font-bold text-danger">{stats?.details?.kyc || 0}</span>
+            </div>
+            <div className="p-4 flex justify-between items-center" style={{ background: 'var(--panel-bg)', borderRadius: '8px', border: '1px solid var(--surface-border)' }}>
+              <span className="font-semibold text-secondary">头像/昵称审核</span>
+              <span className="text-lg font-bold text-danger">{stats?.details?.profiles || 0}</span>
+            </div>
+            <div className="p-4 flex justify-between items-center" style={{ background: 'var(--panel-bg)', borderRadius: '8px', border: '1px solid var(--surface-border)' }}>
+              <span className="font-semibold text-secondary">商家入驻申请</span>
+              <span className="text-lg font-bold text-danger">{stats?.details?.merchants || 0}</span>
+            </div>
           </div>
         </div>
       </div>

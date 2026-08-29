@@ -1,4 +1,4 @@
-﻿package com.lianshan.lslife.core.network
+﻿package com.qingyuan.lslife.core.network
 
 import kotlinx.serialization.Serializable
 

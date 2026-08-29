@@ -1,10 +1,10 @@
-package com.lianshan.lslife.feature.contacts
+package com.qingyuan.lslife.feature.contacts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.network.ApiService
-import com.lianshan.lslife.core.network.FriendRequestPayload
-import com.lianshan.lslife.core.network.PublicUserResponse
+import com.qingyuan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.FriendRequestPayload
+import com.qingyuan.lslife.core.network.PublicUserResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

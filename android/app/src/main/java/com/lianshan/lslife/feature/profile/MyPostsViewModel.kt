@@ -1,9 +1,10 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.model.Post
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.model.Post
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,8 +20,10 @@ data class MyPostsState(
 
 @HiltViewModel
 class MyPostsViewModel @Inject constructor(
-    private val repository: LsRepository
+    private val repository: LsRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+    private val filterStatus = savedStateHandle.get<String>("status") ?: "ALL"
     private val _state = MutableStateFlow(MyPostsState())
     val state = _state.asStateFlow()
 
@@ -29,7 +32,19 @@ class MyPostsViewModel @Inject constructor(
         viewModelScope.launch {
             val res = repository.posts(mine = true, pageSize = 50) // load up to 50 for now
             if (res.isSuccess) {
-                _state.update { it.copy(loading = false, posts = res.getOrNull()?.list.orEmpty()) }
+                var list = res.getOrNull()?.list.orEmpty()
+                if (filterStatus != "ALL") {
+                    list = list.filter { post ->
+                        val ps = post.status.uppercase()
+                        when (filterStatus) {
+                            "PENDING" -> ps == "PENDING_REVIEW" || ps == "AI_REVIEWING" || ps == "MANUAL_REVIEWING"
+                            "PUBLISHED" -> ps == "PUBLISHED"
+                            "ARCHIVED" -> ps == "REMOVED"
+                            else -> true
+                        }
+                    }
+                }
+                _state.update { it.copy(loading = false, posts = list) }
             } else {
                 _state.update { it.copy(loading = false, message = res.exceptionOrNull()?.message ?: "加载失败") }
             }

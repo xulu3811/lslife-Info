@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.home
+package com.qingyuan.lslife.feature.home
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,10 +36,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.lianshan.lslife.R
-import com.lianshan.lslife.core.model.Post
-import com.lianshan.lslife.core.model.PostType
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.R
+import com.qingyuan.lslife.core.model.Post
+import com.qingyuan.lslife.core.model.PostType
+import com.qingyuan.lslife.ui.theme.Dimens
 import kotlin.random.Random
 
 // --- Theme Engine ---
@@ -166,7 +166,7 @@ fun GallerySkinFeedCard(post: Post, onClick: () -> Unit) {
                 )
                 
                 // Sponsored Badge or COMMERCE Tag
-                if (post.postType == com.lianshan.lslife.core.model.PostType.CLASSIFIED && post.price != null) {
+                if (post.postType == com.qingyuan.lslife.core.model.PostType.CLASSIFIED && post.price != null) {
                     Box(
                         modifier = Modifier
                             .padding(6.dp)

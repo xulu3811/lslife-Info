@@ -1,10 +1,10 @@
-package com.lianshan.lslife.core.service
+package com.qingyuan.lslife.core.service
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
-import com.lianshan.lslife.core.data.TokenStore
+import com.qingyuan.lslife.core.data.TokenStore
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

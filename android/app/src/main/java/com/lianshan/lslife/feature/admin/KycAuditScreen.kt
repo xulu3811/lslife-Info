@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.admin
+package com.qingyuan.lslife.feature.admin
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.model.AdminKycUser
+import com.qingyuan.lslife.core.model.AdminKycUser
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

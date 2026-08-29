@@ -3,6 +3,8 @@ import type { Server } from 'node:http';
 import { verifyToken } from '../lib/jwt.js';
 import { prisma } from '../lib/prisma.js';
 import { encryptChatMessage, decryptChatMessage, generateEvidenceHash } from '../lib/crypto.js';
+import Redis from 'ioredis';
+import { env } from '../config/env.js';
 
 interface ExtWebSocket extends WebSocket {
   isAlive?: boolean;
@@ -12,34 +14,62 @@ interface ExtWebSocket extends WebSocket {
 const clients = new Map<string, Set<ExtWebSocket>>();
 const rooms = new Map<string, Set<ExtWebSocket>>();
 
+// Redis instances for Pub/Sub
+const redisPub = new Redis(env.redisUrl);
+const redisSub = new Redis(env.redisUrl);
+const WS_CHANNEL = 'ws:messages';
+
+// Handle incoming Redis Pub/Sub messages
+redisSub.subscribe(WS_CHANNEL, (err) => {
+  if (err) console.error('[WS Hub] Failed to subscribe to Redis channel', err);
+  else console.log(`[WS Hub] Subscribed to Redis channel: ${WS_CHANNEL}`);
+});
+
+redisSub.on('message', (channel, message) => {
+  if (channel !== WS_CHANNEL) return;
+  try {
+    const { type, target, payload } = JSON.parse(message);
+    const data = JSON.stringify(payload);
+
+    if (type === 'user' && target) {
+      const set = clients.get(target);
+      if (set) {
+        for (const ws of set) {
+          if (ws.readyState === WebSocket.OPEN) ws.send(data);
+        }
+      }
+    } else if (type === 'room' && target) {
+      const set = rooms.get(target);
+      if (set) {
+        for (const ws of set) {
+          if (ws.readyState === WebSocket.OPEN) ws.send(data);
+        }
+      }
+    } else if (type === 'broadcast') {
+      for (const set of clients.values()) {
+        for (const ws of set) {
+          if (ws.readyState === WebSocket.OPEN) ws.send(data);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[WS Hub] Failed to parse Redis message', e);
+  }
+});
+
 /** 向指定用户的所有连接推送消息 (订单状态/聊天消息等) */
 export function pushToUser(userId: string, payload: Record<string, unknown>) {
-  const set = clients.get(userId);
-  if (!set) return;
-  const data = JSON.stringify(payload);
-  for (const ws of set) {
-    if (ws.readyState === WebSocket.OPEN) ws.send(data);
-  }
+  redisPub.publish(WS_CHANNEL, JSON.stringify({ type: 'user', target: userId, payload }));
 }
 
 /** 向订阅某房间的所有连接推送消息 */
 export function pushToRoom(room: string, payload: Record<string, unknown>) {
-  const set = rooms.get(room);
-  if (!set) return;
-  const data = JSON.stringify(payload);
-  for (const ws of set) {
-    if (ws.readyState === WebSocket.OPEN) ws.send(data);
-  }
+  redisPub.publish(WS_CHANNEL, JSON.stringify({ type: 'room', target: room, payload }));
 }
 
 /** 向全网广播消息 */
 export function broadcastToAll(payload: Record<string, unknown>) {
-  const data = JSON.stringify(payload);
-  for (const set of clients.values()) {
-    for (const ws of set) {
-      if (ws.readyState === WebSocket.OPEN) ws.send(data);
-    }
-  }
+  redisPub.publish(WS_CHANNEL, JSON.stringify({ type: 'broadcast', payload }));
 }
 
 /**

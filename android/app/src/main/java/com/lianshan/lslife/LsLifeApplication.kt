@@ -1,4 +1,4 @@
-package com.lianshan.lslife
+package com.qingyuan.lslife
 
 import android.app.Application
 import android.app.NotificationChannel

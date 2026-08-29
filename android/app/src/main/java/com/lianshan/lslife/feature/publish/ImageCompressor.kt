@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.publish
+package com.qingyuan.lslife.feature.publish
 
 import android.content.Context
 import android.graphics.Bitmap

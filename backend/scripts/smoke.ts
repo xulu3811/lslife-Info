@@ -60,14 +60,14 @@ async function main() {
   assert(cart.length === 1 && cart[0].quantity === 2, '购物车含2件');
 
   console.log('6) 收货地址');
-  const addr = await call('POST', '/addresses', { name: '莫小美', phone, address: '连山吉田镇吉祥路88号', isDefault: true });
+  const addr = await call('POST', '/addresses', { name: '莫小美', phone, address: '清远吉田镇吉祥路88号', isDefault: true });
   assert(addr.isDefault, '默认地址已建');
 
   console.log('7) 下单 (服务端计算金额)');
   const order = await call('POST', '/orders', {
     merchantId: merchant.id,
     items: [{ productId: product.id, quantity: 2 }],
-    deliveryAddress: { name: '莫小美', phone, address: '连山吉田镇吉祥路88号' },
+    deliveryAddress: { name: '莫小美', phone, address: '清远吉田镇吉祥路88号' },
   });
   const expected = product.price * 2 + merchant.deliveryFee;
   assert(Math.abs(order.totalAmount - expected) < 0.001, `订单金额正确 ¥${order.totalAmount}`);
@@ -102,7 +102,7 @@ async function main() {
     brand: '其他',
     condition: '几乎全新',
     shipping: '自提',
-    locationName: '连山吉田镇',
+    locationName: '清远吉田镇',
   });
   assert(post.status === 'published', `发布入库 status=${post.status}`);
   assert(post.id, '返回帖子 id');

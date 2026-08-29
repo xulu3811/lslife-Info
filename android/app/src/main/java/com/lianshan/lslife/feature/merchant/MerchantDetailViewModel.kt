@@ -1,11 +1,11 @@
-package com.lianshan.lslife.feature.merchant
+package com.qingyuan.lslife.feature.merchant
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.model.Merchant
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.model.Merchant
 import dagger.hilt.android.lifecycle.HiltViewModel
-import com.lianshan.lslife.core.data.AuthRepository
+import com.qingyuan.lslife.core.data.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

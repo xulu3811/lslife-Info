@@ -46,13 +46,26 @@ async function main() {
     console.log('Killing all node processes just in case port 4000 is blocked...');
     await ssh.execCommand('fuser -k 4000/tcp');
 
+    console.log('Uploading package.json and ecosystem config...');
+    await ssh.putFile(
+      path.resolve('d:/GitHub-lslife-V6.0/backend/package.json'),
+      `${targetDir}/package.json`
+    );
+    await ssh.putFile(
+      path.resolve('d:/GitHub-lslife-V6.0/ecosystem.config.cjs'),
+      `${targetDir}/ecosystem.config.cjs`
+    );
+
+    console.log('Running npm install on server to fetch ioredis...');
+    await ssh.execCommand(`su - lslife -c "cd ${targetDir} && npm install --production"`);
+
     console.log('Generating Prisma Client and DB Push...');
     const prismaRes = await ssh.execCommand(`su - lslife -c "cd ${targetDir} && npx prisma generate && npx prisma db push --accept-data-loss"`);
     console.log(prismaRes.stdout);
     if (prismaRes.stderr) console.error(prismaRes.stderr);
 
-    console.log('Restarting PM2 lslife-api...');
-    const pm2Res = await ssh.execCommand(`su - lslife -c "pm2 restart lslife-api --update-env"`);
+    console.log('Restarting PM2 in CLUSTER mode...');
+    const pm2Res = await ssh.execCommand(`su - lslife -c "cd ${targetDir} && pm2 reload ecosystem.config.cjs --update-env || pm2 start ecosystem.config.cjs --update-env"`);
     console.log(pm2Res.stdout);
     
     console.log('Deploying admin-web to /var/www/html/admin-web...');

@@ -1,7 +1,8 @@
-package com.lianshan.lslife.core.network
+package com.qingyuan.lslife.core.network
 
-import com.lianshan.lslife.core.model.*
+import com.qingyuan.lslife.core.model.*
 import retrofit2.http.*
+import kotlinx.serialization.json.JsonObject
 
 interface AdminApiService {
 
@@ -12,13 +13,13 @@ interface AdminApiService {
     suspend fun getKycUsers(@Query("status") status: String = "pending"): ApiEnvelope<List<AdminKycUser>>
 
     @POST("admin/kyc/{id}/audit")
-    suspend fun auditKycUser(@Path("id") id: String, @Body request: AdminActionRequest): ApiEnvelope<Any?>
+    suspend fun auditKycUser(@Path("id") id: String, @Body request: AdminActionRequest): ApiEnvelope<JsonObject>
 
     @GET("admin/posts")
     suspend fun getPosts(@Query("status") status: String? = null): ApiEnvelope<List<AdminPost>>
 
     @POST("admin/posts/{id}/audit")
-    suspend fun auditPost(@Path("id") id: String, @Body request: AdminActionRequest): ApiEnvelope<Any?>
+    suspend fun auditPost(@Path("id") id: String, @Body request: AdminActionRequest): ApiEnvelope<JsonObject>
 
     @GET("admin/users")
     suspend fun getUsers(
@@ -31,5 +32,5 @@ interface AdminApiService {
     suspend fun updateUserStatus(@Path("id") id: String, @Body request: AdminStatusRequest): ApiEnvelope<AdminUser>
 
     @POST("admin/security/force-logout-all")
-    suspend fun forceLogoutAll(): ApiEnvelope<Any?>
+    suspend fun forceLogoutAll(): ApiEnvelope<JsonObject>
 }

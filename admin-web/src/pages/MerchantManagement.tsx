@@ -127,14 +127,14 @@ export function MerchantManagement() {
               <tr>
                 <th>商户名</th>
                 <th>分类标签</th>
-                <th>联系电话</th>
-                <th>评分/销量大盘</th>
+                <th>联系电话/余额</th>
+                <th>行政区域 (省市区)</th>
                 <th>经营状态</th>
                 <th className="text-right">管控操作</th>
               </tr>
             </thead>
             <tbody>
-              {merchants.map((merchant) => (
+              {merchants.map((merchant: any) => (
                 <tr key={merchant.id}>
                   <td>
                     <div className="font-semibold text-base mb-1">{merchant.name}</div>
@@ -145,10 +145,17 @@ export function MerchantManagement() {
                   <td>
                     <span className="badge badge-neutral">{merchant.category || '默认分类'}</span>
                   </td>
-                  <td className="font-medium text-secondary">{merchant.phone}</td>
                   <td>
-                    <div className="text-warning font-bold text-lg mb-1">★ {merchant.rating.toFixed(1)}</div>
-                    <div className="text-xs text-secondary">已售 {merchant.sales} 单</div>
+                    <div className="font-medium text-secondary mb-1">{merchant.phone}</div>
+                    <div className="font-bold text-success text-sm">￥{(merchant.walletBalance || 0).toFixed(2)}</div>
+                  </td>
+                  <td>
+                    <div className="text-sm font-medium mb-1">
+                      {merchant.province || ''} {merchant.city || ''} {merchant.district || ''}
+                    </div>
+                    <div className="text-xs text-secondary truncate" style={{ maxWidth: '200px' }}>
+                      {merchant.address || '暂无详细地址'}
+                    </div>
                   </td>
                   <td>
                     <span className={`badge ${merchant.status === 'active' ? 'badge-success' : merchant.status === 'pending' ? 'badge-warning' : 'badge-danger'}`}>

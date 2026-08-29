@@ -1,6 +1,6 @@
-package com.lianshan.lslife.core.network
+package com.qingyuan.lslife.core.network
 
-import com.lianshan.lslife.core.data.TokenStore
+import com.qingyuan.lslife.core.data.TokenStore
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

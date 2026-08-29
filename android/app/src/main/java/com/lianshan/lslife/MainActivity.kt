@@ -1,4 +1,4 @@
-package com.lianshan.lslife
+package com.qingyuan.lslife
 
 import android.Manifest
 import android.content.Intent
@@ -14,12 +14,12 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.core.model.ThemeMode
-import com.lianshan.lslife.feature.settings.UpdateDialog
-import com.lianshan.lslife.feature.settings.UpdateViewModel
-import com.lianshan.lslife.ui.LsLifeApp
-import com.lianshan.lslife.ui.SessionViewModel
-import com.lianshan.lslife.ui.theme.LsLifeTheme
+import com.qingyuan.lslife.core.model.ThemeMode
+import com.qingyuan.lslife.feature.settings.UpdateDialog
+import com.qingyuan.lslife.feature.settings.UpdateViewModel
+import com.qingyuan.lslife.ui.LsLifeApp
+import com.qingyuan.lslife.ui.SessionViewModel
+import com.qingyuan.lslife.ui.theme.LsLifeTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
                     androidx.compose.material3.AlertDialog(
                         onDismissRequest = { showPermissionRationale.value = false },
                         title = { androidx.compose.material3.Text("需要通知权限") },
-                        text = { androidx.compose.material3.Text("为了防止您错过同城买家/商家的私聊和订单通知，请允许连山同城发送系统通知。") },
+                        text = { androidx.compose.material3.Text("为了防止您错过同城买家/商家的私聊和订单通知，请允许同城清远发送系统通知。") },
                         confirmButton = {
                             androidx.compose.material3.TextButton(onClick = {
                                 showPermissionRationale.value = false

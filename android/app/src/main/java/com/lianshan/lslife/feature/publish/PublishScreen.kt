@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.publish
+package com.qingyuan.lslife.feature.publish
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -45,11 +45,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.model.CategoryNode
-import com.lianshan.lslife.core.model.DynamicField
-import com.lianshan.lslife.core.model.TradeMode
+import com.qingyuan.lslife.core.model.CategoryNode
+import com.qingyuan.lslife.core.model.DynamicField
+import com.qingyuan.lslife.core.model.TradeMode
 import androidx.compose.ui.text.style.TextOverflow
-import com.lianshan.lslife.ui.components.CategoryIconView
+import com.qingyuan.lslife.ui.components.CategoryIconView
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.ui.focus.FocusRequester
@@ -559,7 +559,7 @@ fun PublishScreen(
     }
 
     if (showAddressPicker) {
-        com.lianshan.lslife.ui.components.AddressPickerBottomSheet(
+        com.qingyuan.lslife.ui.components.AddressPickerBottomSheet(
             addressNodes = state.addressNodes,
             onDismissRequest = { showAddressPicker = false },
             onAddressSelected = {

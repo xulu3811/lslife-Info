@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.publish
+package com.qingyuan.lslife.feature.publish
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,8 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lianshan.lslife.core.model.AttributeSchema
-import com.lianshan.lslife.core.model.FieldType
+import com.qingyuan.lslife.core.model.AttributeSchema
+import com.qingyuan.lslife.core.model.FieldType
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DisplaySettings
 import androidx.compose.ui.draw.shadow

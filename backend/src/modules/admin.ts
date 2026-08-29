@@ -50,25 +50,27 @@ router.get(
     today.setHours(0, 0, 0, 0);
 
     const newUsers = await prisma.user.count({ where: { createdAt: { gte: today } } });
-    const activeOrders = 0;
+    const todayPosts = await prisma.post.count({ where: { createdAt: { gte: today } } });
 
-    const payments = { _sum: { amount: 0 } };
+    const todayRecharge = await prisma.walletTransaction.aggregate({ 
+      _sum: { amount: true },
+      where: { bizType: 'recharge', createdAt: { gte: today } }
+    });
 
     const pendingReviews = await prisma.post.count({ 
       where: { status: { in: ['pending_review', 'MANUAL_REVIEWING'] } } 
     });
-    
     const pendingProfileReviews = await prisma.user.count({
       where: { profileReviewStatus: 'MANUAL_REVIEWING' }
     });
-    
     const pendingKyc = await prisma.user.count({
       where: { realNameStatus: 'pending' }
     });
-    
     const pendingMerchantCerts = await prisma.merchantCertification.count({
       where: { status: 'PENDING_REVIEW' }
     });
+    
+    const totalPending = pendingReviews + pendingProfileReviews + pendingKyc + pendingMerchantCerts;
 
     // Generate trendData for the past 7 days
     const trendData = [];
@@ -83,23 +85,28 @@ router.get(
         where: { createdAt: { gte: d, lt: nextD } }
       });
       
-      const dayPayments = { _sum: { amount: 0 } };
+      const dayPosts = await prisma.post.count({
+        where: { createdAt: { gte: d, lt: nextD } }
+      });
 
       trendData.push({
         date: d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }),
         users: dayUsers,
-        revenue: dayPayments._sum.amount || 0
+        posts: dayPosts
       });
     }
 
     return ok(res, {
       newUsers,
-      activeOrders,
-      revenue: payments._sum.amount || 0,
-      pendingReviews,
-      pendingProfileReviews,
-      pendingKyc,
-      pendingMerchantCerts,
+      todayPosts,
+      revenue: todayRecharge._sum.amount || 0,
+      pendingReviews: totalPending,
+      details: {
+        posts: pendingReviews,
+        profiles: pendingProfileReviews,
+        kyc: pendingKyc,
+        merchants: pendingMerchantCerts
+      },
       trendData
     });
   }),
@@ -175,12 +182,17 @@ router.get(
     const { status } = z.object({ status: z.string().optional() }).parse(req.query);
     let where: any = {};
     if (status) {
-      if (status === 'pending_review' || status === 'MANUAL_REVIEWING') {
-        where.status = { in: ['pending_review', 'MANUAL_REVIEWING'] };
+      if (status === 'pending_review' || status === 'MANUAL_REVIEWING' || status === 'AI_REVIEWING') {
+        where.status = { in: ['pending_review', 'MANUAL_REVIEWING', 'AI_REVIEWING'] };
+      } else if (status === 'published' || status === 'PUBLISHED') {
+        where.status = { in: ['published', 'PUBLISHED'] };
+      } else if (status === 'rejected' || status === 'REJECTED') {
+        where.status = { in: ['rejected', 'REJECTED'] };
       } else {
         where.status = status;
       }
     }
+
 
     const posts = await prisma.post.findMany({
       where,
@@ -211,7 +223,7 @@ router.post(
     const post = await prisma.post.findUnique({ where: { id } });
     if (!post) throw new ApiError(404, '帖子不存在');
 
-    const newStatus = action === 'approve' ? 'published' : (action === 'ban' ? 'removed' : 'rejected');
+    const newStatus = action === 'approve' ? 'PUBLISHED' : (action === 'ban' ? 'REMOVED' : 'REJECTED');
     let reviewNote = note;
     if (!reviewNote) {
       if (action === 'approve') reviewNote = '人工审核通过';
@@ -295,6 +307,28 @@ router.put(
     });
 
     return ok(res, user, `成功为用户充值/扣减 ${amount} 元`);
+  }),
+);
+
+router.put(
+  '/users/:id/quota',
+  asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    const { freeQuota, paidQuota } = z.object({ 
+      freeQuota: z.number().optional(),
+      paidQuota: z.number().optional()
+    }).parse(req.body);
+
+    const data: any = {};
+    if (freeQuota !== undefined) data.freeQuota = freeQuota;
+    if (paidQuota !== undefined) data.paidQuota = paidQuota;
+
+    const user = await prisma.user.update({
+      where: { id },
+      data
+    });
+
+    return ok(res, user, `用户发帖配额更新成功`);
   }),
 );
 
@@ -399,16 +433,17 @@ router.post(
   '/categories',
   asyncHandler(async (req, res) => {
     const body = z.object({
+      id: z.string().optional(),
       name: z.string(),
       iconUrl: z.string().optional(),
       parentId: z.string().optional(),
       sortOrder: z.number().default(0),
       isLeaf: z.boolean().default(false),
       isActive: z.boolean().default(true),
+      isHot: z.boolean().default(false),
       attributeSchema: z.string().optional().default('[]'),
     }).parse(req.body);
 
-    // parentId empty string check
     if (body.parentId === '') {
       delete body.parentId;
     }
@@ -431,6 +466,7 @@ router.put(
       sortOrder: z.number().optional(),
       isLeaf: z.boolean().optional(),
       isActive: z.boolean().optional(),
+      isHot: z.boolean().optional(),
       attributeSchema: z.string().optional(),
     }).parse(req.body);
 
@@ -488,6 +524,9 @@ router.get(
           membershipTier: true,
           walletBalance: true,
           realNameStatus: true,
+          freeQuota: true,
+          paidQuota: true,
+          role: true,
         },
       }),
       prisma.user.count({ where }),

@@ -197,7 +197,7 @@ export default function PaymentModal({
                       <CreditCard size={20} />
                     </div>
                     <div>
-                      <p className="font-bold text-sm">连山同城零钱 (余额)</p>
+                      <p className="font-bold text-sm">同城清远零钱 (余额)</p>
                       <p className="text-xs text-amber-500 dark:text-amber-400 mt-0.5 font-semibold">余额: ¥245.80 (立减0.5元)</p>
                     </div>
                   </div>
@@ -251,7 +251,7 @@ export default function PaymentModal({
               
               <h3 className="text-lg font-bold">正在安全支付中</h3>
               <p className="text-xs text-gray-400 dark:text-gray-400 mt-2 max-w-xs leading-relaxed">
-                正在请求连山同城加密收银后台接口，请勿关闭页面或断开网络连接...
+                正在请求同城清远加密收银后台接口，请勿关闭页面或断开网络连接...
               </p>
             </motion.div>
           )}
@@ -278,7 +278,7 @@ export default function PaymentModal({
                   <span className="text-gray-400">支付方式</span>
                   <span className="font-semibold text-gray-700 dark:text-gray-300">
                     {selectedMethod === 'alipay' ? '支付宝极速付' :
-                     selectedMethod === 'wechat' ? '微信零钱支付' : '连山同城零钱'}
+                     selectedMethod === 'wechat' ? '微信零钱支付' : '同城清远零钱'}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs py-1">

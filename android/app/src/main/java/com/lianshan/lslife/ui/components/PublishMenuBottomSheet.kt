@@ -1,4 +1,4 @@
-package com.lianshan.lslife.ui.components
+package com.qingyuan.lslife.ui.components
 
 import android.net.Uri
 import android.widget.Toast
@@ -34,9 +34,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.lianshan.lslife.feature.publish.PublishMomentState
-import com.lianshan.lslife.feature.publish.PublishMomentViewModel
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.feature.publish.PublishMomentState
+import com.qingyuan.lslife.feature.publish.PublishMomentViewModel
+import com.qingyuan.lslife.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
 private data class PublishMenuItem(
@@ -48,16 +48,16 @@ private data class PublishMenuItem(
 )
 
 private val publishMenuItems = listOf(
-    PublishMenuItem("cat_2_service", "家政/护理", "cleaning-services", "android.resource://com.lianshan.lslife/drawable/ic_category_service", Color(0xFFFF9800)),
-    PublishMenuItem("cat_3_repair", "便民维修", "build", "android.resource://com.lianshan.lslife/drawable/ic_category_repair", Color(0xFF607D8B)),
-    PublishMenuItem("cat_4_fresh", "同城生鲜", "shopping-basket", "android.resource://com.lianshan.lslife/drawable/ic_category_fresh", Color(0xFF4CAF50)),
-    PublishMenuItem("cat_5_rent", "房屋出租", "home", "android.resource://com.lianshan.lslife/drawable/ic_category_rent", Color(0xFF2196F3)),
-    PublishMenuItem("cat_6_sale", "二手房产", "home", "android.resource://com.lianshan.lslife/drawable/ic_category_sale", Color(0xFF2196F3)),
-    PublishMenuItem("cat_7_carpool", "拼车/租车", "local-shipping", "android.resource://com.lianshan.lslife/drawable/ic_category_carpool", Color(0xFF3351B5)),
-    PublishMenuItem("cat_8_job", "招聘求职", "work", "android.resource://com.lianshan.lslife/drawable/ic_category_job", Color(0xFF00BCD4)),
-    PublishMenuItem("cat_9_life", "吃喝玩乐", "restaurant", "android.resource://com.lianshan.lslife/drawable/ic_category_life", Color(0xFFFF5722)),
-    PublishMenuItem("cat_10_edu", "教育培训", "school", "android.resource://com.lianshan.lslife/drawable/ic_category_edu", Color(0xFFE91E63)),
-    PublishMenuItem("cat_1_idle", "个人闲置", "shopping-bag", "android.resource://com.lianshan.lslife/drawable/ic_category_idle", Color(0xFFE52F2F))
+    PublishMenuItem("cat_2_service", "家政/护理", "cleaning-services", "android.resource://com.qingyuan.lslife/drawable/ic_category_service", Color(0xFFFF9800)),
+    PublishMenuItem("cat_3_repair", "便民维修", "build", "android.resource://com.qingyuan.lslife/drawable/ic_category_repair", Color(0xFF607D8B)),
+    PublishMenuItem("cat_4_fresh", "同城生鲜", "shopping-basket", "android.resource://com.qingyuan.lslife/drawable/ic_category_fresh", Color(0xFF4CAF50)),
+    PublishMenuItem("cat_5_rent", "房屋出租", "home", "android.resource://com.qingyuan.lslife/drawable/ic_category_rent", Color(0xFF2196F3)),
+    PublishMenuItem("cat_6_sale", "二手房产", "home", "android.resource://com.qingyuan.lslife/drawable/ic_category_sale", Color(0xFF2196F3)),
+    PublishMenuItem("cat_7_carpool", "拼车/租车", "local-shipping", "android.resource://com.qingyuan.lslife/drawable/ic_category_carpool", Color(0xFF3351B5)),
+    PublishMenuItem("cat_8_job", "招聘求职", "work", "android.resource://com.qingyuan.lslife/drawable/ic_category_job", Color(0xFF00BCD4)),
+    PublishMenuItem("cat_9_life", "吃喝玩乐", "restaurant", "android.resource://com.qingyuan.lslife/drawable/ic_category_life", Color(0xFFFF5722)),
+    PublishMenuItem("cat_10_edu", "教育培训", "school", "android.resource://com.qingyuan.lslife/drawable/ic_category_edu", Color(0xFFE91E63)),
+    PublishMenuItem("cat_1_idle", "个人闲置", "shopping-bag", "android.resource://com.qingyuan.lslife/drawable/ic_category_idle", Color(0xFFE52F2F))
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,7 +69,8 @@ fun PublishMenuBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = Color.White
+        containerColor = Color(0xFFF3F5F8),
+        dragHandle = { BottomSheetDefaults.DragHandle(color = Color(0xFFD1D5DB)) }
     ) {
         val pagerState = rememberPagerState(pageCount = { 2 })
         val coroutineScope = rememberCoroutineScope()
@@ -83,8 +84,8 @@ fun PublishMenuBottomSheet(
         ) {
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
-                containerColor = Color.White,
-                contentColor = Color(0xFFFF4D4F),
+                containerColor = Color(0xFFF3F5F8),
+                contentColor = Color(0xFF4285F4),
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         modifier = Modifier
@@ -142,8 +143,8 @@ private fun CommercePublishTab(
             .padding(horizontal = Dimens.lg)
     ) {
         Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xFFF5F6F8),
+            shape = RoundedCornerShape(24.dp),
+            color = Color.White,
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(vertical = Dimens.lg)) {
@@ -181,15 +182,23 @@ private fun RowScope.PublishMenuItemBox(
             },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AsyncImage(
-            model = item.iconUrl,
-            contentDescription = item.title,
-            modifier = Modifier.size(48.dp) // 统一基准：48.dp
-        )
-        Spacer(Modifier.height(6.dp))
+                Surface(
+            modifier = Modifier.size(60.dp),
+            shape = RoundedCornerShape(20.dp),
+            color = Color(0xFFF0F4F9)
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    model = item.iconUrl,
+                    contentDescription = item.title,
+                    modifier = Modifier.size(46.dp)
+                )
+            }
+        }
+        Spacer(Modifier.height(8.dp))
         Text(
             text = item.title,
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             color = Color(0xFF444444),
             maxLines = 1,
@@ -276,8 +285,8 @@ private fun MomentPublishTab(
             .padding(horizontal = Dimens.lg)
     ) {
         Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = Color(0xFFF7F8FA),
+            shape = RoundedCornerShape(24.dp),
+            color = Color.White,
             modifier = Modifier.fillMaxWidth()
         ) {
             Column {
@@ -333,7 +342,7 @@ private fun MomentPublishTab(
                             }
                         },
                         shape = RoundedCornerShape(16.dp),
-                        color = Color(0xFFFFF0F0),
+                        color = Color(0xFFE8DEF8),
                         enabled = text.isNotBlank() && !aiGenerating
                     ) {
                         Row(
@@ -341,7 +350,7 @@ private fun MomentPublishTab(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             if (aiGenerating) {
-                                CircularProgressIndicator(modifier = Modifier.size(12.dp), color = Color(0xFFFF4D4F), strokeWidth = 2.dp)
+                                CircularProgressIndicator(modifier = Modifier.size(12.dp), color = Color(0xFF1D192B), strokeWidth = 2.dp)
                             } else {
                                 Text("✨", fontSize = 12.sp)
                             }
@@ -349,7 +358,7 @@ private fun MomentPublishTab(
                             Text(
                                 text = if (aiGenerating) "AI润色中..." else "AI帮你写",
                                 fontSize = 12.sp,
-                                color = Color(0xFFFF4D4F),
+                                color = Color(0xFF1D192B),
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -403,9 +412,9 @@ private fun MomentPublishTab(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(Icons.Filled.Add, contentDescription = "添加图片", tint = Color(0xFFFF4D4F), modifier = Modifier.size(28.dp))
+                        Icon(Icons.Filled.Add, contentDescription = "添加图片", tint = Color(0xFF4285F4), modifier = Modifier.size(28.dp))
                         Spacer(Modifier.height(4.dp))
-                        Text("${selectedImages.size}/3", fontSize = 11.sp, color = Color.Gray)
+                        Text("${selectedImages.size}/3", fontSize = 12.sp, color = Color.Gray)
                     }
                 }
             }
@@ -422,8 +431,8 @@ private fun MomentPublishTab(
                 .height(48.dp),
             enabled = uiState !is PublishMomentState.Publishing && (text.isNotBlank() || selectedImages.isNotEmpty()),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFFF4D4F),
-                disabledContainerColor = Color(0xFFFF4D4F).copy(alpha = 0.5f)
+                containerColor = Color(0xFF4285F4),
+                disabledContainerColor = Color(0xFF4285F4).copy(alpha = 0.5f)
             ),
             shape = RoundedCornerShape(24.dp)
         ) {

@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -49,10 +49,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.data.AuthRepository
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.components.PrimaryButton
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.core.data.AuthRepository
+import com.qingyuan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.ui.components.PrimaryButton
+import com.qingyuan.lslife.ui.theme.Dimens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -84,7 +84,7 @@ data class EditProfileUiState(
 class EditProfileViewModel @Inject constructor(
     @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context,
     private val authRepository: AuthRepository,
-    private val lsRepository: com.lianshan.lslife.core.data.LsRepository,
+    private val lsRepository: com.qingyuan.lslife.core.data.LsRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(EditProfileUiState())
     val state: StateFlow<EditProfileUiState> = _state

@@ -1,4 +1,4 @@
-﻿package com.lianshan.lslife.feature.chat
+﻿package com.qingyuan.lslife.feature.chat
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -42,9 +42,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.core.model.ChatMessage
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.theme.PrimaryRed
+import com.qingyuan.lslife.core.model.ChatMessage
+import com.qingyuan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.ui.theme.PrimaryRed
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

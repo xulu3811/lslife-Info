@@ -1,15 +1,15 @@
-﻿package com.lianshan.lslife.feature.admin
+﻿package com.qingyuan.lslife.feature.admin
 
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.model.Report
-import com.lianshan.lslife.core.network.ApiService
-import com.lianshan.lslife.core.network.SensitiveWord
-import com.lianshan.lslife.core.network.SensitiveWordRequest
-import com.lianshan.lslife.core.network.ImportSensitiveWordsRequest
-import com.lianshan.lslife.core.network.ModerationLog
+import com.qingyuan.lslife.core.model.Report
+import com.qingyuan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.SensitiveWord
+import com.qingyuan.lslife.core.network.SensitiveWordRequest
+import com.qingyuan.lslife.core.network.ImportSensitiveWordsRequest
+import com.qingyuan.lslife.core.network.ModerationLog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

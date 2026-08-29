@@ -1,12 +1,12 @@
-package com.lianshan.lslife.feature.search
+package com.qingyuan.lslife.feature.search
 
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.model.CategorySchemaResponse
-import com.lianshan.lslife.core.model.Post
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.model.CategorySchemaResponse
+import com.qingyuan.lslife.core.model.Post
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -19,7 +19,7 @@ import javax.inject.Inject
 data class SearchUiState(
     val keyword: String = "",
     val category: String? = null,
-    val categoryTree: List<com.lianshan.lslife.core.model.CategoryNode> = emptyList(),
+    val categoryTree: List<com.qingyuan.lslife.core.model.CategoryNode> = emptyList(),
     val minPrice: Double? = null,
     val maxPrice: Double? = null,
     val sortBy: String = "latest", // latest, price_asc, price_desc
@@ -71,7 +71,7 @@ class SearchViewModel @Inject constructor(
         return findCategoryPath(tree, categoryId, "")
     }
 
-    private fun findCategoryPath(nodes: List<com.lianshan.lslife.core.model.CategoryNode>, targetId: String, currentPath: String): String? {
+    private fun findCategoryPath(nodes: List<com.qingyuan.lslife.core.model.CategoryNode>, targetId: String, currentPath: String): String? {
         for (node in nodes) {
             val path = if (currentPath.isEmpty()) node.name else "$currentPath > ${node.name}"
             if (node.id == targetId) return path

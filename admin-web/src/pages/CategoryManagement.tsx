@@ -10,8 +10,10 @@ interface Category {
   sortOrder: number;
   isLeaf: boolean;
   isActive: boolean;
+  isHot: boolean;
   attributeSchema: string;
   createdAt: string;
+  isNew?: boolean;
 }
 
 export default function CategoryManagement() {
@@ -37,13 +39,16 @@ export default function CategoryManagement() {
       setEditCategory(cat);
     } else {
       setEditCategory({
+        id: '',
         name: '',
         iconUrl: '',
         parentId: '',
         sortOrder: 0,
         isLeaf: true,
         isActive: true,
+        isHot: false,
         attributeSchema: '[]',
+        isNew: true,
       });
     }
     setIsModalOpen(true);
@@ -66,7 +71,7 @@ export default function CategoryManagement() {
     }
 
     try {
-      if (editCategory.id) {
+      if (editCategory.id && !editCategory.isNew) {
         await api.put(`/admin/categories/${editCategory.id}`, editCategory);
       } else {
         await api.post('/admin/categories', editCategory);
@@ -107,11 +112,11 @@ export default function CategoryManagement() {
           <table className="glass-table">
             <thead>
               <tr>
-                <th>类目名称</th>
+                <th>类目名称 (ID)</th>
                 <th>图标 / 图标URL</th>
                 <th>父级ID</th>
                 <th>排序</th>
-                <th>叶子节点</th>
+                <th>属性</th>
                 <th>状态</th>
                 <th className="text-right">操作</th>
               </tr>
@@ -119,7 +124,10 @@ export default function CategoryManagement() {
             <tbody>
               {categories.map(cat => (
                 <tr key={cat.id}>
-                  <td className="font-semibold text-primary">{cat.name}</td>
+                  <td>
+                    <div className="font-semibold text-primary">{cat.name}</div>
+                    <div className="text-xs text-muted font-mono mt-1">{cat.id}</div>
+                  </td>
                   <td>
                     {cat.iconUrl ? (
                       <img src={cat.iconUrl} alt="icon" className="w-8 h-8 object-cover rounded-md border border-gray-200" style={{ width: 32, height: 32 }} />
@@ -130,9 +138,14 @@ export default function CategoryManagement() {
                   <td className="text-sm font-mono text-secondary">{cat.parentId || '-'}</td>
                   <td>{cat.sortOrder}</td>
                   <td>
-                    <span className={`badge ${cat.isLeaf ? 'badge-primary' : 'badge-neutral'}`}>
-                      {cat.isLeaf ? '是' : '否'}
-                    </span>
+                    <div className="flex gap-2">
+                      <span className={`badge ${cat.isLeaf ? 'badge-primary' : 'badge-neutral'}`}>
+                        {cat.isLeaf ? '叶子节点' : '目录'}
+                      </span>
+                      {cat.isHot && (
+                        <span className="badge badge-warning">热门</span>
+                      )}
+                    </div>
                   </td>
                   <td>
                     <span className={`badge ${cat.isActive ? 'badge-success' : 'badge-danger'}`}>
@@ -167,15 +180,29 @@ export default function CategoryManagement() {
             <h2 className="text-xl font-bold mb-4">{editCategory.id ? '编辑类目' : '新增类目'}</h2>
             <form onSubmit={handleSave} className="flex-col gap-4">
               
-              <div className="flex-col gap-1">
-                <label className="text-sm font-medium text-secondary">类目名称 *</label>
-                <input 
-                  type="text" 
-                  className="glass-input" 
-                  required 
-                  value={editCategory.name || ''} 
-                  onChange={e => setEditCategory({ ...editCategory, name: e.target.value })} 
-                />
+              <div className="flex gap-4">
+                <div className="flex-col gap-1 flex-1">
+                  <label className="text-sm font-medium text-secondary">类目 ID (字母/数字/下划线) *</label>
+                  <input 
+                    type="text" 
+                    className="glass-input" 
+                    required 
+                    disabled={!!editCategory.id && !editCategory.isNew}
+                    value={editCategory.id || ''} 
+                    onChange={e => setEditCategory({ ...editCategory, id: e.target.value })} 
+                    placeholder="例如: cat_rent"
+                  />
+                </div>
+                <div className="flex-col gap-1 flex-1">
+                  <label className="text-sm font-medium text-secondary">类目名称 *</label>
+                  <input 
+                    type="text" 
+                    className="glass-input" 
+                    required 
+                    value={editCategory.name || ''} 
+                    onChange={e => setEditCategory({ ...editCategory, name: e.target.value })} 
+                  />
+                </div>
               </div>
 
               <div className="flex-col gap-1">
@@ -229,7 +256,7 @@ export default function CategoryManagement() {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-col gap-1 flex-1">
+                <div className="flex-col gap-1 flex-[0.5]">
                   <label className="text-sm font-medium text-secondary">排序权重</label>
                   <input 
                     type="number" 
@@ -246,7 +273,17 @@ export default function CategoryManagement() {
                     checked={editCategory.isLeaf} 
                     onChange={e => setEditCategory({ ...editCategory, isLeaf: e.target.checked })} 
                   />
-                  <label htmlFor="isLeaf" className="text-sm font-medium">叶子节点 (允许发帖)</label>
+                  <label htmlFor="isLeaf" className="text-sm font-medium">叶子节点</label>
+                </div>
+
+                <div className="flex items-center gap-2 flex-1 mt-6">
+                  <input 
+                    type="checkbox" 
+                    id="isHot"
+                    checked={editCategory.isHot} 
+                    onChange={e => setEditCategory({ ...editCategory, isHot: e.target.checked })} 
+                  />
+                  <label htmlFor="isHot" className="text-sm font-medium text-warning">热门推荐</label>
                 </div>
                 
                 <div className="flex items-center gap-2 flex-1 mt-6">

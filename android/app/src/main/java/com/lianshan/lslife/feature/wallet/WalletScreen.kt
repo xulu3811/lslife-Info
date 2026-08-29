@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.wallet
+package com.qingyuan.lslife.feature.wallet
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
@@ -30,11 +30,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.R
-import com.lianshan.lslife.core.model.RechargePackage
-import com.lianshan.lslife.core.model.WalletLog
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.components.PaymentBottomSheet
+import com.qingyuan.lslife.R
+import com.qingyuan.lslife.core.model.RechargePackage
+import com.qingyuan.lslife.core.model.WalletLog
+import com.qingyuan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.ui.components.PaymentBottomSheet
 import kotlinx.coroutines.launch
 
 // Google Primary Colors
@@ -370,7 +370,7 @@ fun WalletScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    "1. 充值成功的连山币将存入个人账户中，永久有效，不设过期时间。\n2. 可用于购买同城商品、置顶推广、实物配送及增值服务。\n3. 如遇支付异常，可点击右上角【账单明细】核对或联系客服。",
+                    "1. 充值成功的清远币将存入个人账户中，永久有效，不设过期时间。\n2. 可用于购买同城商品、置顶推广、实物配送及增值服务。\n3. 如遇支付异常，可点击右上角【账单明细】核对或联系客服。",
                     fontSize = 10.sp,
                     lineHeight = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.settings
+package com.qingyuan.lslife.feature.settings
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -55,9 +55,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.BuildConfig
-import com.lianshan.lslife.core.model.NotificationMode
-import com.lianshan.lslife.core.model.ThemeMode
+import com.qingyuan.lslife.BuildConfig
+import com.qingyuan.lslife.core.model.NotificationMode
+import com.qingyuan.lslife.core.model.ThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -228,7 +228,7 @@ fun SettingsScreen(
                 )
                 JoybuyActionRow(
                     icon = Icons.Outlined.Info,
-                    title = "关于同城·连山",
+                    title = "关于同城清远",
                     subtitle = "当前版本 v${BuildConfig.VERSION_NAME}",
                     onClick = onOpenAbout,
                     showDivider = false
@@ -258,7 +258,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "© 2026 连山壮族瑶族自治县 · 智慧同城生活平台",
+                text = "© 2026 清远壮族瑶族自治县 · 智慧同城生活平台",
                 fontSize = 10.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.align(Alignment.CenterHorizontally),

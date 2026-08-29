@@ -42,7 +42,7 @@ const payload = {
     brand: "Insta360",
     condition: "全新"
   },
-  locationName: "连山壮族瑶族自治县"
+  locationName: "清远壮族瑶族自治县"
 };
 
 try {

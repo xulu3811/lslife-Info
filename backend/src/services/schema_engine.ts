@@ -48,7 +48,7 @@ const schemas: Record<string, DynamicField[]> = {
   ],
   // 7. 拼车/出行
   cat_7_carpool: [
-    { key: 'departure', label: '出发地', fieldType: 'TEXT', required: true, placeholder: '例: 连山县城' },
+    { key: 'departure', label: '出发地', fieldType: 'TEXT', required: true, placeholder: '例: 清远市城' },
     { key: 'destination', label: '目的地', fieldType: 'TEXT', required: true, placeholder: '例: 清远市区' },
     { key: 'seats', label: '提供/需要座位数', fieldType: 'NUMBER', required: true, placeholder: '例: 3' },
     { key: 'time', label: '出发时间', fieldType: 'TEXT', required: true, placeholder: '例: 8月10日 上午9点' }

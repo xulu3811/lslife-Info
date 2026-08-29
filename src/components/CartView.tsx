@@ -160,7 +160,7 @@ export default function CartView({
             <div>
               <h1 className="text-sm font-black tracking-wider uppercase">我的购物车</h1>
               <p className="text-[10px] text-red-100 font-semibold">
-                {globalItemCount > 0 ? `共加购了 ${globalItemCount} 件商品` : '挑选连山当地好物美味'}
+                {globalItemCount > 0 ? `共加购了 ${globalItemCount} 件商品` : '挑选清远当地好物美味'}
               </p>
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function CartView({
             </div>
             <p className="text-[15px] font-black tracking-tight text-gray-900 dark:text-white">您的购物车空空如也</p>
             <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 max-w-[200px]">
-              还没加购任何商品呢，快去首页寻找连山的特色美味或优质商品吧！
+              还没加购任何商品呢，快去首页寻找清远的特色美味或优质商品吧！
             </p>
             <button
               onClick={onNavigateToHome}
@@ -313,7 +313,7 @@ export default function CartView({
 
       {/* Static bottom layout info to complete the design */}
       <div className="absolute bottom-0 inset-x-0 py-4 text-center text-[10px] text-gray-450 dark:text-gray-500 font-bold tracking-wide pointer-events-none uppercase bg-gradient-to-t from-gray-50 dark:from-black to-transparent">
-        © 连山壮族瑶族自治县 · 智慧同城生活平台
+        © 清远壮族瑶族自治县 · 智慧同城生活平台
       </div>
     </div>
   );

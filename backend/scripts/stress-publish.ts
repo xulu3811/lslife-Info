@@ -35,13 +35,13 @@ async function oneUserFlow(i: number) {
   const token = reg.token;
   const post = await call<{ id: string; status: string }>('POST', '/posts', {
     category: 'second_hand',
-    description: `压测商品 #${i} 九成新闲置，功能正常，连山自提优先。`,
+    description: `压测商品 #${i} 九成新闲置，功能正常，清远自提优先。`,
     price: 10 + (i % 50),
     images: [DEMO_IMG],
     brand: '其他',
     condition: '几乎全新',
     shipping: '自提',
-    locationName: '连山壮族瑶族自治县',
+    locationName: '清远壮族瑶族自治县',
   }, token);
   if (post.status !== 'published') throw new Error(`unexpected status ${post.status}`);
   const feed = await call<{ list: Array<{ id: string }> }>('GET', `/posts?category=second_hand&pageSize=20`, undefined, token);

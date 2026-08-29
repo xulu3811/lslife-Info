@@ -335,7 +335,7 @@ export default function App() {
                 <div className="shrink-0 flex items-center gap-1.5">
                   <div className="bg-white text-[#FF1A1A] p-0.5 rounded-sm font-black text-xs leading-none">yelp</div>
                   <h1 className="text-[15px] font-black tracking-tight">
-                    连山
+                    清远
                   </h1>
                 </div>
 
@@ -354,7 +354,7 @@ export default function App() {
                 <div className="flex items-center gap-1 cursor-pointer max-w-[260px] opacity-90">
                   <MapPin size={12} strokeWidth={3} className="shrink-0" />
                   <span className="font-bold text-[11px] truncate">
-                    连山壮族瑶族自治县 瑶香苑小区
+                    清远壮族瑶族自治县 瑶香苑小区
                   </span>
                   <ChevronRight size={13} strokeWidth={3} />
                 </div>
@@ -565,7 +565,7 @@ export default function App() {
               ) : (
                 <div className="text-center py-16 flex flex-col items-center justify-center text-gray-400">
                   <Search size={32} className="opacity-40 mb-3" />
-                  <p className="text-xs font-semibold">抱歉，连山没有搜索到匹配商户</p>
+                  <p className="text-xs font-semibold">抱歉，清远没有搜索到匹配商户</p>
                   <p className="text-[10px] mt-1 opacity-70">试试输入 “汤糍” 或 “生鲜” 吧！</p>
                 </div>
               )}

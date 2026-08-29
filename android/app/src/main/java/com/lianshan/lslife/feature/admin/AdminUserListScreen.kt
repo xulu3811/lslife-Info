@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.admin
+package com.qingyuan.lslife.feature.admin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,10 +28,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.core.model.AdminUserListItem
-import com.lianshan.lslife.ui.components.EmptyState
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.components.NetworkImage
+import com.qingyuan.lslife.core.model.AdminUserListItem
+import com.qingyuan.lslife.ui.components.EmptyState
+import com.qingyuan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.ui.components.NetworkImage
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

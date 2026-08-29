@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.home
+package com.qingyuan.lslife.feature.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.model.Post
+import com.qingyuan.lslife.core.model.Post
 
 @Composable
 fun ClayCard(modifier: Modifier = Modifier, onClick: () -> Unit = {}, content: @Composable () -> Unit) {

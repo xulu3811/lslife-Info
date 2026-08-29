@@ -1,12 +1,12 @@
-package com.lianshan.lslife.feature.settings
+package com.qingyuan.lslife.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.AuthRepository
-import com.lianshan.lslife.core.data.TokenStore
-import com.lianshan.lslife.core.database.MerchantDao
-import com.lianshan.lslife.core.model.ThemeMode
-import com.lianshan.lslife.core.model.NotificationMode
+import com.qingyuan.lslife.core.data.AuthRepository
+import com.qingyuan.lslife.core.data.TokenStore
+import com.qingyuan.lslife.core.database.MerchantDao
+import com.qingyuan.lslife.core.model.ThemeMode
+import com.qingyuan.lslife.core.model.NotificationMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

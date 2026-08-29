@@ -1,4 +1,4 @@
-package com.lianshan.lslife.ui.components
+package com.qingyuan.lslife.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -50,8 +50,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Shape
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.model.Merchant
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.core.model.Merchant
+import com.qingyuan.lslife.ui.theme.Dimens
 
 @Composable
 fun NetworkImage(

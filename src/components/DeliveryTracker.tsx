@@ -171,7 +171,7 @@ export default function DeliveryTracker({
       case 'preparing':
         return {
           title: '商家正在出餐中',
-          desc: '连山美味正在烹制，马上交由美团专送骑手',
+          desc: '清远美味正在烹制，马上交由美团专送骑手',
           color: 'text-amber-500 dark:text-amber-400',
           bgColor: 'bg-amber-500/10',
           eta: '约 10 分钟内送达'
@@ -298,7 +298,7 @@ export default function DeliveryTracker({
                     金牌骑手
                   </span>
                 </div>
-                <p className="text-xs text-gray-400 mt-0.5">美团专送 · 连山城市广场站</p>
+                <p className="text-xs text-gray-400 mt-0.5">美团专送 · 清远城市广场站</p>
               </div>
             </div>
 

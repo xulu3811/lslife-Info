@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -11,8 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.lianshan.lslife.ui.components.SoftCard
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.ui.components.SoftCard
+import com.qingyuan.lslife.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +43,7 @@ fun MessageScreen(onBack: () -> Unit) {
                 icon = Icons.Filled.Info,
                 title = "系统通知",
                 time = "昨天 14:00",
-                content = "欢迎加入连山同城生活！现在开通高级会员可享受每月50条免费发布额度。",
+                content = "欢迎加入同城清远生活！现在开通高级会员可享受每月50条免费发布额度。",
                 unread = false
             )
         }

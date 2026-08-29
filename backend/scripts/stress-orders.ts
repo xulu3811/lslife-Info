@@ -70,7 +70,7 @@ async function oneUserFlow(i: number) {
   await call<{ id: string }>('POST', '/addresses', {
     name: `压测收货人${i}`,
     phone,
-    address: '连山吉田镇压测路1号',
+    address: '清远吉田镇压测路1号',
     latitude: 24.502,
     longitude: 112.085
   }, token);
@@ -79,7 +79,7 @@ async function oneUserFlow(i: number) {
   const checkoutResult = await call<{ id: string; orderNo: string }>('POST', '/orders', {
     merchantId: product.merchantId,
     items: [{ productId: product.id, quantity: 1 }],
-    deliveryAddress: { name: `压测收货人${i}`, phone, address: '连山吉田镇压测路1号' }
+    deliveryAddress: { name: `压测收货人${i}`, phone, address: '清远吉田镇压测路1号' }
   }, token);
 
   // 7. 模拟支付

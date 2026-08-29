@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.wallet
+package com.qingyuan.lslife.feature.wallet
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -11,7 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.lianshan.lslife.R
+import com.qingyuan.lslife.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

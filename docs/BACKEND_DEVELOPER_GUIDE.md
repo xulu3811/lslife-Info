@@ -1,4 +1,4 @@
-# 连山同城 LsLife · 后端开发详细手册
+# 清远智慧同城生活服务平台 · 后端开发详细手册
 
 > 适用范围：`backend/` 目录  
 > 技术栈：Node.js 20+ · TypeScript (ESM) · Express 4 · Prisma 5 · Zod · WebSocket (`ws`) · JWT  
@@ -352,7 +352,7 @@ throw new ApiError(429, '验证码发送过于频繁, 请稍后再试');
 
 1. 查最新未消费且未过期验证码，比对  
 2. 标记 `consumed`  
-3. 无用户则创建：`nickname = 连山用户{后四位}`  
+3. 无用户则创建：`nickname = 清远用户{后四位}`  
 4. 签发 JWT，返回 `{ token, user }`
 
 **实名**：`idCard` 仅哈希入库，响应经 `sanitize` 去掉 `idCardHash`。

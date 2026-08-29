@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.config
+package com.qingyuan.lslife.core.config
 
 /**
  * Global application configuration flags.

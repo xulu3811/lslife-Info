@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.utils
+package com.qingyuan.lslife.core.utils
 
 import android.annotation.SuppressLint
 import android.content.Context

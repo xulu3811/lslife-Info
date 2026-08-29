@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.database
+package com.qingyuan.lslife.core.database
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

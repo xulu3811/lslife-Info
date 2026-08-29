@@ -1,15 +1,15 @@
-package com.lianshan.lslife.feature.chat
+package com.qingyuan.lslife.feature.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.AuthRepository
-import com.lianshan.lslife.core.data.ImRepository
-import com.lianshan.lslife.core.database.ImDao
-import com.lianshan.lslife.core.database.LocalMessageEntity
+import com.qingyuan.lslife.core.data.AuthRepository
+import com.qingyuan.lslife.core.data.ImRepository
+import com.qingyuan.lslife.core.database.ImDao
+import com.qingyuan.lslife.core.database.LocalMessageEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import com.lianshan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.data.LsRepository
 import javax.inject.Inject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -32,7 +32,7 @@ class ChatViewModel @Inject constructor(
     private val imDao: ImDao,
     private val authRepository: AuthRepository,
     private val lsRepository: LsRepository,
-    private val api: com.lianshan.lslife.core.network.ApiService
+    private val api: com.qingyuan.lslife.core.network.ApiService
 ) : ViewModel() {
     private val _state = MutableStateFlow(ChatUiState())
     val state: StateFlow<ChatUiState> = _state
@@ -189,6 +189,27 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    private val _myPosts = MutableStateFlow<List<com.qingyuan.lslife.core.model.Post>>(emptyList())
+    val myPosts: StateFlow<List<com.qingyuan.lslife.core.model.Post>> = _myPosts.asStateFlow()
+
+    fun fetchMyPosts() {
+        viewModelScope.launch {
+            lsRepository.posts(mine = true, page = 1, pageSize = 50).onSuccess { page ->
+                _myPosts.value = page.list
+            }
+        }
+    }
+
+    fun sendPostCard(post: com.qingyuan.lslife.core.model.Post) {
+        val json = org.json.JSONObject().apply {
+            put("id", post.id)
+            put("title", post.title)
+            put("price", post.price ?: 0.0)
+            put("image", post.images.firstOrNull() ?: "")
+        }.toString()
+        sendMessage(json, "POST_CARD")
+    }
+
     fun sendMessage(content: String, type: String = "TEXT") {
         if (content.isBlank() || targetUserId.isEmpty()) return
         
@@ -201,7 +222,12 @@ class ChatViewModel @Inject constructor(
     }
 
     fun sendLocation(lat: Double, lng: Double, name: String, address: String) {
-        val json = """{"lat":$lat,"lng":$lng,"name":"$name","address":"$address"}"""
+        val json = org.json.JSONObject().apply {
+            put("lat", lat)
+            put("lng", lng)
+            put("name", name)
+            put("address", address)
+        }.toString()
         sendMessage(json, "LOCATION")
     }
 

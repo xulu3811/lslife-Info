@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.admin
+package com.qingyuan.lslife.feature.admin
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -27,9 +27,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.network.ApiService
-import com.lianshan.lslife.core.network.GovernancePostDto
-import com.lianshan.lslife.core.network.GovernanceUserDto
+import com.qingyuan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.GovernancePostDto
+import com.qingyuan.lslife.core.network.GovernanceUserDto
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

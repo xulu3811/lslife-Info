@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.home
+package com.qingyuan.lslife.feature.home
 
 import android.content.Context
 import android.widget.Toast
@@ -51,12 +51,12 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.model.Banner
-import com.lianshan.lslife.core.model.Post
-import com.lianshan.lslife.feature.search.AdvancedFilterBottomSheet
-import com.lianshan.lslife.ui.SessionViewModel
-import com.lianshan.lslife.ui.components.*
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.core.model.Banner
+import com.qingyuan.lslife.core.model.Post
+import com.qingyuan.lslife.feature.search.AdvancedFilterBottomSheet
+import com.qingyuan.lslife.ui.SessionViewModel
+import com.qingyuan.lslife.ui.components.*
+import com.qingyuan.lslife.ui.theme.Dimens
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -68,16 +68,16 @@ private data class CategoryBadgeItem(
 )
 
 private val page1Categories = listOf(
-    CategoryBadgeItem("cat_2_service", "家政/护理", "android.resource://com.lianshan.lslife/drawable/ic_category_service"),
-    CategoryBadgeItem("cat_3_repair", "便民维修", "android.resource://com.lianshan.lslife/drawable/ic_category_repair"),
-    CategoryBadgeItem("cat_4_fresh", "同城生鲜", "android.resource://com.lianshan.lslife/drawable/ic_category_fresh"),
-    CategoryBadgeItem("cat_5_rent", "房屋出租", "android.resource://com.lianshan.lslife/drawable/ic_category_rent"),
-    CategoryBadgeItem("cat_6_sale", "二手房产", "android.resource://com.lianshan.lslife/drawable/ic_category_sale"),
-    CategoryBadgeItem("cat_7_carpool", "拼车/租车", "android.resource://com.lianshan.lslife/drawable/ic_category_carpool"),
-    CategoryBadgeItem("cat_8_job", "招聘求职", "android.resource://com.lianshan.lslife/drawable/ic_category_job"),
-    CategoryBadgeItem("cat_9_life", "吃喝玩乐", "android.resource://com.lianshan.lslife/drawable/ic_category_life"),
-    CategoryBadgeItem("cat_10_edu", "教育培训", "android.resource://com.lianshan.lslife/drawable/ic_category_edu"),
-    CategoryBadgeItem("cat_1_idle", "个人闲置", "android.resource://com.lianshan.lslife/drawable/ic_category_idle"),
+    CategoryBadgeItem("cat_2_service", "家政/护理", "android.resource://com.qingyuan.lslife/drawable/ic_category_service"),
+    CategoryBadgeItem("cat_3_repair", "便民维修", "android.resource://com.qingyuan.lslife/drawable/ic_category_repair"),
+    CategoryBadgeItem("cat_4_fresh", "同城生鲜", "android.resource://com.qingyuan.lslife/drawable/ic_category_fresh"),
+    CategoryBadgeItem("cat_5_rent", "房屋出租", "android.resource://com.qingyuan.lslife/drawable/ic_category_rent"),
+    CategoryBadgeItem("cat_6_sale", "二手房产", "android.resource://com.qingyuan.lslife/drawable/ic_category_sale"),
+    CategoryBadgeItem("cat_7_carpool", "拼车/租车", "android.resource://com.qingyuan.lslife/drawable/ic_category_carpool"),
+    CategoryBadgeItem("cat_8_job", "招聘求职", "android.resource://com.qingyuan.lslife/drawable/ic_category_job"),
+    CategoryBadgeItem("cat_9_life", "吃喝玩乐", "android.resource://com.qingyuan.lslife/drawable/ic_category_life"),
+    CategoryBadgeItem("cat_10_edu", "教育培训", "android.resource://com.qingyuan.lslife/drawable/ic_category_edu"),
+    CategoryBadgeItem("cat_1_idle", "个人闲置", "android.resource://com.qingyuan.lslife/drawable/ic_category_idle"),
 )
 
 private val page2Categories = emptyList<CategoryBadgeItem>()
@@ -146,7 +146,7 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(androidx.compose.ui.graphics.Color(0xFFF3F5F8))
             .statusBarsPadding()
     ) {
         // 第一层：顶部搜索与本地化头栏
@@ -154,7 +154,7 @@ fun HomeScreen(
             locationText = state.currentLocation,
             hotword = state.searchHotwords.getOrElse(hotwordIndex) { "搜索本地商户、商品、服务" },
             unreadCount = unreadCount,
-            onLocationClick = { Toast.makeText(context, "当前定位：连山壮族瑶族自治县", Toast.LENGTH_SHORT).show() },
+            onLocationClick = { Toast.makeText(context, "当前定位：清远壮族瑶族自治县", Toast.LENGTH_SHORT).show() },
             onSearchClick = onSearchClick,
             onMessageClick = onMessageClick
         )
@@ -165,7 +165,7 @@ fun HomeScreen(
 
         PrimaryTabRow(
             selectedTabIndex = pagerState.currentPage,
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
             contentColor = MaterialTheme.colorScheme.error,
             modifier = Modifier.height(36.dp), // 进一步降低高度
             indicator = {
@@ -294,7 +294,7 @@ fun HomeScreen(
                                 } else if (!state.hasMore && state.posts.isNotEmpty()) {
                                     item(span = StaggeredGridItemSpan.FullLine) {
                                         Box(modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.lg), contentAlignment = Alignment.Center) {
-                                            Text("—— 连山同城，贴心服务 ——", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text("—— 同城清远，贴心服务 ——", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                 }
@@ -359,7 +359,7 @@ private fun TopSearchHeaderBar(
                 .weight(1f)
                 .height(36.dp)
                 .clickable { onSearchClick() },
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedCornerShape(20.dp),
             color = MaterialTheme.colorScheme.outlineVariant
         ) {
             Row(
@@ -539,15 +539,23 @@ private fun KingkongItemView(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // 彻底移除生硬的圆形白底与边框，让3D实物图标自然悬浮，极大增强呼吸感与空间感
-        AsyncImage(
-            model = cat.iconUrl,
-            contentDescription = cat.name,
-            modifier = Modifier.size(48.dp) // 统一基准：48.dp
-        )
-        Spacer(modifier = Modifier.height(6.dp))
+                androidx.compose.material3.Surface(
+            modifier = Modifier.size(60.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+            color = androidx.compose.ui.graphics.Color(0xFFF0F4F9)
+        ) {
+            androidx.compose.foundation.layout.Box(contentAlignment = androidx.compose.ui.Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    model = cat.iconUrl,
+                    contentDescription = cat.name,
+                    modifier = Modifier.size(46.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = cat.name,
-            fontSize = 11.sp, // 与分类页协调
+            fontSize = 12.sp, // 与分类页协调
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Medium,
             maxLines = 1,
@@ -657,12 +665,7 @@ private fun StandardFeedCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .shadow(
-                elevation = 6.dp,
-                shape = RoundedCornerShape(12.dp),
-                spotColor = Color(0x1A000000),
-                ambientColor = Color(0x08000000)
-            )
+            
     ) {
         Column(modifier = Modifier.padding(bottom = 8.dp)) {
             val imageUrl = post.images.firstOrNull()
@@ -671,7 +674,7 @@ private fun StandardFeedCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1.5f, matchHeightConstraintsFirst = false) // 限制为 3:2 比例，显著降低图片高度
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                        .background(androidx.compose.ui.graphics.Color(0xFFF3F5F8)),
                     contentAlignment = Alignment.Center
                 ) {
                     AsyncImage(
@@ -701,9 +704,9 @@ private fun StandardFeedCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     val avatarUrl = post.user?.avatar ?: ""
-                    val authorName = post.user?.nickname ?: "连山用户"
+                    val authorName = post.user?.nickname ?: "清远用户"
                     
-                    com.lianshan.lslife.ui.components.GoogleAvatar(
+                    com.qingyuan.lslife.ui.components.GoogleAvatar(
                         url = avatarUrl,
                         size = 20.dp
                     )
@@ -712,7 +715,7 @@ private fun StandardFeedCard(
                     
                     Text(
                         text = authorName,
-                        fontSize = 11.sp, // 发布者昵称 11.sp
+                        fontSize = 12.sp, // 发布者昵称 11.sp
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

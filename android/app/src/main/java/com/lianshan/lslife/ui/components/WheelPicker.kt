@@ -1,4 +1,4 @@
-package com.lianshan.lslife.ui.components
+package com.qingyuan.lslife.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior

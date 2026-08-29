@@ -42,8 +42,8 @@ const mockProvider: AiProvider = {
       .slice(0, 2);
     return {
       reply:
-        `您好！我是连山同城智能助手。收到您的需求「${prompt}」。\n\n` +
-        '为您推荐连山壮族瑶族自治县的本地好物，点击卡片可直接下单体验哦！',
+        `您好！我是同城清远智能助手。收到您的需求「${prompt}」。\n\n` +
+        '为您推荐清远壮族瑶族自治县的本地好物，点击卡片可直接下单体验哦！',
       recommendations: foodPicks,
     };
   },
@@ -60,7 +60,7 @@ const dashscopeProvider: AiProvider = {
     if (!env.aiApiKey) throw new Error('AI_API_KEY 未配置');
     const merchants = await buildMerchantContext();
     const sys =
-      '你是熟悉广东省清远市连山壮族瑶族自治县的同城生活专家。请基于给定商户数据做定制推荐, ' +
+      '你是熟悉广东省清远市清远壮族瑶族自治县的同城生活专家。请基于给定商户数据做定制推荐, ' +
       '只输出合法 JSON: {"reply":"...","recommendations":[{"merchantId","itemId","name","price"}]}';
     const resp = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
       method: 'POST',
@@ -101,7 +101,7 @@ const deepseekProvider: AiProvider = {
     }
     const merchants = await buildMerchantContext();
     const sys =
-      '你是熟悉广东省清远市连山壮族瑶族自治县的同城生活专家。请基于给定商户数据做定制推荐, ' +
+      '你是熟悉广东省清远市清远壮族瑶族自治县的同城生活专家。请基于给定商户数据做定制推荐, ' +
       '只输出合法 JSON: {"reply":"...","recommendations":[{"merchantId":"","itemId":"","name":"","price":0}]}';
     const resp = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',

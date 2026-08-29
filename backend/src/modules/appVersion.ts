@@ -4,6 +4,7 @@ import { prisma } from '../lib/prisma.js';
 import { ok, ApiError } from '../lib/http.js';
 import { asyncHandler } from '../middleware/error.js';
 import { requireAdminAuth } from '../middleware/auth.js';
+import { broadcastToAll } from '../realtime/hub.js';
 
 const router = Router();
 
@@ -76,8 +77,6 @@ router.post(
 
     const data = schema.parse(req.body);
 
-    // 若新版本标记为激活，将同 versionCode 级别以下的旧激活版本置为非激活
-    // 注：此处只停用 versionCode 更低的已激活版本，管理员可手动切换
     if (data.isActive) {
       await prisma.appVersion.updateMany({
         where: {
@@ -89,6 +88,11 @@ router.post(
     }
 
     const version = await prisma.appVersion.create({ data });
+    
+    if (version.isActive) {
+      broadcastToAll({ event: 'APP_UPDATE_AVAILABLE', data: version });
+    }
+    
     return ok(res, version, '版本发布成功');
   }),
 );
@@ -111,7 +115,6 @@ router.patch(
 
     const data = schema.parse(req.body);
 
-    // 若要激活某版本，先把所有版本都置为非激活
     if (data.isActive === true) {
       await prisma.appVersion.updateMany({
         where: { isActive: true },
@@ -123,6 +126,11 @@ router.patch(
       where: { id },
       data,
     });
+    
+    if (data.isActive === true) {
+      broadcastToAll({ event: 'APP_UPDATE_AVAILABLE', data: version });
+    }
+    
     return ok(res, version, '更新成功');
   }),
 );

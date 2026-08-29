@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -225,7 +225,7 @@ fun Step2BasicInfo(viewModel: MerchantCertifyViewModel) {
     )
 
     if (showAddressPicker) {
-        com.lianshan.lslife.ui.components.AddressPickerBottomSheet(
+        com.qingyuan.lslife.ui.components.AddressPickerBottomSheet(
             addressNodes = viewModel.addressNodes.value,
             onDismissRequest = { showAddressPicker = false },
             onAddressSelected = {

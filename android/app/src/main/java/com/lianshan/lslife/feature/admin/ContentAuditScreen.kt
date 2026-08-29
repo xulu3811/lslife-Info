@@ -1,5 +1,6 @@
-package com.lianshan.lslife.feature.admin
+package com.qingyuan.lslife.feature.admin
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,15 +13,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.lianshan.lslife.core.model.AdminPost
+import com.qingyuan.lslife.core.model.AdminPost
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentAuditScreen(
     viewModel: AdminViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onOpenPostDetail: (String) -> Unit
 ) {
     val posts by viewModel.posts.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.loadPosts("pending_review")
@@ -49,8 +52,25 @@ fun ContentAuditScreen(
             items(posts) { post ->
                 PostAuditCard(
                     post = post,
-                    onApprove = { viewModel.auditPost(post.id, "approve") { _, _ -> } },
-                    onReject = { viewModel.auditPost(post.id, "reject") { _, _ -> } }
+                    onApprove = { 
+                        viewModel.auditPost(post.id, "approve") { success, msg -> 
+                            if (!success) {
+                                android.widget.Toast.makeText(context, msg ?: "操作失败", android.widget.Toast.LENGTH_SHORT).show()
+                            } else {
+                                android.widget.Toast.makeText(context, "审核通过", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        } 
+                    },
+                    onReject = { 
+                        viewModel.auditPost(post.id, "reject") { success, msg -> 
+                            if (!success) {
+                                android.widget.Toast.makeText(context, msg ?: "操作失败", android.widget.Toast.LENGTH_SHORT).show()
+                            } else {
+                                android.widget.Toast.makeText(context, "已违规下架", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        } 
+                    },
+                    onClick = { onOpenPostDetail(post.id) }
                 )
             }
         }
@@ -61,10 +81,11 @@ fun ContentAuditScreen(
 fun PostAuditCard(
     post: AdminPost,
     onApprove: () -> Unit,
-    onReject: () -> Unit
+    onReject: () -> Unit,
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

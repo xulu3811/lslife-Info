@@ -1,11 +1,11 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.network.PromotionBuyRequest
-import com.lianshan.lslife.core.network.PromotionStatsResponse
-import com.lianshan.lslife.core.network.PromotionTask
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.network.PromotionBuyRequest
+import com.qingyuan.lslife.core.network.PromotionStatsResponse
+import com.qingyuan.lslife.core.network.PromotionTask
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-import com.lianshan.lslife.core.model.Post
+import com.qingyuan.lslife.core.model.Post
 
 data class PromotionState(
     val isLoading: Boolean = false,
@@ -76,7 +76,7 @@ class PromotionViewModel @Inject constructor(
     fun rechargeCards(quantity: Int, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            val req = com.lianshan.lslife.core.network.RechargeCardsRequest(quantity = quantity)
+            val req = com.qingyuan.lslife.core.network.RechargeCardsRequest(quantity = quantity)
             val result = repository.rechargeCards(req)
             _state.update { it.copy(isLoading = false) }
 

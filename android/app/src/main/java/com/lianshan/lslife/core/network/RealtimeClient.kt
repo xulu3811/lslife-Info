@@ -1,8 +1,8 @@
-package com.lianshan.lslife.core.network
+package com.qingyuan.lslife.core.network
 
 import android.util.Log
-import com.lianshan.lslife.BuildConfig
-import com.lianshan.lslife.core.data.TokenStore
+import com.qingyuan.lslife.BuildConfig
+import com.qingyuan.lslife.core.data.TokenStore
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -110,10 +110,16 @@ class RealtimeClient @Inject constructor(
         type: String = "TEXT", 
         mediaHash: String? = null
     ) {
-        val targetPart = if (targetId != null) ""","targetId":"$targetId"""" else ""
-        val hashPart = if (mediaHash != null) ""","mediaHash":"$mediaHash"""" else ""
-        val payload = """{"action":"chat","clientMsgId":"$clientMsgId","toUserId":"$toUserId","content":"$content","type":"$type"$targetPart$hashPart}"""
-        _activeWebSocket?.send(payload)
+        val payloadObj = org.json.JSONObject().apply {
+            put("action", "chat")
+            put("clientMsgId", clientMsgId)
+            put("toUserId", toUserId)
+            put("content", content)
+            put("type", type)
+            if (targetId != null) put("targetId", targetId)
+            if (mediaHash != null) put("mediaHash", mediaHash)
+        }
+        _activeWebSocket?.send(payloadObj.toString())
     }
 
     fun sendRecallMessage(messageId: String) {

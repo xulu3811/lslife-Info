@@ -28,7 +28,7 @@ export function createApp() {
   // 浏览器直接打开 /api 或 /api/ 时给出友好指引 (非业务接口)
   app.get(['/api', '/api/'], (_req, res) =>
     ok(res, {
-      name: '连山同城 LsLife API',
+      name: '清远智慧同城生活服务平台 API',
       version: '1.0.0',
       status: 'up',
       docs: {

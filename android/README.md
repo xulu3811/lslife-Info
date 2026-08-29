@@ -1,4 +1,4 @@
-# 连山同城 LsLife · Android 原生客户端
+# 清远智慧同城生活服务平台 · Android 原生客户端
 
 Kotlin + Jetpack Compose + Material 3 实现的同城生活服务用户端 App，对接 `../backend` 后端。
 
@@ -30,7 +30,7 @@ gradle wrapper --gradle-version 8.11.1
 
 ## 目录结构（包分层，可平滑拆分为 Gradle 多模块）
 ```
-com.lianshan.lslife/
+com.qingyuan.lslife/
   LsLifeApplication.kt / MainActivity.kt
   di/            NetworkModule, DatabaseModule
   core/

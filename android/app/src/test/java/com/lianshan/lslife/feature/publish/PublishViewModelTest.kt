@@ -1,7 +1,7 @@
-package com.lianshan.lslife.feature.publish
+package com.qingyuan.lslife.feature.publish
 
 import android.content.Context
-import com.lianshan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.data.LsRepository
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers

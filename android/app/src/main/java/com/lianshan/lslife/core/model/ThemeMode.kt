@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.model
+package com.qingyuan.lslife.core.model
 
 enum class ThemeMode(val storageValue: String, val label: String) {
     SYSTEM("system", "跟随系统"),

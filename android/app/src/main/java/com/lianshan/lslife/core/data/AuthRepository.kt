@@ -1,14 +1,14 @@
-package com.lianshan.lslife.core.data
+package com.qingyuan.lslife.core.data
 
-import com.lianshan.lslife.core.model.LoginResult
-import com.lianshan.lslife.core.model.User
-import com.lianshan.lslife.core.network.ApiService
-import com.lianshan.lslife.core.network.LoginRequest
-import com.lianshan.lslife.core.network.RealNameRequest
-import com.lianshan.lslife.core.network.RegisterRequest
-import com.lianshan.lslife.core.network.safeCall
-import com.lianshan.lslife.core.network.ResetPasswordRequest
-import com.lianshan.lslife.core.network.SendEmailCodeRequest
+import com.qingyuan.lslife.core.model.LoginResult
+import com.qingyuan.lslife.core.model.User
+import com.qingyuan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.LoginRequest
+import com.qingyuan.lslife.core.network.RealNameRequest
+import com.qingyuan.lslife.core.network.RegisterRequest
+import com.qingyuan.lslife.core.network.safeCall
+import com.qingyuan.lslife.core.network.ResetPasswordRequest
+import com.qingyuan.lslife.core.network.SendEmailCodeRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,14 +45,14 @@ class AuthRepository @Inject constructor(
 
     suspend fun me(): Result<User> = safeCall { api.me() }.onSuccess { _currentUser.value = it }
 
-    suspend fun performOcr(imageUrl: String): Result<com.lianshan.lslife.core.network.OcrResponse> =
-        safeCall { api.performOcr(com.lianshan.lslife.core.network.OcrRequest(imageUrl)) }
+    suspend fun performOcr(imageUrl: String): Result<com.qingyuan.lslife.core.network.OcrResponse> =
+        safeCall { api.performOcr(com.qingyuan.lslife.core.network.OcrRequest(imageUrl)) }
 
     suspend fun realName(name: String, idCard: String, idCardFrontImage: String?, idCardBackImage: String?): Result<User> =
         safeCall { api.realName(RealNameRequest(name, idCard, idCardFrontImage, idCardBackImage)) }
 
     suspend fun updateProfile(nickname: String?, avatar: String?): Result<User> =
-        safeCall { api.updateProfile(com.lianshan.lslife.core.model.ProfileUpdateRequest(nickname, avatar)) }
+        safeCall { api.updateProfile(com.qingyuan.lslife.core.model.ProfileUpdateRequest(nickname, avatar)) }
 
     suspend fun logout() {
         _currentUser.value = null

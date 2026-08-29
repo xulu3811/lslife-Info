@@ -1,11 +1,11 @@
-package com.lianshan.lslife.core.data
+package com.qingyuan.lslife.core.data
 
 import android.content.Context
-import com.lianshan.lslife.core.database.ImDao
-import com.lianshan.lslife.core.database.LocalConversationEntity
-import com.lianshan.lslife.core.database.LocalMessageEntity
-import com.lianshan.lslife.core.network.ApiService
-import com.lianshan.lslife.core.network.RealtimeClient
+import com.qingyuan.lslife.core.database.ImDao
+import com.qingyuan.lslife.core.database.LocalConversationEntity
+import com.qingyuan.lslife.core.database.LocalMessageEntity
+import com.qingyuan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.RealtimeClient
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

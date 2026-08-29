@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.admin
+package com.qingyuan.lslife.feature.admin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,9 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.model.Post
-import com.lianshan.lslife.ui.components.ErrorBox
-import com.lianshan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.core.model.Post
+import com.qingyuan.lslife.ui.components.ErrorBox
+import com.qingyuan.lslife.ui.components.LoadingBox
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +64,7 @@ fun AdminReviewListScreen(
                 )
             }
             state.posts.isEmpty() -> {
-                com.lianshan.lslife.ui.components.EmptyState(
+                com.qingyuan.lslife.ui.components.EmptyState(
                     title = "暂无待审核帖子",
                     subtitle = "当前没有需要人工处理的内容",
                     modifier = Modifier.padding(padding).fillMaxSize()

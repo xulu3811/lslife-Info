@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,7 +30,7 @@ import coil.compose.AsyncImage
 
 /** Mock 数据状态 */
 data class MerchantStoreState(
-    val merchantName: String = "京东家电专卖店 (连山店)",
+    val merchantName: String = "京东家电专卖店 (清远店)",
     val merchantLogo: String = "https://picsum.photos/200",
     val merchantBanner: String = "https://picsum.photos/800/400",
     val rating: Double = 4.9,

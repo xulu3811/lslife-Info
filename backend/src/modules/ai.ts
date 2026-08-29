@@ -61,7 +61,7 @@ router.post(
           )}）。严禁虚构、幻觉出未在 Schema 中定义的 Key！`
         : '无特定属性格式，尽力提取必要品牌和参数。';
 
-    const prompt = `你是连山同城智能发布文案与实体提取助手。
+    const prompt = `你是同城清远智能发布文案与实体提取助手。
 用户准备在【${categoryName}】分类下发布标题/主题为“${hint}”的信息。
 ${
   existing

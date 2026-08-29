@@ -1,8 +1,8 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
-import com.lianshan.lslife.core.model.SignInExecuteResponse
-import com.lianshan.lslife.core.model.SignInStatusResponse
-import com.lianshan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.model.SignInExecuteResponse
+import com.qingyuan.lslife.core.model.SignInStatusResponse
+import com.qingyuan.lslife.core.network.ApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

@@ -1,4 +1,4 @@
-package com.lianshan.lslife.ui.components
+package com.qingyuan.lslife.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -48,11 +48,11 @@ fun CategoryIconView(
         var finalIconUrl = iconUrl.takeIf { !it.isNullOrBlank() } ?: getFallbackIconUrl(categoryName)
         
         // Cache bust for updated V2 icons
-        if (finalIconUrl == "android.resource://com.lianshan.lslife/drawable/ic_category_life") {
-            finalIconUrl = "android.resource://com.lianshan.lslife/drawable/ic_category_life_v2"
+        if (finalIconUrl == "android.resource://com.qingyuan.lslife/drawable/ic_category_life") {
+            finalIconUrl = "android.resource://com.qingyuan.lslife/drawable/ic_category_life_v2"
         }
-        if (finalIconUrl == "android.resource://com.lianshan.lslife/drawable/ic_category_sub_gourmet_dining") {
-            finalIconUrl = "android.resource://com.lianshan.lslife/drawable/ic_category_sub_gourmet_dining_v2"
+        if (finalIconUrl == "android.resource://com.qingyuan.lslife/drawable/ic_category_sub_gourmet_dining") {
+            finalIconUrl = "android.resource://com.qingyuan.lslife/drawable/ic_category_sub_gourmet_dining_v2"
         }
         
         val freshV2Map = mapOf(
@@ -87,8 +87,8 @@ fun CategoryIconView(
             "ic_category_sub_gourmet_dining" to "ic_category_sub_local_life_v1"
         )
         freshV2Map.forEach { (old, new) ->
-            if (finalIconUrl == "android.resource://com.lianshan.lslife/drawable/$old") {
-                finalIconUrl = "android.resource://com.lianshan.lslife/drawable/$new"
+            if (finalIconUrl == "android.resource://com.qingyuan.lslife/drawable/$old") {
+                finalIconUrl = "android.resource://com.qingyuan.lslife/drawable/$new"
             }
         }
 
@@ -96,7 +96,7 @@ fun CategoryIconView(
             finalIconUrl.isNullOrBlank() -> null
             finalIconUrl.startsWith("http://") || finalIconUrl.startsWith("https://") -> finalIconUrl
             finalIconUrl.startsWith("/") -> {
-                val baseUrl = com.lianshan.lslife.BuildConfig.API_BASE_URL
+                val baseUrl = com.qingyuan.lslife.BuildConfig.API_BASE_URL
                     .removeSuffix("/api/")
                     .removeSuffix("/api")
                     .removeSuffix("/")

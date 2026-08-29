@@ -1,4 +1,4 @@
-package com.lianshan.lslife.ui
+package com.qingyuan.lslife.ui
 
 import android.content.Context
 import android.media.RingtoneManager
@@ -8,12 +8,12 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.AuthRepository
-import com.lianshan.lslife.core.data.ImRepository
-import com.lianshan.lslife.core.data.TokenStore
-import com.lianshan.lslife.core.model.NotificationMode
-import com.lianshan.lslife.core.model.ThemeMode
-import com.lianshan.lslife.core.service.LsLifeImService
+import com.qingyuan.lslife.core.data.AuthRepository
+import com.qingyuan.lslife.core.data.ImRepository
+import com.qingyuan.lslife.core.data.TokenStore
+import com.qingyuan.lslife.core.model.NotificationMode
+import com.qingyuan.lslife.core.model.ThemeMode
+import com.qingyuan.lslife.core.service.LsLifeImService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.BufferOverflow
@@ -23,14 +23,15 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.database.ImDao
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.database.ImDao
 
 @HiltViewModel
 class SessionViewModel @Inject constructor(
@@ -41,13 +42,12 @@ class SessionViewModel @Inject constructor(
     private val lsRepository: LsRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
-    private val _navigateToChatFlow = MutableSharedFlow<Triple<String, String, String>>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val navigateToChatFlow = _navigateToChatFlow.asSharedFlow()
-
+    private val _navigateToChatChannel = kotlinx.coroutines.channels.Channel<Triple<String, String, String>>(kotlinx.coroutines.channels.Channel.BUFFERED)
+    val navigateToChatFlow = _navigateToChatChannel.receiveAsFlow()
 
 
     fun triggerNavigateToChat(sessionId: String, targetUserId: String, targetName: String) {
-        _navigateToChatFlow.tryEmit(Triple(sessionId, targetUserId, targetName))
+        _navigateToChatChannel.trySend(Triple(sessionId, targetUserId, targetName))
     }
 
     val isLoggedIn = authRepository.isLoggedIn.stateIn(
@@ -125,10 +125,10 @@ class SessionViewModel @Inject constructor(
                             playNotificationAlert(mode)
 
                             // 2. 构造前台悬浮胶囊弹窗数据
-                            val displayContent = when (type) {
+                            val displayContent = when (type.uppercase()) {
                                 "IMAGE" -> "[图片]"
                                 "VOICE" -> "[语音消息]"
-                                "post_card" -> "[商品/房源卡片]"
+                                "POST_CARD" -> "[商品/房源卡片]"
                                 else -> rawContent.ifBlank { "[新消息]" }
                             }
                             val conv = imDao.getConversation(sessionId)

@@ -1,4 +1,4 @@
-# 连山同城 LsLife · 开发者手册（二次开发指南）
+# 清远智慧同城生活服务平台 · 开发者手册（二次开发指南）
 
 > 版本：V1.0（商业化重构基线）  
 > 更新日期：2026-07  
@@ -30,7 +30,7 @@
 
 ### 1.1 产品定位
 
-连山壮族瑶族自治县同城生活服务 App：周边商家/服务浏览、加购下单、模拟支付与配送追踪、同城信息发布（会员额度）、会员订阅、AI 推荐助手（可插拔）、用户设置（主题/通知）。
+清远壮族瑶族自治县同城生活服务 App：周边商家/服务浏览、加购下单、模拟支付与配送追踪、同城信息发布（会员额度）、会员订阅、AI 推荐助手（可插拔）、用户设置（主题/通知）。
 
 ### 1.2 当前交付状态
 
@@ -481,7 +481,7 @@ lng = merchantLng + (userLng - merchantLng) * ratio
 ### 9.1 包分层
 
 ```
-com.lianshan.lslife
+com.qingyuan.lslife
 ├── LsLifeApplication / MainActivity
 ├── di/                 NetworkModule, DatabaseModule
 ├── core/

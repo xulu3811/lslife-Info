@@ -1,14 +1,14 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import kotlinx.serialization.json.*
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.AuthRepository
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.model.MembershipPlan
-import com.lianshan.lslife.core.model.SignInStatusResponse
-import com.lianshan.lslife.core.model.User
+import com.qingyuan.lslife.core.data.AuthRepository
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.model.MembershipPlan
+import com.qingyuan.lslife.core.model.SignInStatusResponse
+import com.qingyuan.lslife.core.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import javax.inject.Inject
 
-import com.lianshan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.ApiService
 
 data class ProfileUiState(
     val loading: Boolean = true,
@@ -174,7 +174,7 @@ class ProfileViewModel @Inject constructor(
         tempFile.outputStream().use { out -> inputStream.use { it.copyTo(out) } }
         
         // 压缩图片至2MB以内，避免超过服务端5MB限制
-        val compressedBytes = com.lianshan.lslife.feature.publish.ImageCompressor.compress(context, tempFile.absolutePath, 2 * 1024 * 1024, 1920)
+        val compressedBytes = com.qingyuan.lslife.feature.publish.ImageCompressor.compress(context, tempFile.absolutePath, 2 * 1024 * 1024, 1920)
         
         val reqFile = okhttp3.RequestBody.create(
             "image/jpeg".toMediaTypeOrNull(), compressedBytes

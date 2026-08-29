@@ -1,6 +1,6 @@
-package com.lianshan.lslife.feature.publish
+package com.qingyuan.lslife.feature.publish
 
-import com.lianshan.lslife.core.model.TradeMode
+import com.qingyuan.lslife.core.model.TradeMode
 
 data class CategoryConfig(
     val id: String,

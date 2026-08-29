@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.chat
+package com.qingyuan.lslife.feature.chat
 
 import android.media.MediaPlayer
 import kotlinx.coroutines.flow.MutableStateFlow

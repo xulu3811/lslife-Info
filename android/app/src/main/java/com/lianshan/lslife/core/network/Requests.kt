@@ -1,6 +1,6 @@
-package com.lianshan.lslife.core.network
+package com.qingyuan.lslife.core.network
 
-import com.lianshan.lslife.core.model.FlexibleJsonObjectSerializer
+import com.qingyuan.lslife.core.model.FlexibleJsonObjectSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
@@ -166,7 +166,7 @@ data class AiGenerateDescRequest(
     val title: String? = null,
     val categoryId: String? = null,
     val draft: String? = null,
-    val schema: List<com.lianshan.lslife.core.model.DynamicField> = emptyList(),
+    val schema: List<com.qingyuan.lslife.core.model.DynamicField> = emptyList(),
 )
 
 @Serializable

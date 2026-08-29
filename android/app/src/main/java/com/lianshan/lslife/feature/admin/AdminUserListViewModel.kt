@@ -1,10 +1,10 @@
-package com.lianshan.lslife.feature.admin
+package com.qingyuan.lslife.feature.admin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.model.AdminUserListItem
-import com.lianshan.lslife.core.network.AdminUserStatusRequest
-import com.lianshan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.model.AdminUserListItem
+import com.qingyuan.lslife.core.network.AdminUserStatusRequest
+import com.qingyuan.lslife.core.network.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

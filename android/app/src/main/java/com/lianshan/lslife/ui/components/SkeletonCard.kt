@@ -1,4 +1,4 @@
-package com.lianshan.lslife.ui.components
+package com.qingyuan.lslife.ui.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -13,7 +13,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.ui.theme.Dimens
 
 @Composable
 fun ShimmerBrush(showShimmer: Boolean = true, targetValue: Float = 1000f): Brush {

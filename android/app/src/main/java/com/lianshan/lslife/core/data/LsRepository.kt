@@ -1,9 +1,9 @@
-package com.lianshan.lslife.core.data
+package com.qingyuan.lslife.core.data
 
-import com.lianshan.lslife.core.database.MerchantDao
-import com.lianshan.lslife.core.database.MerchantEntity
-import com.lianshan.lslife.core.model.*
-import com.lianshan.lslife.core.network.*
+import com.qingyuan.lslife.core.database.MerchantDao
+import com.qingyuan.lslife.core.database.MerchantEntity
+import com.qingyuan.lslife.core.model.*
+import com.qingyuan.lslife.core.network.*
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import javax.inject.Inject

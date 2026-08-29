@@ -1,9 +1,9 @@
-package com.lianshan.lslife.feature.admin
+package com.qingyuan.lslife.feature.admin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.model.*
-import com.lianshan.lslife.core.network.AdminApiService
+import com.qingyuan.lslife.core.model.*
+import com.qingyuan.lslife.core.network.AdminApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.category
+package com.qingyuan.lslife.feature.category
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -37,10 +37,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.model.CategoryNode
-import com.lianshan.lslife.core.model.Post
-import com.lianshan.lslife.ui.components.EmptyState
-import com.lianshan.lslife.ui.components.InfoPublishCard
+import com.qingyuan.lslife.core.model.CategoryNode
+import com.qingyuan.lslife.core.model.Post
+import com.qingyuan.lslife.ui.components.EmptyState
+import com.qingyuan.lslife.ui.components.InfoPublishCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -342,7 +342,7 @@ private fun FilterBottomSheetContent(
     } else {
         listOf("智能排序", "价格从低到高", "价格从高到低", "最新发布")
     }
-    val areaOptions = listOf("全城区域", "连山县城", "吉田镇", "太保镇", "禾洞镇", "福堂镇", "小三江镇", "加益镇")
+    val areaOptions = listOf("全城区域", "清远市城", "吉田镇", "太保镇", "禾洞镇", "福堂镇", "小三江镇", "加益镇")
 
     Column(
         modifier = Modifier

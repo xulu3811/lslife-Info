@@ -1,11 +1,11 @@
-package com.lianshan.lslife.ui.navigation
+package com.qingyuan.lslife.ui.navigation
 
 object Routes {
     const val LOGIN = "login"
     const val FORGOT_PASSWORD = "forgot_password"
     const val HOME = "home"
     const val PUBLISH = "publish?postId={postId}&categoryId={categoryId}"
-    const val MY_POSTS = "my_posts"
+    const val MY_POSTS = "my_posts?status={status}"
     const val FOLLOW_LIST = "follow_list"
     const val FAVORITES = "favorites"
     const val FOOTPRINTS = "footprints"
@@ -43,6 +43,7 @@ object Routes {
     fun publicProfile(userId: String) = "public_profile/$userId"
     fun favorites() = "favorites"
     fun footprints() = "footprints"
+    fun myPosts(status: String = "ALL") = "my_posts?status=$status"
     fun postDetail(id: String, mode: String? = null, reportId: String? = null): String {
         val base = "post_detail/$id"
         val params = mutableListOf<String>()
@@ -53,7 +54,7 @@ object Routes {
 
     fun cropAvatar() = "crop_avatar"
     fun chat(sessionId: String, targetUserId: String, targetName: String, initPostId: String? = null) = 
-        "chat/$sessionId/$targetUserId/$targetName" + if (!initPostId.isNullOrBlank()) "?initPostId=$initPostId" else ""
+        "chat/$sessionId/$targetUserId/${java.net.URLEncoder.encode(targetName, "UTF-8")}" + if (!initPostId.isNullOrBlank()) "?initPostId=$initPostId" else ""
     fun publish(postId: String? = null, categoryId: String? = null) = 
         if (postId.isNullOrBlank() && categoryId.isNullOrBlank()) "publish" 
         else "publish?postId=${postId ?: ""}&categoryId=${categoryId ?: ""}"

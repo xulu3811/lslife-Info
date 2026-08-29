@@ -36,7 +36,7 @@ export interface SeedMerchant {
 export const merchantsData: SeedMerchant[] = [
   {
     id: 'm1',
-    name: '连山高山有机果蔬专营店',
+    name: '清远高山有机果蔬专营店',
     rating: 4.9,
     distance: 0.5,
     sales: 1200,
@@ -50,8 +50,8 @@ export const merchantsData: SeedMerchant[] = [
     category: 'veggies',
     latitude: 24.472,
     longitude: 112.081,
-    description: '连山本地高山有机果蔬直供，每日清晨采摘，新鲜直达。无农药残留，健康吃得出来。',
-    address: '连山壮族瑶族自治县商业中心1楼',
+    description: '清远本地高山有机果蔬直供，每日清晨采摘，新鲜直达。无农药残留，健康吃得出来。',
+    address: '清远壮族瑶族自治县商业中心1楼',
     phone: '138-0000-1111',
     items: [
       { id: 'm1_1', name: '高山有机甜菜心 (500g)', price: 8.9, originalPrice: 12.9, desc: '清甜脆嫩，高山生态种植。', sales: 500, image: 'https://images.unsplash.com/photo-1566385101042-1a0104524c61?w=600&h=300&fit=crop&q=80', category: '蔬菜' },
@@ -74,8 +74,8 @@ export const merchantsData: SeedMerchant[] = [
     category: 'house',
     latitude: 24.473,
     longitude: 112.082,
-    description: '专业房产中介，为您提供连山本地真实优质的租房、二手房买卖服务。',
-    address: '连山壮族瑶族自治县吉水路8号',
+    description: '专业房产中介，为您提供清远本地真实优质的租房、二手房买卖服务。',
+    address: '清远壮族瑶族自治县吉水路8号',
     phone: '138-0000-2222',
     items: [
       { id: 'm2_1', name: '温馨单间带阳台 (月租)', price: 500.0, originalPrice: 600.0, desc: '家电齐全，拎包入住，近商业中心。', sales: 12, image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=300&fit=crop&q=80', category: '租房' },
@@ -84,7 +84,7 @@ export const merchantsData: SeedMerchant[] = [
   },
   {
     id: 'm3',
-    name: '连山王牌家政服务公司',
+    name: '清远王牌家政服务公司',
     rating: 4.8,
     distance: 2.0,
     sales: 890,
@@ -99,7 +99,7 @@ export const merchantsData: SeedMerchant[] = [
     latitude: 24.474,
     longitude: 112.083,
     description: '本地老字号家政，阿姨经验丰富，工具齐全，提供高品质保洁服务。',
-    address: '连山壮族瑶族自治县向阳街12号',
+    address: '清远壮族瑶族自治县向阳街12号',
     phone: '138-0000-3333',
     items: [
       { id: 'm3_1', name: '日常全屋保洁 (3小时)', price: 135.0, originalPrice: 150.0, desc: '包括客厅、卧室、厨房、卫生间表面清洁，垃圾清运。', sales: 350, image: 'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=600&h=300&fit=crop&q=80', category: '保洁' },
@@ -123,7 +123,7 @@ export const merchantsData: SeedMerchant[] = [
     latitude: 24.475,
     longitude: 112.084,
     description: '专业解决各类水电疑难杂症，管道疏通、电路检修。',
-    address: '连山壮族瑶族自治县鹿鸣中路',
+    address: '清远壮族瑶族自治县鹿鸣中路',
     phone: '138-0000-4444',
     items: [
       { id: 'm4_1', name: '马桶/下水道专业疏通', price: 80.0, desc: '不通不收费，专业设备快速解决堵塞。', sales: 200, image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&h=300&fit=crop&q=80', category: '维修' },
@@ -132,7 +132,7 @@ export const merchantsData: SeedMerchant[] = [
   },
   {
     id: 'm5',
-    name: '连山兄弟货运搬家',
+    name: '清远兄弟货运搬家',
     rating: 4.7,
     distance: 1.5,
     sales: 320,
@@ -147,7 +147,7 @@ export const merchantsData: SeedMerchant[] = [
     latitude: 24.476,
     longitude: 112.085,
     description: '专业同城搬家、货运服务，提供拆装打包、楼层搬运一条龙服务。',
-    address: '连山壮族瑶族自治县沿江路',
+    address: '清远壮族瑶族自治县沿江路',
     phone: '138-0000-5555',
     items: [
       { id: 'm5_1', name: '小面包人货混装同城送', price: 60.0, originalPrice: 80.0, desc: '适合少量物品搬运，同城快速送达。', sales: 180, image: 'https://images.unsplash.com/photo-1600518464441-9154a4dea21b?w=600&h=300&fit=crop&q=80', category: '搬家' },
@@ -156,7 +156,7 @@ export const merchantsData: SeedMerchant[] = [
   },
   {
     id: 'm6',
-    name: '连山人才直聘中心',
+    name: '清远人才直聘中心',
     rating: 4.9,
     distance: 2.5,
     sales: 600,
@@ -170,8 +170,8 @@ export const merchantsData: SeedMerchant[] = [
     category: 'job',
     latitude: 24.477,
     longitude: 112.086,
-    description: '连山本地权威招聘平台，提供海量真实工作岗位，帮您找到满意工作。',
-    address: '连山壮族瑶族自治县广场南路',
+    description: '清远本地权威招聘平台，提供海量真实工作岗位，帮您找到满意工作。',
+    address: '清远壮族瑶族自治县广场南路',
     phone: '138-0000-6666',
     items: [
       { id: 'm6_1', name: '前台接待 (月薪4K+)', price: 0, originalPrice: 0, desc: '形象气质佳，具有亲和力，每周双休。', sales: 150, image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=600&h=300&fit=crop&q=80', category: '全职' },
@@ -180,7 +180,7 @@ export const merchantsData: SeedMerchant[] = [
   },
   {
     id: 'm7',
-    name: '连山闲置物品同城转让',
+    name: '清远闲置物品同城转让',
     rating: 4.6,
     distance: 1.0,
     sales: 120,
@@ -195,7 +195,7 @@ export const merchantsData: SeedMerchant[] = [
     latitude: 24.478,
     longitude: 112.087,
     description: '个人闲置物品转让，涵盖数码、家居、母婴等各类二手好物。',
-    address: '连山壮族瑶族自治县（全城）',
+    address: '清远壮族瑶族自治县（全城）',
     phone: '138-0000-7777',
     items: [
       { id: 'm7_1', name: '九成新儿童自行车 (带辅助轮)', price: 80.0, originalPrice: 260.0, desc: '孩子长大了骑不了，车况极佳，自提优先。', sales: 1, image: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&h=300&fit=crop&q=80', category: '二手' },
@@ -204,7 +204,7 @@ export const merchantsData: SeedMerchant[] = [
   },
   {
     id: 'm8',
-    name: '连山旺铺商业地产转让',
+    name: '清远旺铺商业地产转让',
     rating: 4.8,
     distance: 0.6,
     sales: 28,
@@ -218,8 +218,8 @@ export const merchantsData: SeedMerchant[] = [
     category: 'shop_rent',
     latitude: 24.479,
     longitude: 112.088,
-    description: '连山本地优质商铺转让出租，涵盖餐饮门店、临街零售商铺及办公写字楼。',
-    address: '连山壮族瑶族自治县商业街1号',
+    description: '清远本地优质商铺转让出租，涵盖餐饮门店、临街零售商铺及办公写字楼。',
+    address: '清远壮族瑶族自治县商业街1号',
     phone: '138-0000-8888',
     items: [
       { id: 'm8_1', name: '县城商业街80㎡奶茶甜品店整租转让', price: 2500.0, originalPrice: 3000.0, desc: '紧邻商业广场，带全套烘焙冷饮设备，接手即可营业。', sales: 5, image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=300&fit=crop&q=80', category: '旺铺出租' },
@@ -228,7 +228,7 @@ export const merchantsData: SeedMerchant[] = [
   },
   {
     id: 'm9',
-    name: '连山好房二手房交易服务中心',
+    name: '清远好房二手房交易服务中心',
     rating: 4.9,
     distance: 1.1,
     sales: 65,
@@ -242,8 +242,8 @@ export const merchantsData: SeedMerchant[] = [
     category: 'secondhand_house',
     latitude: 24.480,
     longitude: 112.089,
-    description: '专业代理连山二手商品房、自建房买卖过户及贷款服务，省心省力。',
-    address: '连山壮族瑶族自治县鹿鸣东路',
+    description: '专业代理清远二手商品房、自建房买卖过户及贷款服务，省心省力。',
+    address: '清远壮族瑶族自治县鹿鸣东路',
     phone: '138-0000-9999',
     items: [
       { id: 'm9_1', name: '中心小学旁115㎡精装三房二厅急售', price: 380000.0, originalPrice: 420000.0, desc: '南北通透，红本在手，满五唯一过户费低，对口重点学校。', sales: 8, image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&h=300&fit=crop&q=80', category: '二手房' },
@@ -252,7 +252,7 @@ export const merchantsData: SeedMerchant[] = [
   },
   {
     id: 'm10',
-    name: '连山同城兼职直聘发布站',
+    name: '同城清远兼职直聘发布站',
     rating: 4.9,
     distance: 1.8,
     sales: 450,
@@ -266,8 +266,8 @@ export const merchantsData: SeedMerchant[] = [
     category: 'part_time',
     latitude: 24.481,
     longitude: 112.090,
-    description: '严选连山本地兼职岗位，覆盖钟点工、促销员、家教辅导及周末临时工。',
-    address: '连山壮族瑶族自治县广场北路',
+    description: '严选清远本地兼职岗位，覆盖钟点工、促销员、家教辅导及周末临时工。',
+    address: '清远壮族瑶族自治县广场北路',
     phone: '138-0000-1010',
     items: [
       { id: 'm10_1', name: '周末商场促销量贩兼职 (150元/天)', price: 0, originalPrice: 0, desc: '每周六日上班，主要负责门店礼品发放及活动引导，工资日结。', sales: 120, image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&h=300&fit=crop&q=80', category: '兼职' },

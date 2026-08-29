@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import android.graphics.Bitmap
 import java.io.ByteArrayOutputStream

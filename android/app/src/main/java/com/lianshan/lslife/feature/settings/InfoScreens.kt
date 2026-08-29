@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.settings
+package com.qingyuan.lslife.feature.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,15 +19,15 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import com.lianshan.lslife.BuildConfig
-import com.lianshan.lslife.ui.components.SoftCard
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.BuildConfig
+import com.qingyuan.lslife.ui.components.SoftCard
+import com.qingyuan.lslife.ui.theme.Dimens
 
 @Composable
 fun AboutScreen(onBack: () -> Unit) {
-    InfoPage(title = "关于连山同城", onBack = onBack) {
+    InfoPage(title = "关于同城清远", onBack = onBack) {
         Text(
-            "连山同城",
+            "同城清远",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -38,11 +38,11 @@ fun AboutScreen(onBack: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            "面向连山壮族瑶族自治县的本地生活服务平台，连接社区居民、商家与本地服务者。",
+            "面向清远壮族瑶族自治县的本地生活服务平台，连接社区居民、商家与本地服务者。",
             style = MaterialTheme.typography.bodyMedium,
         )
         Text(
-            "© 2026 连山同城 · 智慧同城生活平台",
+            "© 2026 同城清远 · 智慧同城生活平台",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

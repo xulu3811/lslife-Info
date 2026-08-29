@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,20 +19,20 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.lianshan.lslife.ui.components.PostListCard
+import com.qingyuan.lslife.ui.components.PostListCard
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.lianshan.lslife.ui.components.ErrorBox
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.components.UserAvatar
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.ui.components.ErrorBox
+import com.qingyuan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.ui.components.UserAvatar
+import com.qingyuan.lslife.ui.theme.Dimens
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.sp
-import com.lianshan.lslife.ui.components.GridPostCard
+import com.qingyuan.lslife.ui.components.GridPostCard
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close

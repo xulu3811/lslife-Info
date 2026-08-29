@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.auth
+package com.qingyuan.lslife.feature.auth
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -66,7 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.ui.theme.PrimaryRed
+import com.qingyuan.lslife.ui.theme.PrimaryRed
 
 @Composable
 fun LoginScreen(
@@ -111,7 +111,7 @@ fun LoginScreen(
             ) {
                 // 新的 Google 风格图标
                 androidx.compose.foundation.Image(
-                    painter = androidx.compose.ui.res.painterResource(id = com.lianshan.lslife.R.drawable.img_google_logo),
+                    painter = androidx.compose.ui.res.painterResource(id = com.qingyuan.lslife.R.drawable.img_google_logo),
                     contentDescription = "Logo",
                     modifier = Modifier.size(72.dp)
                 )
@@ -120,7 +120,7 @@ fun LoginScreen(
 
                 // 品牌主标题
                 Text(
-                    text = "同城•连山",
+                    text = "同城清远",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Medium,
                     letterSpacing = 0.5.sp,

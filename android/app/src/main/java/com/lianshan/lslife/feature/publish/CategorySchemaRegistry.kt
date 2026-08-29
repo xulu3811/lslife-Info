@@ -1,7 +1,7 @@
-package com.lianshan.lslife.feature.publish
+package com.qingyuan.lslife.feature.publish
 
-import com.lianshan.lslife.core.model.AttributeSchema
-import com.lianshan.lslife.core.model.FieldType
+import com.qingyuan.lslife.core.model.AttributeSchema
+import com.qingyuan.lslife.core.model.FieldType
 
 object CategorySchemaRegistry {
 

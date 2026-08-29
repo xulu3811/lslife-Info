@@ -1,8 +1,8 @@
-package com.lianshan.lslife.ui.components
+package com.qingyuan.lslife.ui.components
 
 import androidx.compose.runtime.Composable
-import com.lianshan.lslife.core.model.Post
-import com.lianshan.lslife.core.model.TradeMode
+import com.qingyuan.lslife.core.model.Post
+import com.qingyuan.lslife.core.model.TradeMode
 
 @Composable
 fun PostListCard(

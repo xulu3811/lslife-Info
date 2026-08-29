@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.home
+package com.qingyuan.lslife.feature.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import com.lianshan.lslife.feature.publish.CategorySchemaRegistry
+import com.qingyuan.lslife.feature.publish.CategorySchemaRegistry
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -35,10 +35,10 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.lianshan.lslife.ui.components.ErrorBox
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.components.UserAvatar
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.ui.components.ErrorBox
+import com.qingyuan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.ui.components.UserAvatar
+import com.qingyuan.lslife.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -63,7 +63,7 @@ fun PostDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("商品详情") },
+                title = { Text("商品详情", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, "返回") }
                 },
@@ -365,16 +365,16 @@ fun PostDetailScreen(
                     // Price and Title Card
                     item {
                         SoftUiCard(modifier = Modifier.padding(horizontal = Dimens.md, vertical = Dimens.sm)) {
-                            Column(modifier = Modifier.padding(Dimens.lg)) {
+                            Column(modifier = Modifier.padding(16.dp)) {
                                 if (post.price != null && post.price > 0) {
                                     Row(verticalAlignment = Alignment.Bottom) {
                                         Text("¥ ", style = MaterialTheme.typography.titleMedium, color = scheme.error, fontWeight = FontWeight.Bold)
-                                        Text("${post.price}", style = MaterialTheme.typography.headlineMedium, color = scheme.error, fontWeight = FontWeight.ExtraBold)
+                                        Text("${post.price}", fontSize = 24.sp, color = scheme.error, fontWeight = FontWeight.Bold)
                                     }
                                 } else {
-                                    Text("面议", style = MaterialTheme.typography.headlineSmall, color = scheme.error, fontWeight = FontWeight.ExtraBold)
+                                    Text("面议", fontSize = 20.sp, color = scheme.error, fontWeight = FontWeight.Bold)
                                 }
-                                Spacer(modifier = Modifier.height(Dimens.sm))
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = post.title,
                                     style = MaterialTheme.typography.titleMedium,
@@ -382,7 +382,7 @@ fun PostDetailScreen(
                                     color = scheme.onSurface,
                                     lineHeight = 22.sp
                                 )
-                                Spacer(modifier = Modifier.height(Dimens.sm))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = post.description,
                                     style = MaterialTheme.typography.bodyMedium,
@@ -400,7 +400,7 @@ fun PostDetailScreen(
                             val schemaMap = remember(schemas) { schemas.associateBy { it.key } }
                             
                             SoftUiCard(modifier = Modifier.padding(horizontal = Dimens.md, vertical = Dimens.sm)) {
-                                Column(modifier = Modifier.padding(Dimens.lg)) {
+                                Column(modifier = Modifier.padding(16.dp)) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier.padding(bottom = Dimens.md)
@@ -526,13 +526,13 @@ fun PostDetailScreen(
                     item {
                         SoftUiCard(modifier = Modifier.padding(horizontal = Dimens.md, vertical = Dimens.sm).padding(bottom = Dimens.md)) {
                             Row(
-                                modifier = Modifier.padding(Dimens.lg),
+                                modifier = Modifier.padding(16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                com.lianshan.lslife.ui.components.GoogleAvatar(url = post.user?.avatar, size = 36.dp)
+                                com.qingyuan.lslife.ui.components.GoogleAvatar(url = post.user?.avatar, size = 36.dp)
                                 Spacer(Modifier.width(Dimens.md))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(post.user?.nickname ?: "连山用户", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                                    Text(post.user?.nickname ?: "清远用户", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                                     val authLabel = post.user?.authLabel ?: "认证个人用户"
                                     val isMerchant = post.user?.isMerchant == true || post.publisherType == "MERCHANT"
                                     Text(

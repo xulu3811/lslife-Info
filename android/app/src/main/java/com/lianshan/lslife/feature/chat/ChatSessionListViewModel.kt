@@ -1,11 +1,11 @@
-package com.lianshan.lslife.feature.chat
+package com.qingyuan.lslife.feature.chat
 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.database.ImDao
-import com.lianshan.lslife.core.database.LocalConversationEntity
+import com.qingyuan.lslife.core.database.ImDao
+import com.qingyuan.lslife.core.database.LocalConversationEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,9 +13,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.lianshan.lslife.core.data.ImRepository
+import com.qingyuan.lslife.core.data.ImRepository
 
-import com.lianshan.lslife.core.data.TokenStore
+import com.qingyuan.lslife.core.data.TokenStore
 
 data class ChatSessionListUiState(
     val loading: Boolean = false,

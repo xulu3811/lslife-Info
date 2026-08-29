@@ -1,9 +1,9 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.network.FollowUserItem
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.network.FollowUserItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +22,7 @@ data class FollowListState(
 @HiltViewModel
 class FollowListViewModel @Inject constructor(
     private val repository: LsRepository,
-    private val authRepository: com.lianshan.lslife.core.data.AuthRepository
+    private val authRepository: com.qingyuan.lslife.core.data.AuthRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(FollowListState())
     val state = _state.asStateFlow()

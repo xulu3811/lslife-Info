@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.chat
+package com.qingyuan.lslife.feature.chat
 
 import android.content.Context
 import android.media.MediaPlayer

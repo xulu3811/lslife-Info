@@ -1,4 +1,4 @@
-package com.lianshan.lslife
+package com.qingyuan.lslife
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.junit.Test

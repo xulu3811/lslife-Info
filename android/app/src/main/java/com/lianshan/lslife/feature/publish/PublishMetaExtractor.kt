@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.publish
+package com.qingyuan.lslife.feature.publish
 
 /**
  * 从标题/描述中提取品牌、型号参数、购买日期。

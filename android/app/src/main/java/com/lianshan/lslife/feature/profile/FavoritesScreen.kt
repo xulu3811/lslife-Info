@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,10 +25,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.model.Post
-import com.lianshan.lslife.ui.components.EmptyState
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.core.model.Post
+import com.qingyuan.lslife.ui.components.EmptyState
+import com.qingyuan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.chat
+package com.qingyuan.lslife.feature.chat
 
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
-import com.lianshan.lslife.ui.theme.PrimaryRed
+import com.qingyuan.lslife.ui.theme.PrimaryRed
 
 @Composable
 fun SendImagePreviewScreen(

@@ -141,12 +141,12 @@ export default function ContentAudit() {
                     {new Date(post.createdAt).toLocaleString()}
                   </td>
                   <td>
-                    <span className={`badge ${post.status === 'published' ? 'badge-success' : post.status === 'pending_review' ? 'badge-warning' : 'badge-danger'}`}>
-                      {post.status === 'published' ? '已发布' : post.status === 'pending_review' ? '审核中' : '已驳回'}
+                    <span className={`badge ${post.status === 'published' || post.status === 'PUBLISHED' ? 'badge-success' : ['pending_review', 'MANUAL_REVIEWING', 'AI_REVIEWING'].includes(post.status) ? 'badge-warning' : 'badge-danger'}`}>
+                      {post.status === 'published' || post.status === 'PUBLISHED' ? '已发布' : ['pending_review', 'MANUAL_REVIEWING', 'AI_REVIEWING'].includes(post.status) ? '审核中' : '已驳回'}
                     </span>
                   </td>
                   <td className="text-right">
-                    {post.status === 'pending_review' && (
+                    {['pending_review', 'MANUAL_REVIEWING', 'AI_REVIEWING'].includes(post.status) && (
                       <div className="flex justify-end gap-2">
                         <button className="glass-button success p-2 px-3" onClick={() => handleAudit(post.id, 'approve')}>
                           <Check size={16} /> 通过
@@ -156,7 +156,7 @@ export default function ContentAudit() {
                         </button>
                       </div>
                     )}
-                    {post.status === 'published' && (
+                    {(post.status === 'published' || post.status === 'PUBLISHED') && (
                       <div className="flex justify-end gap-2">
                         <button className="glass-button danger p-2 px-3" onClick={() => handleAudit(post.id, 'ban')}>
                           <Ban size={16} /> 违规下架

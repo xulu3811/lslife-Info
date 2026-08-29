@@ -1,8 +1,8 @@
-package com.lianshan.lslife.feature.auth
+package com.qingyuan.lslife.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.AuthRepository
+import com.qingyuan.lslife.core.data.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

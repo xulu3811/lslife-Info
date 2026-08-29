@@ -1,10 +1,10 @@
-package com.lianshan.lslife.feature.wallet
+package com.qingyuan.lslife.feature.wallet
 
-import com.lianshan.lslife.core.model.ConsumeRequest
-import com.lianshan.lslife.core.model.RechargePackage
-import com.lianshan.lslife.core.model.UserWalletResponse
-import com.lianshan.lslife.core.model.WalletLogPage
-import com.lianshan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.model.ConsumeRequest
+import com.qingyuan.lslife.core.model.RechargePackage
+import com.qingyuan.lslife.core.model.UserWalletResponse
+import com.qingyuan.lslife.core.model.WalletLogPage
+import com.qingyuan.lslife.core.network.ApiService
 import javax.inject.Inject
 
 class WalletRepository @Inject constructor(

@@ -108,7 +108,7 @@ router.post(
       });
       triggerProfileAiReview(user.id, user.pendingNickname).catch(console.error);
     } else {
-      const defaultNickname = `连山新用户${phone.slice(-4)}`;
+      const defaultNickname = `清远新用户${phone.slice(-4)}`;
       user = await prisma.user.create({
         data: {
           phone,

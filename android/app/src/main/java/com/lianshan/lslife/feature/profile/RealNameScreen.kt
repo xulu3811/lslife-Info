@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -31,8 +31,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.lianshan.lslife.ui.components.PrimaryButton
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.ui.components.PrimaryButton
+import com.qingyuan.lslife.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

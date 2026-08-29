@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.chat
+package com.qingyuan.lslife.feature.chat
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
@@ -23,9 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.database.LocalConversationEntity
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.theme.PrimaryRed
+import com.qingyuan.lslife.core.database.LocalConversationEntity
+import com.qingyuan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.ui.theme.PrimaryRed
 import androidx.compose.foundation.clickable
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -54,17 +55,22 @@ fun ChatSessionListScreen(
         }
     }
 
+    
+
     Scaffold(
+        
+        containerColor = androidx.compose.ui.graphics.Color(0xFFF3F5F8),
         topBar = {
             TopAppBar(
                 title = { 
                     Text(
                         text = "消息", 
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                     ) 
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                    containerColor = androidx.compose.ui.graphics.Color(0xFFF3F5F8),
+                    scrolledContainerColor = androidx.compose.ui.graphics.Color(0xFFF3F5F8)
                 )
             )
         }
@@ -83,10 +89,19 @@ fun ChatSessionListScreen(
                 return@Column
             }
 
-            LazyColumn(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                contentPadding = PaddingValues(vertical = 8.dp)
+            androidx.compose.material3.Surface(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp).padding(bottom = 16.dp),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+                color = androidx.compose.ui.graphics.Color.White,
+                shadowElevation = 0.dp
             ) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
                 items(state.sessions, key = { it.conversationId }) { session ->
                     ChatSessionItem(
                         session = session, 
@@ -108,6 +123,7 @@ fun ChatSessionListScreen(
                     )
                 }
             }
+            } // End of Surface
         }
     }
 
@@ -175,7 +191,7 @@ fun ChatSessionItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(if (isPinned) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.background)
+            .background(if (isPinned) androidx.compose.ui.graphics.Color(0xFFF8F9FA) else androidx.compose.ui.graphics.Color.Transparent)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
@@ -184,14 +200,9 @@ fun ChatSessionItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Avatar
-        AsyncImage(
-            model = session.peerAvatar,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(Color.LightGray)
+        com.qingyuan.lslife.ui.components.GoogleAvatar(
+            url = session.peerAvatar,
+            size = 48.dp
         )
 
         Spacer(modifier = Modifier.width(12.dp))
@@ -221,6 +232,10 @@ fun ChatSessionItem(
                 "[图片]"
             } else if (session.lastMessage.startsWith("http") && (session.lastMessage.contains("chat_audio") || session.lastMessage.matches(Regex(".*\\.(mp3|m4a|wav|aac|ogg)(\\?.*)?", RegexOption.IGNORE_CASE)))) {
                 "[语音]"
+            } else if (session.lastMessage.trim().startsWith("{") && session.lastMessage.contains("\"id\"") && session.lastMessage.contains("\"title\"")) {
+                "[商品/服务]"
+            } else if (session.lastMessage.trim().startsWith("{") && session.lastMessage.contains("\"lat\"") && session.lastMessage.contains("\"lng\"")) {
+                "[位置]"
             } else {
                 session.lastMessage
             }

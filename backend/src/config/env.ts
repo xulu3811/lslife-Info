@@ -21,5 +21,6 @@ export const env = {
   geminiApiKey: process.env.GEMINI_API_KEY ?? '',
   aiModel: process.env.AI_MODEL ?? 'qwen-plus',
   contentModerationEnabled: (process.env.CONTENT_MODERATION_ENABLED ?? 'true') === 'true',
+  redisUrl: process.env.REDIS_URL ?? 'redis://127.0.0.1:6379',
   isProd: process.env.NODE_ENV === 'production',
 };

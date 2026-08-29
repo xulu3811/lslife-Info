@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -20,8 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.model.Post
-import com.lianshan.lslife.feature.category.ServiceListFeedCard
+import com.qingyuan.lslife.core.model.Post
+import com.qingyuan.lslife.feature.category.ServiceListFeedCard
 
 /** Mock 数据状态 */
 data class PersonalProfileState(

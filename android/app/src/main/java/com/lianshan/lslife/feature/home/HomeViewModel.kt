@@ -1,15 +1,15 @@
-package com.lianshan.lslife.feature.home
+package com.qingyuan.lslife.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.CategoryRepository
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.model.Banner
-import com.lianshan.lslife.core.model.CategoryNode
-import com.lianshan.lslife.core.model.CategorySchemaResponse
+import com.qingyuan.lslife.core.data.CategoryRepository
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.model.Banner
+import com.qingyuan.lslife.core.model.CategoryNode
+import com.qingyuan.lslife.core.model.CategorySchemaResponse
 
-import com.lianshan.lslife.core.model.Merchant
-import com.lianshan.lslife.core.model.Post
+import com.qingyuan.lslife.core.model.Merchant
+import com.qingyuan.lslife.core.model.Post
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -50,7 +50,7 @@ data class HomeUiState(
     val banners: List<Banner> = emptyList(),
 
     val selectedTab: String = "RECOMMENDED",
-    val currentLocation: String = "连山县",
+    val currentLocation: String = "清远市",
     val searchHotwords: List<String> = listOf("搜本地 靠谱保洁阿姨", "查看最新急售二手房", "找日结兼职工人", "精选同城美食"),
 )
 

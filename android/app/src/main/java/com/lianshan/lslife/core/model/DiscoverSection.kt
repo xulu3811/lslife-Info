@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.model
+package com.qingyuan.lslife.core.model
 
 import kotlinx.serialization.Serializable
 

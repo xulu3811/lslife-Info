@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.contacts
+package com.qingyuan.lslife.feature.contacts
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.network.PublicUserResponse
-import com.lianshan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.core.network.PublicUserResponse
+import com.qingyuan.lslife.ui.components.LoadingBox
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

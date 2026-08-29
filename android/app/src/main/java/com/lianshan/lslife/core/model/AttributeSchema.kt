@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.model
+package com.qingyuan.lslife.core.model
 
 /** 属性字段类型枚举 */
 enum class FieldType {

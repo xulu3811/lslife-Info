@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -31,8 +31,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.ui.components.LoadingBox
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -174,7 +174,7 @@ app.get('/api/orders/:id', (req, res) => {
     status,
     progress,
     rider: {
-      name: '阿力 (连山特派骑手)',
+      name: '阿力 (清远特派骑手)',
       phone: '139-2244-8800',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&q=80',
       lat: riderLat,
@@ -195,7 +195,7 @@ app.post('/api/gemini/recommend', async (req, res) => {
   if (!ai) {
     // Fallback if API key is not available
     res.json({
-      reply: '您好！我是连山同城智能小助手。目前AI服务连接中，我可以直接向您推荐连山壮族瑶族自治县的特色名吃：\n\n1. **瑶家柴火鸡**：纯天然柴火烹制，鸡肉饱满香脆。\n2. **连山大汤糍**：传统咸甜大汤糍，老街口碑之王，软糯香滑。\n3. **腊肉冬笋竹筒饭**：竹香与农家熏腊肉完美融合！\n\n请问您今天胃口如何？点击菜单可以直接下单体验哦！',
+      reply: '您好！我是同城清远智能小助手。目前AI服务连接中，我可以直接向您推荐清远壮族瑶族自治县的特色名吃：\n\n1. **瑶家柴火鸡**：纯天然柴火烹制，鸡肉饱满香脆。\n2. **清远大汤糍**：传统咸甜大汤糍，老街口碑之王，软糯香滑。\n3. **腊肉冬笋竹筒饭**：竹香与农家熏腊肉完美融合！\n\n请问您今天胃口如何？点击菜单可以直接下单体验哦！',
       recommendations: [
         { merchantId: 'm1', itemId: 'm1_i1', name: '招牌瑶家柴火鸡', price: 68 },
         { merchantId: 'm2', itemId: 'm2_i1', name: '招牌经典咸大汤糍', price: 10 }
@@ -214,7 +214,7 @@ app.post('/api/gemini/recommend', async (req, res) => {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.5-flash',
-      contents: `你是一个熟悉广东省清远市连山壮族瑶族自治县美食的同城生活专家。请根据用户的喜好，在下方提供的真实商户数据中，进行定制化、温情并充满粤北特色的菜品推荐。
+      contents: `你是一个熟悉广东省清远市清远壮族瑶族自治县美食的同城生活专家。请根据用户的喜好，在下方提供的真实商户数据中，进行定制化、温情并充满粤北特色的菜品推荐。
 
 商户数据:
 ${JSON.stringify(formattedMerchants, null, 2)}
@@ -223,7 +223,7 @@ ${JSON.stringify(formattedMerchants, null, 2)}
 
 请返回一个包含推荐文字和推荐菜品ID列表的JSON数据，格式如下：
 {
-  "reply": "带有连山风土人情和诱人美食描述的回答...",
+  "reply": "带有清远风土人情和诱人美食描述的回答...",
   "recommendations": [
     { "merchantId": "商户ID", "itemId": "菜品ID", "name": "菜品名称", "price": 价格 }
   ]

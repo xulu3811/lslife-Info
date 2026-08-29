@@ -169,7 +169,7 @@ export default function MapContainer({
             opacity="0.75"
           />
           <text x="200" y="300" fill={isDarkMode ? '#4ade80' : '#15803d'} fontSize="14" className="font-sans font-semibold opacity-60">
-            连山九龙山生态园
+            清远九龙山生态园
           </text>
 
           {/* Park Area 2: Riverside Square */}
@@ -404,7 +404,7 @@ export default function MapContainer({
 
       {/* Map Legend Overlay */}
       <div className="absolute bottom-10 md:bottom-4 left-4 p-2.5 rounded-xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-lg border border-gray-100 dark:border-gray-800 flex flex-col gap-1.5 z-10 text-[11px] max-w-[180px] transition-colors">
-        <div className="font-bold text-gray-800 dark:text-gray-100">连山城区实时定位地图</div>
+        <div className="font-bold text-gray-800 dark:text-gray-100">清远城区实时定位地图</div>
         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
           <span className="w-2.5 h-2.5 rounded-full bg-red-500 ring-4 ring-red-500/25"></span>
           <span>我的地址: 瑶香苑小区</span>

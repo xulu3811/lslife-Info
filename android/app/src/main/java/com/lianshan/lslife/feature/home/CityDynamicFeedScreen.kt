@@ -1,20 +1,19 @@
-package com.lianshan.lslife.feature.home
+﻿package com.qingyuan.lslife.feature.home
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.staggeredgrid.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
@@ -28,10 +27,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Size
-import com.lianshan.lslife.core.model.Post
+import com.qingyuan.lslife.core.model.Post
+import com.qingyuan.lslife.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,15 +42,14 @@ fun CityDynamicsScreen(
     onPostClick: (String) -> Unit,
     onChatClick: (String) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val newPostsCount by viewModel.newPostsCount.collectAsState()
-    val gridState = rememberLazyStaggeredGridState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val newPostsCount by viewModel.newPostsCount.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     var isRefreshing by remember { mutableStateOf(false) }
 
-    // Trigger load more
-    LaunchedEffect(gridState) {
-        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .collect { lastIndex ->
                 if (uiState is DynamicsUiState.Success) {
                     val postsSize = (uiState as DynamicsUiState.Success).items.size
@@ -66,47 +66,38 @@ fun CityDynamicsScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF3F5F8))) {
         PullToRefreshBox(
             isRefreshing = isRefreshing,
-            onRefresh = {
+            onRefresh = { 
                 isRefreshing = true
                 viewModel.loadInitialData()
             },
             modifier = Modifier.fillMaxSize()
         ) {
-            when (val state = uiState) {
-                is DynamicsUiState.Loading -> {
-                    if (!isRefreshing) {
-                        DynamicsSkeletonGrid()
+            LazyColumn(
+                state = listState,
+                contentPadding = PaddingValues(top = 8.dp, bottom = Dimens.xxl),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (uiState is DynamicsUiState.Loading) {
+                    items(6) { DynamicsSkeletonList() }
+                } else if (uiState is DynamicsUiState.Error) {
+                    item { Text((uiState as DynamicsUiState.Error).message, modifier = Modifier.padding(16.dp)) }
+                } else if (uiState is DynamicsUiState.Success) {
+                    val posts = (uiState as DynamicsUiState.Success).items
+                    items(posts, key = { it.id }) { post ->
+                        MomentFeedCard(
+                            item = post,
+                            onClick = { onPostClick(post.id) },
+                            onChatClick = { onChatClick(post.id) }
+                        )
+                        HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFF3F5F8))
                     }
-                }
-                is DynamicsUiState.Success -> {
-                    val feedItems = state.items
-                    LazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Fixed(2),
-                        state = gridState,
-                        contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 100.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalItemSpacing = 8.dp,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(feedItems, key = { it.id }) { item ->
-                            DynamicFeedCard(
-                                item = item,
-                                onClick = { onPostClick(item.id) },
-                                onChatClick = { onChatClick(item.id) }
-                            )
-                        }
-                    }
-                }
-                is DynamicsUiState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(state.message, color = Color.Gray)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Button(onClick = { viewModel.loadInitialData() }) {
-                                Text("重试")
+                    if ((uiState as DynamicsUiState.Success).hasMore) {
+                        item {
+                            Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
                             }
                         }
                     }
@@ -114,7 +105,6 @@ fun CityDynamicsScreen(
             }
         }
 
-        // Floating Pill UX for new items
         AnimatedVisibility(
             visible = newPostsCount > 0,
             enter = fadeIn(),
@@ -125,18 +115,16 @@ fun CityDynamicsScreen(
         ) {
             Surface(
                 shape = CircleShape,
-                color = Color(0xFFFF4D4F),
+                color = Color(0xFF4285F4),
                 shadowElevation = 4.dp,
                 modifier = Modifier.clickable {
                     viewModel.fetchNewData()
-                    coroutineScope.launch {
-                        gridState.animateScrollToItem(0)
-                    }
+                    coroutineScope.launch { listState.animateScrollToItem(0) }
                 }
             ) {
                 Text(
-                    text = "👇 有 $newPostsCount 条新动态",
-                    color = MaterialTheme.colorScheme.surface,
+                    text = "有 ${newPostsCount} 条新动态",
+                    color = Color.White,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -147,48 +135,142 @@ fun CityDynamicsScreen(
 }
 
 @Composable
-fun DynamicsSkeletonGrid() {
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Fixed(2),
-        contentPadding = PaddingValues(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalItemSpacing = 8.dp,
-        modifier = Modifier.fillMaxSize()
+fun DynamicsSkeletonList() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        items(6) { index ->
-            val heightInfo = if (index % 2 == 0) 220.dp else 180.dp
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(heightInfo)
-            ) {
-                Column {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .background(MaterialTheme.colorScheme.outlineVariant)
-                    )
-                    Column(modifier = Modifier.padding(8.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.8f)
-                                .height(14.dp)
-                                .background(MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(20.dp).background(MaterialTheme.colorScheme.outlineVariant, CircleShape))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Box(
-                                modifier = Modifier
-                                    .width(60.dp)
-                                    .height(12.dp)
-                                    .background(MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
-                            )
-                        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(modifier = Modifier.size(36.dp).background(Color(0xFFF3F5F8), CircleShape))
+            Spacer(modifier = Modifier.width(10.dp))
+            Column {
+                Box(modifier = Modifier.width(120.dp).height(14.dp).background(Color(0xFFF3F5F8), RoundedCornerShape(4.dp)))
+                Spacer(modifier = Modifier.height(6.dp))
+                Box(modifier = Modifier.width(80.dp).height(12.dp).background(Color(0xFFF3F5F8), RoundedCornerShape(4.dp)))
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(Color(0xFFF3F5F8), RoundedCornerShape(4.dp)))
+        Spacer(modifier = Modifier.height(6.dp))
+        Box(modifier = Modifier.fillMaxWidth(0.6f).height(16.dp).background(Color(0xFFF3F5F8), RoundedCornerShape(4.dp)))
+    }
+    HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFF3F5F8))
+}
+
+@Composable
+fun MomentFeedCard(
+    item: Post,
+    onClick: () -> Unit,
+    onChatClick: () -> Unit
+) {
+    val context = LocalContext.current
+    val baseUrl = com.qingyuan.lslife.BuildConfig.API_BASE_URL
+    val avatarUrl = item.user?.avatar ?: ""
+    val absoluteAvatarUrl = if (avatarUrl.startsWith("http") || avatarUrl.startsWith("android.resource://") || avatarUrl.startsWith("file://")) {
+        avatarUrl
+    } else if (avatarUrl.isNotEmpty()) {
+        "${baseUrl.removeSuffix("/")}${if (avatarUrl.startsWith("/")) "" else "/"}$avatarUrl"
+    } else {
+        ""
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White)
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        // Header: Avatar, Name, Time
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            com.qingyuan.lslife.ui.components.GoogleAvatar(
+                url = absoluteAvatarUrl,
+                size = 36.dp
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = item.user?.nickname ?: "清远用户",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF111827)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = item.createdAt.take(16).replace("T", " "), // Simple formatting
+                    fontSize = 11.sp,
+                    color = Color(0xFF888888)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Content Text
+        val displayText = if (item.title.isNotBlank()) item.title else item.description
+        if (displayText.isNotBlank()) {
+            Text(
+                text = displayText,
+                fontSize = 14.sp,
+                color = Color(0xFF1F2937),
+                maxLines = 6,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 22.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Images Grid
+        if (item.images.isNotEmpty()) {
+            MomentImageGrid(images = item.images, baseUrl = baseUrl)
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+
+        // Location & Actions
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            if (!item.city.isNullOrEmpty() || !item.district.isNullOrEmpty()) {
+                val locText = listOfNotNull(item.city, item.district).joinToString("·")
+                Text(
+                    text = locText,
+                    fontSize = 11.sp,
+                    color = Color(0xFF4285F4), // Primary Blue
+                    modifier = Modifier
+                        .background(Color(0xFFF0F4F9), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.weight(1f))
+
+            if (!item.contactPhone.isNullOrEmpty()) {
+                Surface(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:${item.contactPhone}") }
+                        context.startActivity(intent)
+                    },
+                    shape = RoundedCornerShape(14.dp),
+                    color = Color(0xFFF0F4F9),
+                    modifier = Modifier.height(26.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 8.dp)) {
+                        Icon(Icons.Filled.Phone, contentDescription = "拨打", tint = Color(0xFF4285F4), modifier = Modifier.size(13.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("拨打", fontSize = 11.sp, color = Color(0xFF4285F4), fontWeight = FontWeight.Medium)
+                    }
+                }
+            } else {
+                Surface(
+                    onClick = { onChatClick() },
+                    shape = RoundedCornerShape(14.dp),
+                    color = Color(0xFFF0F4F9),
+                    modifier = Modifier.height(26.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 8.dp)) {
+                        Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "私聊", tint = Color(0xFF4285F4), modifier = Modifier.size(13.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("私聊", fontSize = 11.sp, color = Color(0xFF4285F4), fontWeight = FontWeight.Medium)
                     }
                 }
             }
@@ -197,168 +279,47 @@ fun DynamicsSkeletonGrid() {
 }
 
 @Composable
-fun DynamicFeedCard(
-    item: Post,
-    onClick: () -> Unit,
-    onChatClick: () -> Unit
-) {
+fun MomentImageGrid(images: List<String>, baseUrl: String) {
+    val maxImages = images.take(9)
     val context = LocalContext.current
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = Color.White,
-        shadowElevation = 0.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE8EAED)),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-    ) {
-        Column {
-            val imageUrl = item.images.firstOrNull() ?: ""
-            val baseUrl = com.lianshan.lslife.BuildConfig.API_BASE_URL
-            val absoluteUrl = if (imageUrl.startsWith("http") || imageUrl.startsWith("android.resource://") || imageUrl.startsWith("file://")) {
-                imageUrl
-            } else if (imageUrl.isNotEmpty()) {
-                "${baseUrl.removeSuffix("/")}${if (imageUrl.startsWith("/")) "" else "/"}$imageUrl"
-            } else {
-                ""
-            }
-
-            val displayText = if (item.title.isNotBlank()) item.title else item.description
-
-            if (absoluteUrl.isNotEmpty()) {
-                // Image Post - Google Discover Style
-                val aspectRatio = item.imageWidth?.let { w ->
-                    item.imageHeight?.let { h ->
-                        if (h > 0) w.toFloat() / h.toFloat() else 1f
-                    }
-                } ?: 1f
-                
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(absoluteUrl)
-                        .crossfade(true)
-                        .size(Size.ORIGINAL)
-                        .build(),
-                    contentDescription = item.title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(aspectRatio.coerceIn(0.7f, 1.5f))
-                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                        .background(Color(0xFFF1F3F4))
-                )
-                
-                if (displayText.isNotBlank()) {
-                    Text(
-                        text = displayText,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF202124),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 4.dp)
-                    )
-                } else {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            } else {
-                // Text-only Post - Google Assistant/Keep Card Style
-                val googleColors = listOf(Color(0xFF4285F4), Color(0xFFEA4335), Color(0xFFFBBC05), Color(0xFF34A853))
-                val googleLightColors = listOf(Color(0xFFE8F0FE), Color(0xFFFCE8E6), Color(0xFFFEF7E0), Color(0xFFE6F4EA))
-                val colorIndex = kotlin.math.abs(item.id.hashCode()) % googleColors.size
-                
-                Column(modifier = Modifier.padding(12.dp)) {
-                    // Category/Type indicator
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
+    
+    if (maxImages.size == 1) {
+        val img = maxImages.first()
+        val absoluteUrl = if (img.startsWith("http") || img.startsWith("android.resource://") || img.startsWith("file://")) img else "${baseUrl.removeSuffix("/")}${if (img.startsWith("/")) "" else "/"}$img"
+        AsyncImage(
+            model = ImageRequest.Builder(context).data(absoluteUrl).crossfade(true).build(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .widthIn(max = 180.dp)
+                .heightIn(max = 180.dp)
+                .aspectRatio(1f, matchHeightConstraintsFirst = false)
+                .clip(RoundedCornerShape(6.dp))
+                .background(Color(0xFFF3F5F8))
+        )
+    } else {
+        val columns = if (maxImages.size == 4) 2 else 3
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            maxImages.chunked(columns).forEach { rowImages ->
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    rowImages.forEach { img ->
+                        val absoluteUrl = if (img.startsWith("http") || img.startsWith("android.resource://") || img.startsWith("file://")) img else "${baseUrl.removeSuffix("/")}${if (img.startsWith("/")) "" else "/"}$img"
+                        AsyncImage(
+                            model = ImageRequest.Builder(context).data(absoluteUrl).crossfade(true).build(),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .background(googleLightColors[colorIndex], RoundedCornerShape(4.dp))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = "同城信息", 
-                                fontSize = 10.sp, 
-                                fontWeight = FontWeight.Bold,
-                                color = googleColors[colorIndex]
-                            )
+                                .weight(1f)
+                                .aspectRatio(1f)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFFF3F5F8))
+                        )
+                    }
+                    if (rowImages.size < columns) {
+                        repeat(columns - rowImages.size) {
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    Text(
-                        text = displayText,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF202124),
-                        maxLines = 5,
-                        overflow = TextOverflow.Ellipsis,
-                        lineHeight = 22.sp
-                    )
-                }
-            }
-
-            // User Info & Actions Footer
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(horizontal = 12.dp, vertical = 12.dp)
-                    .fillMaxWidth()
-            ) {
-                val avatarUrl = item.user?.avatar ?: ""
-                val authorName = item.user?.nickname ?: "连山市民"
-                
-                val absoluteAvatarUrl = if (avatarUrl.startsWith("http") || avatarUrl.startsWith("android.resource://") || avatarUrl.startsWith("file://")) {
-                    avatarUrl
-                } else if (avatarUrl.isNotEmpty()) {
-                    "${baseUrl.removeSuffix("/")}${if (avatarUrl.startsWith("/")) "" else "/"}$avatarUrl"
-                } else {
-                    ""
-                }
-
-                com.lianshan.lslife.ui.components.GoogleAvatar(
-                    url = absoluteAvatarUrl,
-                    size = 20.dp
-                )
-                
-                Spacer(modifier = Modifier.width(8.dp))
-                
-                Text(
-                    text = authorName,
-                    fontSize = 12.sp,
-                    color = Color(0xFF5F6368),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                
-                Spacer(modifier = Modifier.width(4.dp))
-                
-                if (!item.contactPhone.isNullOrEmpty()) {
-                    Icon(
-                        imageVector = Icons.Filled.Phone,
-                        contentDescription = "拨打",
-                        tint = Color(0xFF5F6368),
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clip(CircleShape)
-                            .clickable {
-                                val intent = Intent(Intent.ACTION_DIAL).apply {
-                                    data = Uri.parse("tel:${item.contactPhone}")
-                                }
-                                context.startActivity(intent)
-                            }
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Chat,
-                        contentDescription = "聊天",
-                        tint = Color(0xFF5F6368),
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clip(CircleShape)
-                            .clickable { onChatClick() }
-                    )
                 }
             }
         }

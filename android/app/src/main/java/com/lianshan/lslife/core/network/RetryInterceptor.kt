@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.network
+package com.qingyuan.lslife.core.network
 
 import okhttp3.Interceptor
 import okhttp3.Response

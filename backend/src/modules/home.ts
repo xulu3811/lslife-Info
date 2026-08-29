@@ -19,7 +19,7 @@ router.get(
       banners = [
         {
           id: 'b1',
-          title: '连山特惠好房 · 盛大开盘',
+          title: '清远特惠好房 · 盛大开盘',
           imageUrl: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1000&q=80',
           linkUrl: null,
           sortOrder: 1,

@@ -1,6 +1,6 @@
-package com.lianshan.lslife.core.network
+package com.qingyuan.lslife.core.network
 
-import com.lianshan.lslife.core.model.ApiEnvelope
+import com.qingyuan.lslife.core.model.ApiEnvelope
 
 import retrofit2.HttpException
 import org.json.JSONObject

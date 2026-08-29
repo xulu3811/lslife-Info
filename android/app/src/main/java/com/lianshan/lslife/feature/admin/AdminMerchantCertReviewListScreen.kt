@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.admin
+package com.qingyuan.lslife.feature.admin
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,10 +19,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.network.ApiService
-import com.lianshan.lslife.core.network.MerchantCertification
-import com.lianshan.lslife.ui.components.EmptyState
-import com.lianshan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.MerchantCertification
+import com.qingyuan.lslife.ui.components.EmptyState
+import com.qingyuan.lslife.ui.components.LoadingBox
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

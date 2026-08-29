@@ -1,8 +1,8 @@
-package com.lianshan.lslife.core.network
+package com.qingyuan.lslife.core.network
 
 import android.content.Context
-import com.lianshan.lslife.core.data.TokenStore
-import com.lianshan.lslife.core.utils.DeviceFingerprintUtil
+import com.qingyuan.lslife.core.data.TokenStore
+import com.qingyuan.lslife.core.utils.DeviceFingerprintUtil
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.Interceptor
 import okhttp3.Response

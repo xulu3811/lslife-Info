@@ -1,10 +1,10 @@
-package com.lianshan.lslife.stress
+package com.qingyuan.lslife.stress
 
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.database.MerchantDao
-import com.lianshan.lslife.core.database.MerchantEntity
-import com.lianshan.lslife.core.model.MerchantPage
-import com.lianshan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.database.MerchantDao
+import com.qingyuan.lslife.core.database.MerchantEntity
+import com.qingyuan.lslife.core.model.MerchantPage
+import com.qingyuan.lslife.core.network.ApiService
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers

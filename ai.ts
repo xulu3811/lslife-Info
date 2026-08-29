@@ -40,8 +40,8 @@ const mockProvider: AiProvider = {
       .slice(0, 2);
     return {
       reply:
-        `您好！我是连山同城智能助手。收到您的需求「${prompt}」。\n\n` +
-        '为您推荐连山壮族瑶族自治县的本地好物，点击卡片可直接下单体验哦！',
+        `您好！我是同城清远智能助手。收到您的需求「${prompt}」。\n\n` +
+        '为您推荐清远壮族瑶族自治县的本地好物，点击卡片可直接下单体验哦！',
       recommendations: foodPicks,
     };
   },
@@ -52,7 +52,7 @@ const deepseekProvider: AiProvider = {
     const apiKey = env.aiApiKey || 'sk-30f79d21acbd487da71ec3cb5ce63d54';
     const merchants = await buildMerchantContext();
     const sys =
-      '你是熟悉广东省清远市连山壮族瑶族自治县的同城生活专家。请基于给定商户数据做定制推荐, ' +
+      '你是熟悉广东省清远市清远壮族瑶族自治县的同城生活专家。请基于给定商户数据做定制推荐, ' +
       '只输出合法 JSON: {"reply":"...","recommendations":[{"merchantId","itemId","name","price"}]}';
     const resp = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',

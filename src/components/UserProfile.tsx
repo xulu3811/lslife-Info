@@ -31,7 +31,7 @@ const SEED_NOTIFICATIONS: AppNotification[] = [
     id: 'sys-1',
     type: 'system',
     title: '🎉 实名认证成功 · 奖励已到账',
-    content: '您的个人实名认证已绑定，连山同城为您解锁 “金牌吃货” 尊贵特权！',
+    content: '您的个人实名认证已绑定，同城清远为您解锁 “金牌吃货” 尊贵特权！',
     timestamp: '昨天 18:30',
     read: true,
   },
@@ -60,7 +60,7 @@ const SEED_ADDRESSES: DeliveryAddress[] = [
     name: '莫小美',
     phone: '13812345678',
     tag: '家',
-    address: '广东省清远市连山壮族瑶族自治县吉田镇吉祥路88号3楼',
+    address: '广东省清远市清远壮族瑶族自治县吉田镇吉祥路88号3楼',
     isDefault: true
   },
   {
@@ -68,7 +68,7 @@ const SEED_ADDRESSES: DeliveryAddress[] = [
     name: '雷大哥',
     phone: '13987654321',
     tag: '公司',
-    address: '广东省清远市连山壮族瑶族自治县壮乡风情街瑶族特色农家乐',
+    address: '广东省清远市清远壮族瑶族自治县壮乡风情街瑶族特色农家乐',
     isDefault: false
   }
 ];
@@ -140,7 +140,7 @@ export default function UserProfile({
               id: `${activeOrderId}-accept`,
               type: 'merchant_accept',
               title: '🏮 商家接单：瑶家美味制作中',
-              content: `【${order.merchantName}】已接单并开始为您烹饪，精选连山非遗食材，火候正佳！`,
+              content: `【${order.merchantName}】已接单并开始为您烹饪，精选清远非遗食材，火候正佳！`,
               timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
               read: false,
               orderId: activeOrderId
@@ -419,7 +419,7 @@ export default function UserProfile({
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-base font-black tracking-tight">{t('profile.username')} (LianShan_A9)</h3>
+              <h3 className="text-base font-black tracking-tight">{t('profile.username')} (Qingyuan_A9)</h3>
               {membershipTier === 'premium' && (
                 <span className="text-[9px] font-bold bg-amber-400 text-gray-900 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
                   {t('profile.member_premium')}
@@ -691,7 +691,7 @@ export default function UserProfile({
 
       {/* Aesthetic footer credits */}
       <div className="py-8 text-center text-[10px] text-gray-400 dark:text-gray-500 font-bold tracking-wide mt-auto shrink-0 uppercase">
-        © 2026 连山壮族瑶族自治县 · 智慧同城生活平台
+        © 2026 清远壮族瑶族自治县 · 智慧同城生活平台
       </div>
 
       {/* Slide-over Panel: Address Management */}
@@ -917,7 +917,7 @@ export default function UserProfile({
                   <textarea
                     value={formAddressStr}
                     onChange={(e) => setFormAddressStr(e.target.value)}
-                    placeholder="请输入完整的收货地址，例如：广东省清远市连山壮族瑶族自治县..."
+                    placeholder="请输入完整的收货地址，例如：广东省清远市清远壮族瑶族自治县..."
                     rows={3}
                     maxLength={200}
                     className="w-full p-2.5 rounded-xl border bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-800 text-gray-850 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-red-500/50 font-semibold resize-none leading-relaxed"
@@ -1119,7 +1119,7 @@ export default function UserProfile({
                     <div className="space-y-4">
                       <div className="space-y-1.5">
                         <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">Username</label>
-                        <input type="text" defaultValue="LianShan_A9" className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all" />
+                        <input type="text" defaultValue="Qingyuan_A9" className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[11px] font-bold text-gray-400 uppercase ml-1">Email</label>
@@ -1224,7 +1224,7 @@ export default function UserProfile({
                               <span className="bg-red-100 text-red-600 text-[9px] px-1.5 py-0.5 rounded font-bold">Default</span>
                             </div>
                             <p className="text-[11px] text-gray-500 mt-1">123 Example Street, Apt 4B, City</p>
-                            <p className="text-[10px] text-gray-400 mt-0.5">Contact: LianShan (+86 138****0000)</p>
+                            <p className="text-[10px] text-gray-400 mt-0.5">Contact: Qingyuan (+86 138****0000)</p>
                           </div>
                         </div>
                         <button className="text-gray-400 hover:text-red-500"><ShieldCheck size={14} /></button>
@@ -1234,7 +1234,7 @@ export default function UserProfile({
                         <div>
                           <h4 className="font-bold text-sm">Office</h4>
                           <p className="text-[11px] text-gray-500 mt-1">456 Business Road, Floor 12, City</p>
-                          <p className="text-[10px] text-gray-400 mt-0.5">Contact: LianShan (+86 138****0000)</p>
+                          <p className="text-[10px] text-gray-400 mt-0.5">Contact: Qingyuan (+86 138****0000)</p>
                         </div>
                       </div>
                     </div>
@@ -1256,11 +1256,11 @@ export default function UserProfile({
                     className="p-6 text-sm text-gray-600 dark:text-gray-400 space-y-4"
                   >
                     <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">Terms of Service</h3>
-                    <p>Welcome to LianShan Local Services. By using our application, you agree to these terms.</p>
+                    <p>Welcome to Qingyuan Local Services. By using our application, you agree to these terms.</p>
                     <p className="font-bold text-gray-800 dark:text-gray-200 mt-4">1. User Account</p>
                     <p>You are responsible for maintaining the confidentiality of your account credentials. You must be at least 18 years old to use certain premium services.</p>
                     <p className="font-bold text-gray-800 dark:text-gray-200 mt-4">2. Services Provided</p>
-                    <p>LianShan provides a local marketplace connecting users with merchants, delivery personnel, and local service providers. We do not guarantee the quality of third-party services.</p>
+                    <p>Qingyuan provides a local marketplace connecting users with merchants, delivery personnel, and local service providers. We do not guarantee the quality of third-party services.</p>
                     <p className="font-bold text-gray-800 dark:text-gray-200 mt-4">3. Prohibited Conduct</p>
                     <p>You agree not to engage in fraudulent activities, spam, or any behavior that violates local laws while using the platform.</p>
                   </motion.div>

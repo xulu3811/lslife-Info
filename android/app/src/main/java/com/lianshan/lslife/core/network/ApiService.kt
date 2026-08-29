@@ -1,6 +1,6 @@
-package com.lianshan.lslife.core.network
+package com.qingyuan.lslife.core.network
 
-import com.lianshan.lslife.core.model.*
+import com.qingyuan.lslife.core.model.*
 import retrofit2.http.*
 
 /** 后端 REST 接口, 对应 backend/src/modules。统一响应包裹在 ApiEnvelope。 */

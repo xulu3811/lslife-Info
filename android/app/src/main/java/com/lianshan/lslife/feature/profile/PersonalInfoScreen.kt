@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,11 +39,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
-import com.lianshan.lslife.core.data.AuthRepository
-import com.lianshan.lslife.core.model.User
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.components.SoftCard
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.core.data.AuthRepository
+import com.qingyuan.lslife.core.model.User
+import com.qingyuan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.ui.components.SoftCard
+import com.qingyuan.lslife.ui.theme.Dimens
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.wallet
+package com.qingyuan.lslife.feature.wallet
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -1,19 +1,19 @@
-package com.lianshan.lslife.feature.publish
+package com.qingyuan.lslife.feature.publish
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.AuthRepository
-import com.lianshan.lslife.core.data.CategoryRepository
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.data.AddressManager
-import com.lianshan.lslife.core.data.AddressNode
-import com.lianshan.lslife.core.model.CategoryNode
-import com.lianshan.lslife.core.model.DynamicField
-import com.lianshan.lslife.core.model.Quota
-import com.lianshan.lslife.core.network.CreatePostRequest
-import com.lianshan.lslife.core.network.AiGenerateDescResponse
+import com.qingyuan.lslife.core.data.AuthRepository
+import com.qingyuan.lslife.core.data.CategoryRepository
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.data.AddressManager
+import com.qingyuan.lslife.core.data.AddressNode
+import com.qingyuan.lslife.core.model.CategoryNode
+import com.qingyuan.lslife.core.model.DynamicField
+import com.qingyuan.lslife.core.model.Quota
+import com.qingyuan.lslife.core.network.CreatePostRequest
+import com.qingyuan.lslife.core.network.AiGenerateDescResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +29,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 import java.security.MessageDigest
 
-import com.lianshan.lslife.core.model.TradeMode
+import com.qingyuan.lslife.core.model.TradeMode
 
 data class PublishUiState(
     val publisherType: String = "INDIVIDUAL",
@@ -47,7 +47,7 @@ data class PublishUiState(
     val preSelectedLevel1Id: String? = null,
 
     // Schema-Driven Dynamic Attributes Form State
-    val categorySchemas: List<com.lianshan.lslife.core.model.AttributeSchema> = emptyList(),
+    val categorySchemas: List<com.qingyuan.lslife.core.model.AttributeSchema> = emptyList(),
     val attributesMap: Map<String, Any> = emptyMap(),
 
     val title: String = "",

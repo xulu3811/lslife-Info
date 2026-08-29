@@ -1,9 +1,9 @@
-package com.lianshan.lslife.feature.wallet
+package com.qingyuan.lslife.feature.wallet
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.model.RechargePackage
-import com.lianshan.lslife.core.model.WalletLog
+import com.qingyuan.lslife.core.model.RechargePackage
+import com.qingyuan.lslife.core.model.WalletLog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

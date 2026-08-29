@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.settings
+package com.qingyuan.lslife.feature.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.core.model.AppVersionInfo
+import com.qingyuan.lslife.core.model.AppVersionInfo
 
 /**
  * OTA 更新弹窗

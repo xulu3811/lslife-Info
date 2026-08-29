@@ -23,7 +23,7 @@ export async function markOrderPaid(orderId: string, transactionId: string) {
       update: {},
       create: {
         orderId,
-        riderName: '阿力 (连山特派骑手)',
+        riderName: '阿力 (清远特派骑手)',
         riderPhone: '139-2244-8800',
         riderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&q=80',
         riderLat: order.merchantId ? 0 : 0,
@@ -77,7 +77,7 @@ export async function markSubscriptionPaid(subscriptionId: string, transactionId
         userId: sub.userId,
         type: 'system',
         title: '会员开通成功',
-        content: `恭喜您开通连山同城 ${sub.tier === 'premium' ? '至尊' : '超级'}会员！发布额度已提升。`,
+        content: `恭喜您开通同城清远 ${sub.tier === 'premium' ? '至尊' : '超级'}会员！发布额度已提升。`,
       },
     });
   });

@@ -1,4 +1,4 @@
-package com.lianshan.lslife.ui
+package com.qingyuan.lslife.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -34,7 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.outlined.Email
-import com.lianshan.lslife.feature.chat.ChatSessionListScreen
+import com.qingyuan.lslife.feature.chat.ChatSessionListScreen
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -67,33 +67,33 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.lianshan.lslife.R
-import com.lianshan.lslife.feature.auth.ForgotPasswordScreen
-import com.lianshan.lslife.feature.auth.LoginScreen
-import com.lianshan.lslife.feature.home.HomeScreen
-import com.lianshan.lslife.feature.category.CategoryScreen
-import com.lianshan.lslife.feature.search.SearchScreen
-import com.lianshan.lslife.feature.merchant.MerchantDetailScreen
+import com.qingyuan.lslife.R
+import com.qingyuan.lslife.feature.auth.ForgotPasswordScreen
+import com.qingyuan.lslife.feature.auth.LoginScreen
+import com.qingyuan.lslife.feature.home.HomeScreen
+import com.qingyuan.lslife.feature.category.CategoryScreen
+import com.qingyuan.lslife.feature.search.SearchScreen
+import com.qingyuan.lslife.feature.merchant.MerchantDetailScreen
 
-import com.lianshan.lslife.feature.profile.CropScreen
-import com.lianshan.lslife.feature.profile.EditProfileScreen
-import com.lianshan.lslife.feature.profile.MembershipScreen
+import com.qingyuan.lslife.feature.profile.CropScreen
+import com.qingyuan.lslife.feature.profile.EditProfileScreen
+import com.qingyuan.lslife.feature.profile.MembershipScreen
 
-import com.lianshan.lslife.feature.chat.ChatSessionListScreen
-import com.lianshan.lslife.feature.chat.ChatScreen
-import com.lianshan.lslife.feature.profile.FavoritesScreen
-import com.lianshan.lslife.feature.profile.FootprintsScreen
-import com.lianshan.lslife.feature.profile.MyPostsScreen
-import com.lianshan.lslife.feature.profile.PersonalInfoScreen
-import com.lianshan.lslife.feature.profile.ProfileScreen
-import com.lianshan.lslife.feature.profile.RealNameScreen
-import com.lianshan.lslife.feature.publish.PublishScreen
-import com.lianshan.lslife.feature.wallet.WalletScreen
-import com.lianshan.lslife.feature.settings.AboutScreen
-import com.lianshan.lslife.feature.settings.PrivacyScreen
-import com.lianshan.lslife.feature.settings.SettingsScreen
-import com.lianshan.lslife.ui.navigation.Routes
-import com.lianshan.lslife.ui.components.PublishMenuBottomSheet
+import com.qingyuan.lslife.feature.chat.ChatSessionListScreen
+import com.qingyuan.lslife.feature.chat.ChatScreen
+import com.qingyuan.lslife.feature.profile.FavoritesScreen
+import com.qingyuan.lslife.feature.profile.FootprintsScreen
+import com.qingyuan.lslife.feature.profile.MyPostsScreen
+import com.qingyuan.lslife.feature.profile.PersonalInfoScreen
+import com.qingyuan.lslife.feature.profile.ProfileScreen
+import com.qingyuan.lslife.feature.profile.RealNameScreen
+import com.qingyuan.lslife.feature.publish.PublishScreen
+import com.qingyuan.lslife.feature.wallet.WalletScreen
+import com.qingyuan.lslife.feature.settings.AboutScreen
+import com.qingyuan.lslife.feature.settings.PrivacyScreen
+import com.qingyuan.lslife.feature.settings.SettingsScreen
+import com.qingyuan.lslife.ui.navigation.Routes
+import com.qingyuan.lslife.ui.components.PublishMenuBottomSheet
 
 private data class Tab(
     val route: String,
@@ -164,7 +164,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
             if (showBottomBar) {
                 Box {
                     NavigationBar(
-                        modifier = Modifier.height(60.dp),
+                        // modifier = Modifier.height(60.dp), removed to let M3 pill show properly
                         containerColor = MaterialTheme.colorScheme.surface,
                         tonalElevation = 0.dp,
                     ) {
@@ -188,32 +188,20 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                                 },
                                 icon = {
                                     if (isPublish) {
-                                        val googleRingBrush = androidx.compose.ui.graphics.Brush.sweepGradient(
-                                            colors = listOf(
-                                                androidx.compose.ui.graphics.Color(0xFF4285F4), // Blue
-                                                androidx.compose.ui.graphics.Color(0xFFEA4335), // Red
-                                                androidx.compose.ui.graphics.Color(0xFFFBBC05), // Yellow
-                                                androidx.compose.ui.graphics.Color(0xFF34A853), // Green
-                                                androidx.compose.ui.graphics.Color(0xFF4285F4)  // Blue
-                                            )
-                                        )
-                                        Box(
-                                            modifier = Modifier
-                                                .size(37.dp)
-                                                .background(googleRingBrush, androidx.compose.foundation.shape.CircleShape)
-                                                .padding(1.8.dp) // Border thickness
-                                                .background(androidx.compose.ui.graphics.Color.White, androidx.compose.foundation.shape.CircleShape)
-                                                .padding(1.dp) // Gap
-                                                .clip(androidx.compose.foundation.shape.CircleShape)
-                                                .background(androidx.compose.ui.graphics.Color.Transparent),
-                                            contentAlignment = Alignment.Center
+                                        Surface(
+                                            modifier = Modifier.size(48.dp),
+                                            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+                                            color = MaterialTheme.colorScheme.primary,
+                                            shadowElevation = 0.dp
                                         ) {
-                                            Icon(
-                                                Icons.Filled.Add,
-                                                contentDescription = stringResource(tab.labelRes),
-                                                tint = MaterialTheme.colorScheme.onBackground,
-                                                modifier = Modifier.size(24.dp),
-                                            )
+                                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                                Icon(
+                                                    Icons.Filled.Add,
+                                                    contentDescription = stringResource(tab.labelRes),
+                                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                                    modifier = Modifier.size(24.dp),
+                                                )
+                                            }
                                         }
                                     } else {
                                         if (isMessages && unreadCount > 0) {
@@ -254,9 +242,9 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                                     }
                                 },
                                 colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = androidx.compose.ui.graphics.Color(0xFF1A73E8),
+                                    selectedIconColor = androidx.compose.ui.graphics.Color(0xFF041E49),
                                     selectedTextColor = androidx.compose.ui.graphics.Color(0xFF1A73E8),
-                                    indicatorColor = androidx.compose.ui.graphics.Color(0xFFE8F0FE),
+                                    indicatorColor = androidx.compose.ui.graphics.Color(0xFFD3E3FD),
                                     unselectedIconColor = androidx.compose.ui.graphics.Color(0xFF5F6368),
                                     unselectedTextColor = androidx.compose.ui.graphics.Color(0xFF5F6368),
                                 )
@@ -310,7 +298,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 arguments = listOf(navArgument("categoryId") { type = NavType.StringType })
             ) { backStackEntry ->
                 val categoryId = backStackEntry.arguments?.getString("categoryId") ?: ""
-                com.lianshan.lslife.feature.category.CategoryDetailScreen(
+                com.qingyuan.lslife.feature.category.CategoryDetailScreen(
                     categoryId = categoryId,
                     onBack = { navController.popBackStack() },
                     onPostClick = { postId -> navController.navigate(Routes.postDetail(postId)) },
@@ -363,7 +351,10 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 ) 
             }
 
-            composable(Routes.MY_POSTS) {
+            composable(
+                Routes.MY_POSTS,
+                arguments = listOf(navArgument("status") { defaultValue = "ALL" })
+            ) {
                 MyPostsScreen(
                     onBack = { navController.popBackStack() },
                     onEditPost = { postId -> navController.navigate(Routes.publish(postId)) }
@@ -392,7 +383,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 )
             }
             composable(Routes.FOLLOW_LIST) {
-                com.lianshan.lslife.feature.profile.FollowListScreen(
+                com.qingyuan.lslife.feature.profile.FollowListScreen(
                     userId = "",
                     onBack = { navController.popBackStack() },
                     onOpenProfile = { uid -> navController.navigate(Routes.publicProfile(uid)) }
@@ -410,7 +401,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 val mode = backStackEntry.arguments?.getString("mode")
                 val reportId = backStackEntry.arguments?.getString("reportId")
                 val context = androidx.compose.ui.platform.LocalContext.current
-                com.lianshan.lslife.feature.home.PostDetailScreen(
+                com.qingyuan.lslife.feature.home.PostDetailScreen(
                     postId = postId,
                     isAdminMode = mode == "admin",
                     reportId = reportId,
@@ -440,19 +431,20 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
             }
             
             composable(Routes.ADMIN_REVIEW_LIST) {
-                com.lianshan.lslife.feature.admin.ContentAuditScreen(
-                    onNavigateBack = { navController.popBackStack() }
+                com.qingyuan.lslife.feature.admin.ContentAuditScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onOpenPostDetail = { postId -> navController.navigate(Routes.postDetail(postId, mode = "admin")) }
                 )
             }
             
             composable(Routes.ADMIN_USER_LIST) {
-                com.lianshan.lslife.feature.admin.UserGovernanceScreen(
+                com.qingyuan.lslife.feature.admin.UserGovernanceScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
             
             composable(Routes.ADMIN_REPORT_LIST) {
-                com.lianshan.lslife.feature.admin.AdminReportListScreen(
+                com.qingyuan.lslife.feature.admin.AdminReportListScreen(
                     onBack = { navController.popBackStack() },
                     onReportClick = { reportId, targetId, targetType ->
                         if (targetType == "POST") {
@@ -462,7 +454,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 )
             }
             composable(Routes.ADMIN_APPROVAL_DASHBOARD) {
-                com.lianshan.lslife.feature.admin.AdminApprovalDashboardScreen(
+                com.qingyuan.lslife.feature.admin.AdminApprovalDashboardScreen(
                     onBack = { navController.popBackStack() },
                     onOpenPostReview = { navController.navigate(Routes.ADMIN_REVIEW_LIST) },
                     onOpenProfileReview = { navController.navigate(Routes.ADMIN_PROFILE_REVIEW_LIST) },
@@ -471,27 +463,27 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 )
             }
             composable(Routes.ADMIN_PROFILE_REVIEW_LIST) {
-                com.lianshan.lslife.feature.admin.AdminProfileReviewListScreen(
+                com.qingyuan.lslife.feature.admin.AdminProfileReviewListScreen(
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.ADMIN_KYC_REVIEW_LIST) {
-                com.lianshan.lslife.feature.admin.KycAuditScreen(
+                com.qingyuan.lslife.feature.admin.KycAuditScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.ADMIN_MERCHANT_CERT_REVIEW_LIST) {
-                com.lianshan.lslife.feature.admin.AdminMerchantCertReviewListScreen(
+                com.qingyuan.lslife.feature.admin.AdminMerchantCertReviewListScreen(
                     onBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.ADMIN_DASHBOARD) {
-                com.lianshan.lslife.feature.admin.AdminDashboardScreen(
+                com.qingyuan.lslife.feature.admin.AdminDashboardScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
             composable(Routes.ADMIN_GOVERNANCE_CENTER) {
-                com.lianshan.lslife.feature.admin.GovernanceCenterScreen(
+                com.qingyuan.lslife.feature.admin.GovernanceCenterScreen(
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -502,7 +494,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                     onOpenMembership = { navController.navigate(Routes.MEMBERSHIP) },
                     onOpenMessage = { navController.navigate(Routes.MESSAGE_LIST) },
                     onOpenRealName = { navController.navigate(Routes.REAL_NAME_AUTH) },
-                    onOpenMyPosts = { navController.navigate(Routes.MY_POSTS) },
+                    onOpenMyPosts = { status -> navController.navigate(Routes.myPosts(status)) },
                     onOpenFavorites = { navController.navigate(Routes.FAVORITES) },
                     onOpenFootprints = { navController.navigate(Routes.FOOTPRINTS) },
                     onOpenWallet = { navController.navigate(Routes.WALLET) },
@@ -550,10 +542,10 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 MembershipScreen(onBack = { navController.popBackStack() })
             }
             composable("promotion_center") {
-                com.lianshan.lslife.feature.profile.PromotionCenterScreen(onBack = { navController.popBackStack() })
+                com.qingyuan.lslife.feature.profile.PromotionCenterScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.MERCHANT_CERTIFY) {
-                com.lianshan.lslife.feature.profile.MerchantCertifyScreen(
+                com.qingyuan.lslife.feature.profile.MerchantCertifyScreen(
                     navController = navController
                 )
             }
@@ -564,7 +556,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 popEnterTransition = { androidx.compose.animation.slideInHorizontally(initialOffsetX = { -it }) },
                 popExitTransition = { androidx.compose.animation.slideOutHorizontally(targetOffsetX = { it }) }
             ) { entry ->
-                com.lianshan.lslife.feature.profile.PublicProfileScreen(
+                com.qingyuan.lslife.feature.profile.PublicProfileScreen(
                     userId = entry.arguments?.getString("userId") ?: "",
                     onBack = { navController.popBackStack() },
                     onOpenPost = { postId -> navController.navigate(Routes.postDetail(postId)) },
@@ -581,7 +573,7 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 popEnterTransition = { androidx.compose.animation.slideInHorizontally(initialOffsetX = { -it }) },
                 popExitTransition = { androidx.compose.animation.slideOutHorizontally(targetOffsetX = { it }) }
             ) { entry ->
-                com.lianshan.lslife.feature.profile.MerchantStoreScreen(
+                com.qingyuan.lslife.feature.profile.MerchantStoreScreen(
                     merchantId = entry.arguments?.getString("merchantId") ?: "",
                     onBack = { navController.popBackStack() },
                     onChatClick = { navController.navigate(Routes.chat("draft", entry.arguments?.getString("merchantId") ?: "", "商家客服")) }
@@ -604,9 +596,10 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                 ChatScreen(
                     sessionId = entry.arguments?.getString("sessionId").orEmpty(),
                     targetUserId = entry.arguments?.getString("targetUserId").orEmpty(),
-                    targetName = entry.arguments?.getString("targetName").orEmpty(),
+                    targetName = java.net.URLDecoder.decode(entry.arguments?.getString("targetName").orEmpty(), "UTF-8"),
                     initPostId = entry.arguments?.getString("initPostId"),
                     onNavigateToProfile = { targetId -> navController.navigate(Routes.publicProfile(targetId)) },
+                    onNavigateToPostDetail = { postId -> navController.navigate(Routes.postDetail(postId)) },
                     onBack = { navController.popBackStack() }
                 )
             }

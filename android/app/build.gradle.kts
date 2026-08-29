@@ -50,11 +50,11 @@ val appVersionCode = (versionProps["versionCode"] as String).toInt()
 val appVersionName = versionProps["versionName"] as String
 
 android {
-    namespace = "com.lianshan.lslife"
+    namespace = "com.qingyuan.lslife"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.lianshan.lslife"
+        applicationId = "com.qingyuan.lslife"
         minSdk = 24
         targetSdk = 34
         versionCode = appVersionCode

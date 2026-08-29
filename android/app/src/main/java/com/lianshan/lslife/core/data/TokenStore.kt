@@ -1,18 +1,18 @@
-package com.lianshan.lslife.core.data
+package com.qingyuan.lslife.core.data
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.lianshan.lslife.core.model.ThemeMode
+import com.qingyuan.lslife.core.model.ThemeMode
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import com.lianshan.lslife.core.model.NotificationMode
+import com.qingyuan.lslife.core.model.NotificationMode
 import javax.inject.Inject
 import javax.inject.Singleton
 

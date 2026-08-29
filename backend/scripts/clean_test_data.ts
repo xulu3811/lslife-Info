@@ -38,7 +38,7 @@ async function main() {
         { nickname: { startsWith: '财务测试' } },
         { nickname: { startsWith: '压测' } },
         { nickname: { startsWith: '测试' } },
-        { nickname: { startsWith: '连山用户' } },
+        { nickname: { startsWith: '清远用户' } },
         { nickname: '部署验证' }
       ]
     }

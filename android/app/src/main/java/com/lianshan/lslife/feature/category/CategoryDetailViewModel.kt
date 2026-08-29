@@ -1,12 +1,12 @@
-package com.lianshan.lslife.feature.category
+package com.qingyuan.lslife.feature.category
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.CategoryRepository
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.model.CategoryNode
-import com.lianshan.lslife.core.model.Post
+import com.qingyuan.lslife.core.data.CategoryRepository
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.model.CategoryNode
+import com.qingyuan.lslife.core.model.Post
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

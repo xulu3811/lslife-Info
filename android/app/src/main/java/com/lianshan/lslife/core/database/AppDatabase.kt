@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.database
+package com.qingyuan.lslife.core.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

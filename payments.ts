@@ -33,7 +33,7 @@ router.post(
       orderNo: order.orderNo,
       amount: order.totalAmount,
       channel: channel as PayChannel,
-      description: `连山同城-${order.merchantName}`,
+      description: `同城清远-${order.merchantName}`,
     });
 
     const payment = await prisma.payment.upsert({

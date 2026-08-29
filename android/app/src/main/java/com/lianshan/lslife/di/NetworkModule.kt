@@ -1,8 +1,8 @@
-package com.lianshan.lslife.di
+package com.qingyuan.lslife.di
 
-import com.lianshan.lslife.BuildConfig
-import com.lianshan.lslife.core.network.ApiService
-import com.lianshan.lslife.core.network.AuthInterceptor
+import com.qingyuan.lslife.BuildConfig
+import com.qingyuan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.AuthInterceptor
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -30,8 +30,8 @@ object NetworkModule {
     @Singleton
     fun provideOkHttp(
         authInterceptor: AuthInterceptor, 
-        retryInterceptor: com.lianshan.lslife.core.network.RetryInterceptor,
-        riskControlInterceptor: com.lianshan.lslife.core.network.RiskControlInterceptor
+        retryInterceptor: com.qingyuan.lslife.core.network.RetryInterceptor,
+        riskControlInterceptor: com.qingyuan.lslife.core.network.RiskControlInterceptor
     ): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
@@ -64,5 +64,5 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAdminApiService(retrofit: Retrofit): com.lianshan.lslife.core.network.AdminApiService = retrofit.create(com.lianshan.lslife.core.network.AdminApiService::class.java)
+    fun provideAdminApiService(retrofit: Retrofit): com.qingyuan.lslife.core.network.AdminApiService = retrofit.create(com.qingyuan.lslife.core.network.AdminApiService::class.java)
 }

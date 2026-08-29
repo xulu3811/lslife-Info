@@ -1,14 +1,14 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.data.AddressManager
-import com.lianshan.lslife.core.data.AddressNode
-import com.lianshan.lslife.core.network.MerchantCertifyRequest
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.data.AddressManager
+import com.qingyuan.lslife.core.data.AddressNode
+import com.qingyuan.lslife.core.network.MerchantCertifyRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -117,7 +117,7 @@ class MerchantCertifyViewModel @Inject constructor(
         val tempFile = File(context.cacheDir, filename)
         tempFile.outputStream().use { out -> inputStream.use { it.copyTo(out) } }
         
-        val compressedBytes = com.lianshan.lslife.feature.publish.ImageCompressor.compress(context, tempFile.absolutePath, 2 * 1024 * 1024, 1920)
+        val compressedBytes = com.qingyuan.lslife.feature.publish.ImageCompressor.compress(context, tempFile.absolutePath, 2 * 1024 * 1024, 1920)
         
         val reqFile = okhttp3.RequestBody.create("image/jpeg".toMediaTypeOrNull(), compressedBytes)
         return MultipartBody.Part.createFormData("images", filename, reqFile)

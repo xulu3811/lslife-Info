@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.settings
+package com.qingyuan.lslife.feature.settings
 
 import android.app.DownloadManager
 import android.content.Context
@@ -8,9 +8,10 @@ import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.BuildConfig
-import com.lianshan.lslife.core.model.AppVersionInfo
-import com.lianshan.lslife.core.network.ApiService
+import com.qingyuan.lslife.BuildConfig
+import com.qingyuan.lslife.core.model.AppVersionInfo
+import com.qingyuan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.RealtimeClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +20,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 import javax.inject.Inject
 
@@ -29,13 +33,15 @@ private const val TWENTY_FOUR_HOURS_MS = 24L * 60L * 60L * 1000L
 /**
  * OTA 版本升级 ViewModel
  * - 启动时检查最新版本（与本地 BuildConfig.VERSION_CODE 对比）
- * - 每 24 小时最多弹一次弹窗
+ * - 每 24 小时最多弹一次弹窗（对强制更新例外）
  * - 通过 DownloadManager 下载 APK 并轮询进度
  * - 下载完成后触发系统安装器
+ * - 监听 WebSocket 实时推送 APP_UPDATE_AVAILABLE
  */
 @HiltViewModel
 class UpdateViewModel @Inject constructor(
     private val apiService: ApiService,
+    private val realtimeClient: RealtimeClient,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -60,12 +66,29 @@ class UpdateViewModel @Inject constructor(
 
     private var activeDownloadId: Long = -1L
 
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            realtimeClient.events.collect { text ->
+                try {
+                    val obj = Json.parseToJsonElement(text).jsonObject
+                    val eventType = obj["event"]?.jsonPrimitive?.content ?: obj["type"]?.jsonPrimitive?.content
+                    if (eventType == "APP_UPDATE_AVAILABLE") {
+                        // 收到服务端 WebSocket 推送新版本可用，强制忽略冷却期立即检查
+                        checkForUpdate(ignoreCooldown = true)
+                    }
+                } catch (e: Exception) {
+                    // Ignore JSON parsing errors for unrelated WS messages
+                }
+            }
+        }
+    }
+
     /**
      * 检查是否有新版本可用。
      * 仅在"已登录"状态下调用（MainActivity 内保证）。
-     * 每 24 小时最多展示一次弹窗。
+     * 每 24 小时最多展示一次弹窗，如果是 WebSocket 推送或强制更新则可忽略冷却。
      */
-    fun checkForUpdate() {
+    fun checkForUpdate(ignoreCooldown: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val response = apiService.getLatestAppVersion()
@@ -74,10 +97,12 @@ class UpdateViewModel @Inject constructor(
                 // 服务端版本号 <= 本地版本号，无需更新
                 if (serverVersion.versionCode <= BuildConfig.VERSION_CODE) return@launch
 
-                // 24h 冷却检查
-                val lastShownAt = prefs.getLong(KEY_LAST_DIALOG_SHOWN_AT, 0L)
-                val now = System.currentTimeMillis()
-                if (now - lastShownAt < TWENTY_FOUR_HOURS_MS) return@launch
+                // 24h 冷却检查 (除非忽略冷却，或者是强制更新)
+                if (!ignoreCooldown && !serverVersion.isForced) {
+                    val lastShownAt = prefs.getLong(KEY_LAST_DIALOG_SHOWN_AT, 0L)
+                    val now = System.currentTimeMillis()
+                    if (now - lastShownAt < TWENTY_FOUR_HOURS_MS) return@launch
+                }
 
                 // 触发弹窗
                 _updateInfo.value = serverVersion

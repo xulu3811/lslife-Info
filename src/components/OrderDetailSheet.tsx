@@ -84,7 +84,7 @@ export default function OrderDetailSheet({
     return {
       name: '徐先生',
       phone: '138-2512-9988',
-      address: '连山壮族瑶族自治县 瑶香苑小区 3栋101室'
+      address: '清远壮族瑶族自治县 瑶香苑小区 3栋101室'
     };
   });
   const [selectedPayment, setSelectedPayment] = useState<'alipay' | 'wechat' | 'wallet'>('alipay');

@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.profile
+package com.qingyuan.lslife.feature.profile
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
@@ -29,12 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.core.model.MembershipPlan
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.components.PaymentBottomSheet
-import com.lianshan.lslife.ui.components.SoftCard
-import com.lianshan.lslife.ui.theme.PrimaryRed
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.core.model.MembershipPlan
+import com.qingyuan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.ui.components.PaymentBottomSheet
+import com.qingyuan.lslife.ui.components.SoftCard
+import com.qingyuan.lslife.ui.theme.PrimaryRed
+import com.qingyuan.lslife.ui.theme.Dimens
 
 /**
  * 会员权益中心 (Joybuy 欧美简约 3D Soft UI 重构版)

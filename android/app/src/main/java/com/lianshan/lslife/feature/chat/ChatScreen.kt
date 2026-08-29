@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.chat
+package com.qingyuan.lslife.feature.chat
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -55,10 +55,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.core.database.LocalMessageEntity
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.theme.PrimaryRed
-import com.lianshan.lslife.ui.components.GoogleAvatar
+import com.qingyuan.lslife.core.database.LocalMessageEntity
+import com.qingyuan.lslife.ui.components.LoadingBox
+
+import com.qingyuan.lslife.ui.components.GoogleAvatar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -80,6 +80,7 @@ fun ChatScreen(
     targetName: String,
     initPostId: String? = null,
     onNavigateToProfile: (String) -> Unit,
+    onNavigateToPostDetail: (String) -> Unit,
     onBack: () -> Unit,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
@@ -99,6 +100,8 @@ fun ChatScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
     var showEmojiPanel by remember { mutableStateOf(false) }
+    var showProductSheet by remember { mutableStateOf(false) }
+    val myPosts by viewModel.myPosts.collectAsStateWithLifecycle()
 
     LaunchedEffect(isRecording) {
         while (isRecording) {
@@ -166,7 +169,7 @@ fun ChatScreen(
                                 selectedMsgForAction?.let { viewModel.recallMessage(it.msgId) }
                                 selectedMsgForAction = null
                             }.padding(8.dp),
-                            color = PrimaryRed,
+                            color = MaterialTheme.colorScheme.error,
                             fontSize = 18.sp
                         )
                     }
@@ -225,7 +228,7 @@ fun ChatScreen(
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(onClick = { viewModel.deleteSelectedMessages() }) {
-                            Icon(Icons.Filled.Delete, contentDescription = "删除", tint = PrimaryRed)
+                            Icon(Icons.Filled.Delete, contentDescription = "删除", tint = MaterialTheme.colorScheme.error)
                         }
                     } else {
                         IconButton(onClick = onBack) {
@@ -245,12 +248,12 @@ fun ChatScreen(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Surface(
-                                    color = Color(0xFFFFF0E5),
+                                    color = MaterialTheme.colorScheme.primaryContainer,
                                     shape = RoundedCornerShape(4.dp)
                                 ) {
                                     Text(
                                         text = "五星店铺",
-                                        color = PrimaryRed,
+                                        color = MaterialTheme.colorScheme.primary,
                                         style = MaterialTheme.typography.labelSmall,
                                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                                     )
@@ -344,82 +347,107 @@ fun ChatScreen(
                             Icon(Icons.Filled.Mic, contentDescription = "语音", tint = Color.DarkGray, modifier = Modifier.size(20.dp))
                         }
                         
-                        // Main Input Pill
-                        androidx.compose.foundation.text.BasicTextField(
-                            value = text,
-                            onValueChange = { viewModel.updateInputText(it) },
-                            modifier = Modifier
-                                .weight(1f)
-                                .focusRequester(focusRequester)
-                                .onFocusChanged { focusState ->
-                                    if (focusState.isFocused) {
-                                        showEmojiPanel = false
-                                    }
-                                },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                            decorationBox = { innerTextField ->
+                        Crossfade(targetState = isRecording, modifier = Modifier.weight(1f), label = "recording_ui") { recording ->
+                            if (recording) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(40.dp)
-                                        .background(Color(0xFFF6F6F6), CircleShape)
+                                        .background(if (isCancelled) Color(0xFFFFEBEE) else Color(0xFFF6F6F6), CircleShape)
                                         .padding(horizontal = 16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(modifier = Modifier.weight(1f)) {
-                                        if (text.isEmpty()) {
-                                            Text("请输入...", color = Color.Gray, style = MaterialTheme.typography.bodyLarge)
-                                        }
-                                        innerTextField()
-                                    }
-                                    Icon(
-                                        imageVector = Icons.Filled.Face,
-                                        contentDescription = "表情",
-                                        tint = if (showEmojiPanel) PrimaryRed else Color.Gray,
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .clickable(
-                                                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                                                indication = null
-                                            ) { 
-                                                if (showEmojiPanel) {
-                                                    showEmojiPanel = false
-                                                    focusRequester.requestFocus()
-                                                    keyboardController?.show()
-                                                } else {
-                                                    keyboardController?.hide()
-                                                    showEmojiPanel = true
-                                                }
-                                            }
+                                    Box(modifier = Modifier.size(8.dp).background(MaterialTheme.colorScheme.error, CircleShape))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "录音中...",
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    val h = (amplitude / 32767f * 20).toInt().coerceIn(2, 20).dp
+                                    Box(modifier = Modifier.width(4.dp).height(h).background(MaterialTheme.colorScheme.error, CircleShape))
+                                    
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Text(
+                                        text = if (isCancelled) "松开取消" else "上滑取消",
+                                        color = if (isCancelled) MaterialTheme.colorScheme.error else Color.Gray,
+                                        style = MaterialTheme.typography.bodyMedium
                                     )
                                 }
+                            } else {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    // Main Input Pill
+                                    androidx.compose.foundation.text.BasicTextField(
+                                        value = text,
+                                        onValueChange = { viewModel.updateInputText(it) },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .focusRequester(focusRequester)
+                                            .onFocusChanged { focusState ->
+                                                if (focusState.isFocused) {
+                                                    showEmojiPanel = false
+                                                }
+                                            },
+                                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                                        decorationBox = { innerTextField ->
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(40.dp)
+                                                    .background(Color(0xFFF6F6F6), CircleShape)
+                                                    .padding(horizontal = 16.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Box(modifier = Modifier.weight(1f)) {
+                                                    if (text.isEmpty()) {
+                                                        Text("请输入...", color = Color.Gray, style = MaterialTheme.typography.bodyLarge)
+                                                    }
+                                                    innerTextField()
+                                                }
+                                                Icon(
+                                                    imageVector = Icons.Filled.Face,
+                                                    contentDescription = "表情",
+                                                    tint = if (showEmojiPanel) MaterialTheme.colorScheme.primary else Color.Gray,
+                                                    modifier = Modifier
+                                                        .size(24.dp)
+                                                        .clickable(
+                                                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                                            indication = null
+                                                        ) { 
+                                                            if (showEmojiPanel) {
+                                                                showEmojiPanel = false
+                                                                focusRequester.requestFocus()
+                                                                keyboardController?.show()
+                                                            } else {
+                                                                keyboardController?.hide()
+                                                                showEmojiPanel = true
+                                                            }
+                                                        }
+                                                )
+                                            }
+                                        }
+                                    )
+                                    
+                                    // Bag Icon
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier.clickable { 
+                                            viewModel.fetchMyPosts()
+                                            showProductSheet = true
+                                        }
+                                    ) {
+                                        Icon(Icons.Filled.ShoppingCart, contentDescription = "商品", tint = Color.DarkGray, modifier = Modifier.size(24.dp))
+                                        Text("商品", fontSize = 10.sp, color = Color.DarkGray)
+                                    }
+                                }
                             }
-                        )
-                        
-                        /* 位置功能未开发，暂时隐藏
-                        // Location Icon
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.clickable { 
-                                viewModel.sendLocation(23.1291, 113.2644, "广州塔", "广东省广州市海珠区阅江西路222号")
-                            }
-                        ) {
-                            Icon(Icons.Filled.LocationOn, contentDescription = "位置", tint = Color.DarkGray, modifier = Modifier.size(24.dp))
-                            Text("位置", fontSize = 10.sp, color = Color.DarkGray)
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        */
-                        
-                        // Bag Icon
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.clickable { 
-                                android.widget.Toast.makeText(context, "选择商品/服务", android.widget.Toast.LENGTH_SHORT).show()
-                            }
-                        ) {
-                            Icon(Icons.Filled.ShoppingCart, contentDescription = "商品", tint = Color.DarkGray, modifier = Modifier.size(24.dp))
-                            Text("商品", fontSize = 10.sp, color = Color.DarkGray)
                         }
                         
                         // Plus / Send Button
@@ -428,7 +456,7 @@ fun ChatScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(36.dp)
-                                        .background(PrimaryRed, CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
                                         .clickable { 
                                             viewModel.sendMessage(text)
                                         },
@@ -511,7 +539,7 @@ fun ChatScreen(
                                 checked = selectedIds.contains(message.msgId),
                                 onCheckedChange = { viewModel.toggleSelection(message.msgId) },
                                 modifier = Modifier.padding(end = 8.dp),
-                                colors = CheckboxDefaults.colors(checkedColor = PrimaryRed)
+                                colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
                             )
                         }
                         Column(modifier = Modifier.weight(1f)) {
@@ -533,7 +561,8 @@ fun ChatScreen(
                                         if (selectedIds.isEmpty()) {
                                             selectedMsgForAction = message
                                         }
-                                    }
+                                    },
+                                    onNavigateToPostDetail = onNavigateToPostDetail
                                 )
                             }
                         }
@@ -549,12 +578,12 @@ fun ChatScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Surface(
-                            color = Color(0xFFFFF0E5),
+                            color = MaterialTheme.colorScheme.errorContainer,
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Text(
                                 text = "对方还不是你的好友，请注意交易安全",
-                                color = PrimaryRed,
+                                color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
                             )
@@ -582,31 +611,6 @@ fun ChatScreen(
         )
     }
 
-    if (isRecording) {
-        Dialog(
-            onDismissRequest = {},
-            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(160.dp)
-                    .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(16.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    val h = (amplitude / 32767f * 60).toInt().coerceIn(24, 60).dp
-                    Icon(Icons.Filled.Mic, contentDescription = null, tint = Color.White, modifier = Modifier.size(h))
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = if (isCancelled) "松开 取消" else "手指上滑 取消",
-                        color = if (isCancelled) PrimaryRed else Color.White,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                    )
-                }
-            }
-        }
-    }
 
     if (previewUris != null) {
         SendImagePreviewScreen(
@@ -648,6 +652,47 @@ fun ChatScreen(
             }
         )
     }
+
+    if (showProductSheet) {
+        ModalBottomSheet(onDismissRequest = { showProductSheet = false }) {
+            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                Text("发送商品/服务", style = MaterialTheme.typography.titleLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
+                if (myPosts.isEmpty()) {
+                    Text("您还未发布过商品或服务", color = Color.Gray, modifier = Modifier.padding(vertical = 32.dp).align(Alignment.CenterHorizontally))
+                } else {
+                    LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp)) {
+                        items(myPosts) { post ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        viewModel.sendPostCard(post)
+                                        showProductSheet = false
+                                    }
+                                    .padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                coil.compose.AsyncImage(
+                                    model = post.images.firstOrNull(),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(60.dp).clip(RoundedCornerShape(8.dp)).background(Color.LightGray),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(post.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text("¥${post.price ?: 0.0}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                                }
+                            }
+                            HorizontalDivider(color = Color(0xFFEEEEEE))
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
 }
 
 @Composable
@@ -683,7 +728,8 @@ fun ChatBubble(
     nickname: String,
     audioManager: AudioManager,
     onClick: () -> Unit = {},
-    onLongPress: () -> Unit
+    onLongPress: () -> Unit,
+    onNavigateToPostDetail: (String) -> Unit = {}
 ) {
     val shape = RoundedCornerShape(
         topStart = 16.dp,
@@ -715,7 +761,7 @@ fun ChatBubble(
                 modifier = Modifier
                     .widthIn(max = 240.dp)
                     .clip(shape)
-                    .background(color = if (isMe) PrimaryRed else MaterialTheme.colorScheme.surfaceVariant)
+                    .background(color = if (isMe) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
                     .combinedClickable(
                         onClick = {
                             if (message.msgType == "VOICE" || message.msgType == "AUDIO") {
@@ -765,7 +811,14 @@ fun ChatBubble(
                 }
                 if (cardData != null) {
                     Column(
-                        modifier = Modifier.width(220.dp)
+                        modifier = Modifier
+                            .width(220.dp)
+                            .clickable {
+                                val id = cardData.optString("id")
+                                if (id.isNotEmpty()) {
+                                    onNavigateToPostDetail(id)
+                                }
+                            }
                     ) {
                         val imageUrl = cardData.optString("image")
                         if (imageUrl.isNotBlank()) {
@@ -791,7 +844,7 @@ fun ChatBubble(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "¥${cardData.optDouble("price", 0.0)}",
-                            color = if (isMe) Color.White else PrimaryRed,
+                            color = if (isMe) Color.White else MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                         )
@@ -824,7 +877,7 @@ fun ChatBubble(
                                 .background(Color.LightGray),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Filled.Place, contentDescription = "Map Placeholder", tint = PrimaryRed, modifier = Modifier.size(36.dp))
+                            Icon(Icons.Filled.Place, contentDescription = "Map Placeholder", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp))
                         }
                     }
                 } else {
@@ -844,7 +897,7 @@ fun ChatBubble(
                             .padding(8.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.LocationOn, contentDescription = "位置", tint = PrimaryRed)
+                            Icon(Icons.Filled.LocationOn, contentDescription = "位置", tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = cardData.optString("name", "位置"),

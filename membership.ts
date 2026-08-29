@@ -8,8 +8,8 @@ import { requireAuth } from '../middleware/auth.js';
 const router = Router();
 
 const PLANS = [
-  { tier: 'vip', name: '连山超级会员', price: 9.9, period: '月', benefits: ['每月20条发布额度', '免配送费券x2', '专属会员标识'] },
-  { tier: 'premium', name: '连山至尊会员', price: 19.9, period: '月', benefits: ['每月50条发布额度', '免配送费券x5', '尊贵皇冠标识', '优先客服'] },
+  { tier: 'vip', name: '清远超级会员', price: 9.9, period: '月', benefits: ['每月20条发布额度', '免配送费券x2', '专属会员标识'] },
+  { tier: 'premium', name: '清远至尊会员', price: 19.9, period: '月', benefits: ['每月50条发布额度', '免配送费券x5', '尊贵皇冠标识', '优先客服'] },
 ];
 
 /** 会员套餐 */
@@ -43,7 +43,7 @@ router.post(
       orderNo: subscriptionNo,
       amount: plan.price,
       channel: channel as PayChannel,
-      description: `连山同城-${plan.name}`,
+      description: `同城清远-${plan.name}`,
     });
 
     const payment = await prisma.payment.create({

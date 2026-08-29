@@ -238,7 +238,7 @@ flowchart TB
 
 | 路径 | 说明 |
 |------|------|
-| `android/app/src/main/java/com/lianshan/lslife/` | C 端 |
+| `android/app/src/main/java/com/qingyuan/lslife/` | C 端 |
 | `backend/src/modules/admin.ts` | 管理 API（需加固） |
 | `backend/src/modules/upload.ts` | 上传 |
 | `admin-web/` | 运营后台 |

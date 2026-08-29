@@ -1,13 +1,13 @@
-package com.lianshan.lslife.feature.publish
+package com.qingyuan.lslife.feature.publish
 
-import com.lianshan.lslife.core.data.AddressManager
-import com.lianshan.lslife.core.data.AddressNode
+import com.qingyuan.lslife.core.data.AddressManager
+import com.qingyuan.lslife.core.data.AddressNode
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.data.LsRepository
-import com.lianshan.lslife.core.network.CreatePostRequest
+import com.qingyuan.lslife.core.data.LsRepository
+import com.qingyuan.lslife.core.network.CreatePostRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

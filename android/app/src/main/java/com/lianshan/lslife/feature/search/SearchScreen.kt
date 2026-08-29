@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.search
+package com.qingyuan.lslife.feature.search
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -29,9 +29,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.ui.components.EmptyState
-import com.lianshan.lslife.ui.components.PostListCard
-import com.lianshan.lslife.ui.components.SkeletonCard
+import com.qingyuan.lslife.ui.components.EmptyState
+import com.qingyuan.lslife.ui.components.PostListCard
+import com.qingyuan.lslife.ui.components.SkeletonCard
 
 import androidx.compose.material.icons.filled.ArrowDropDown
 
@@ -54,7 +54,7 @@ fun SearchScreen(
     var showCategorySelector by remember { mutableStateOf(false) }
 
     if (showCategorySelector && state.categoryTree.isNotEmpty()) {
-        com.lianshan.lslife.ui.components.GlobalCategorySelectorBottomSheet(
+        com.qingyuan.lslife.ui.components.GlobalCategorySelectorBottomSheet(
             categoryTree = state.categoryTree,
             onDismissRequest = { showCategorySelector = false },
             onCategorySelected = { categoryId ->

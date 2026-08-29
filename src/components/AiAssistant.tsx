@@ -34,7 +34,7 @@ export default function AiAssistant({
     {
       id: 'welcome',
       sender: 'bot',
-      text: '您好！我是“连山同城”的智能AI生活助手。😊\n\n我可以帮您推荐连山当地特色美食（如瑶家柴火鸡、传统大汤糍）、寻找最新鲜的超市水果或下午茶饮品。请问您今天想来点什么美味？',
+      text: '您好！我是“同城清远”的智能AI生活助手。😊\n\n我可以帮您推荐清远当地特色美食（如瑶家柴火鸡、传统大汤糍）、寻找最新鲜的超市水果或下午茶饮品。请问您今天想来点什么美味？',
     },
   ]);
   const [isTyping, setIsTyping] = useState<boolean>(false);
@@ -83,7 +83,7 @@ export default function AiAssistant({
         {
           id: 'bot_' + Date.now(),
           sender: 'bot',
-          text: data.reply || '连山同城AI暂时无法解析该美食推荐。建议直接浏览下方精选商家。',
+          text: data.reply || '同城清远AI暂时无法解析该美食推荐。建议直接浏览下方精选商家。',
           recommendations: data.recommendations || [],
         },
       ]);
@@ -93,7 +93,7 @@ export default function AiAssistant({
         {
           id: 'bot_err_' + Date.now(),
           sender: 'bot',
-          text: '抱歉，连山高山地区信号不好，小助手被风吹跑了... 🍃\n您可以试试：\n\n- 招牌瑶家柴火鸡 (半只装+配菜) (瑶山人家柴火鸡)\n- 经典咸大汤糍 (连山大汤糍)',
+          text: '抱歉，清远高山地区信号不好，小助手被风吹跑了... 🍃\n您可以试试：\n\n- 招牌瑶家柴火鸡 (半只装+配菜) (瑶山人家柴火鸡)\n- 经典咸大汤糍 (清远大汤糍)',
           recommendations: [
             { merchantId: 'm1', itemId: 'm1_i1', name: '招牌瑶家柴火鸡', price: 68 },
             { merchantId: 'm2', itemId: 'm2_i1', name: '经典咸大汤糍', price: 10 }
@@ -120,7 +120,7 @@ export default function AiAssistant({
               <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
             </span>
           </div>
-          <span className="text-xs font-extrabold tracking-wider pr-1">连山AI管家</span>
+          <span className="text-xs font-extrabold tracking-wider pr-1">清远AI管家</span>
         </button>
       </div>
 
@@ -151,7 +151,7 @@ export default function AiAssistant({
                     <Sparkles size={18} className="animate-pulse" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm tracking-wide">连山AI生活管家</h3>
+                    <h3 className="font-extrabold text-sm tracking-wide">清远AI生活管家</h3>
                     <p className="text-[10px] text-green-500 font-semibold flex items-center gap-1 mt-0.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span>
                       <span>Gemini 3.5 智能推荐大脑在线</span>
@@ -297,7 +297,7 @@ export default function AiAssistant({
                   </button>
                 </form>
                 <p className="text-[9px] text-gray-400 dark:text-gray-500 text-center mt-2 font-medium">
-                  基于大模型分析 · 汇聚连山瑶壮少数民族纯正老街风味
+                  基于大模型分析 · 汇聚清远瑶壮少数民族纯正老街风味
                 </p>
               </div>
             </motion.div>

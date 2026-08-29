@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.model
+package com.qingyuan.lslife.core.model
 
 enum class NotificationMode(val storageValue: String, val label: String) {
     RINGTONE("ringtone", "铃声"),

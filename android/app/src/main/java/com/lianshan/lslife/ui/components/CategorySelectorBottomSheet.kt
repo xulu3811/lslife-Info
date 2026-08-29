@@ -1,4 +1,4 @@
-package com.lianshan.lslife.ui.components
+package com.qingyuan.lslife.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,8 +45,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.lianshan.lslife.core.model.CategoryNode
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.core.model.CategoryNode
+import com.qingyuan.lslife.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

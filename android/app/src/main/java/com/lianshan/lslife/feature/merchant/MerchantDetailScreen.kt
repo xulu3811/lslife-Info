@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.merchant
+package com.qingyuan.lslife.feature.merchant
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -30,8 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-import com.lianshan.lslife.ui.components.*
-import com.lianshan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.ui.components.*
+import com.qingyuan.lslife.ui.theme.Dimens
 import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3Api::class)

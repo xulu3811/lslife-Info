@@ -1,7 +1,7 @@
 {
   "name": "lslife-backend",
   "version": "1.0.0",
-  "description": "连山同城 LsLife 生产级后端 (鉴权/商家/订单/支付/发布/会员/实时配送)",
+  "description": "清远智慧同城生活服务平台 生产级后端 (鉴权/商家/订单/支付/发布/会员/实时配送)",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -17,6 +17,7 @@
     "smoke": "tsx scripts/smoke.ts",
     "stress:publish": "tsx scripts/stress-publish.ts",
     "stress:im": "tsx scripts/stress-im.ts",
+    "build:icons": "python tools/process_icon.py -i ../public/raw_icons -o ../public/icons",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
     "helmet": "^8.0.0",
+    "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.2.0",
     "nanoid": "^5.0.9",

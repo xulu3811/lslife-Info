@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.chat
+package com.qingyuan.lslife.feature.chat
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

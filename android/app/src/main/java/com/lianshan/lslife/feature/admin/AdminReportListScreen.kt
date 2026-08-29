@@ -1,4 +1,4 @@
-﻿package com.lianshan.lslife.feature.admin
+﻿package com.qingyuan.lslife.feature.admin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -25,9 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.lianshan.lslife.core.model.Report
-import com.lianshan.lslife.ui.components.LoadingBox
-import com.lianshan.lslife.ui.components.NetworkImage
+import com.qingyuan.lslife.core.model.Report
+import com.qingyuan.lslife.ui.components.LoadingBox
+import com.qingyuan.lslife.ui.components.NetworkImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,18 +66,18 @@ fun AdminReportListScreen(
                 title = { Text("内容风控", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                     }
                 },
                 
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
+                    containerColor = Color.Transparent,
                     scrolledContainerColor = Color.White
                 )
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
-        containerColor = Color(0xFFF7F8FA)
+        containerColor = Color(0xFFF3F5F8)
     ) { padding ->
                 Column(
             modifier = Modifier
@@ -86,7 +86,7 @@ fun AdminReportListScreen(
         ) {
             TabRow(
                 selectedTabIndex = topLevelTab,
-                containerColor = Color.White,
+                containerColor = Color.Transparent,
                 indicator = { tabPositions ->
                     TabRowDefaults.PrimaryIndicator(
                         Modifier.tabIndicatorOffset(tabPositions[topLevelTab]),
@@ -106,7 +106,7 @@ fun AdminReportListScreen(
             if (topLevelTab == 0) {
             ScrollableTabRow(
                 selectedTabIndex = tabs.indexOfFirst { it.first == state.currentTab }.takeIf { it >= 0 } ?: 0,
-                containerColor = Color.White,
+                containerColor = Color.Transparent,
                 edgePadding = 16.dp,
                 indicator = { tabPositions ->
                     val selectedIndex = tabs.indexOfFirst { it.first == state.currentTab }.takeIf { it >= 0 } ?: 0
@@ -164,16 +164,16 @@ fun AdminReportListScreen(
 
 @Composable
 private fun ResourceGovernanceSection(
-    governanceViewModel: com.lianshan.lslife.feature.admin.GovernanceViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    governanceViewModel: com.qingyuan.lslife.feature.admin.GovernanceViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 ) {
     val state by governanceViewModel.state.collectAsStateWithLifecycle()
     val context = androidx.compose.ui.platform.LocalContext.current
     
     Box(modifier = Modifier.fillMaxSize()) {
-        com.lianshan.lslife.feature.admin.PostGovernanceTab(state, governanceViewModel, context)
+        com.qingyuan.lslife.feature.admin.PostGovernanceTab(state, governanceViewModel, context)
         
-        if (state.activeDialogAction != com.lianshan.lslife.feature.admin.GovernanceActionType.NONE) {
-            com.lianshan.lslife.feature.admin.GovernanceDialog(state, governanceViewModel, context)
+        if (state.activeDialogAction != com.qingyuan.lslife.feature.admin.GovernanceActionType.NONE) {
+            com.qingyuan.lslife.feature.admin.GovernanceDialog(state, governanceViewModel, context)
         }
     }
 }
@@ -185,7 +185,7 @@ fun ReportTicketCard(
 ) {
     Surface(
         color = Color.White,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(24.dp),
         shadowElevation = 0.dp,
         border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.ui.graphics.Color(0xFFE8EAED)),
         modifier = Modifier.fillMaxWidth().clickable { onClick() }
@@ -302,7 +302,7 @@ private fun RiskDictionarySection(state: AdminReportListState, viewModel: AdminR
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedButton(
                     onClick = { launcher.launch("text/plain") },
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp)
                 ) {
                     Text("导入TXT", fontSize = 13.sp)
@@ -310,7 +310,7 @@ private fun RiskDictionarySection(state: AdminReportListState, viewModel: AdminR
                 Spacer(Modifier.width(8.dp))
                 Button(
                     onClick = { showAddDialog = true },
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp)
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -337,7 +337,7 @@ private fun RiskDictionarySection(state: AdminReportListState, viewModel: AdminR
                 items(state.words) { word ->
                     Surface(
                         color = Color.White,
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(20.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF1F3F4)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -410,7 +410,7 @@ private fun RiskDictionarySection(state: AdminReportListState, viewModel: AdminR
                     Text("取消")
                 }
             },
-            containerColor = Color.White
+            containerColor = Color.Transparent
         )
     }
 }
@@ -444,9 +444,9 @@ fun ModerationLogsSection(
             items(state.logs) { log ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(24.dp)
                 ) {
                     Column(
                         modifier = Modifier

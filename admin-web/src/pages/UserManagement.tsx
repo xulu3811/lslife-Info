@@ -72,6 +72,24 @@ export default function UserManagement() {
       });
   };
 
+  const handleQuota = (id: string, currentFree: number, currentPaid: number) => {
+    const input = window.prompt(`当前配额 - 免费: ${currentFree}, 付费: ${currentPaid}\n请输入新的配额 (格式：免费数,付费数):`, `${currentFree},${currentPaid}`);
+    if (!input || !input.includes(',')) return;
+    const [freeStr, paidStr] = input.split(',');
+    const freeQuota = parseInt(freeStr.trim());
+    const paidQuota = parseInt(paidStr.trim());
+    if (isNaN(freeQuota) || isNaN(paidQuota)) return;
+
+    api.put(`/admin/users/${id}/quota`, { freeQuota, paidQuota })
+      .then(res => {
+        alert(res.data.message);
+        fetchUsers();
+      })
+      .catch(err => {
+        alert(err.response?.data?.message || '操作失败');
+      });
+  };
+
   return (
     <div className="flex-col gap-6">
       <div className="flex justify-between items-center mb-6">
@@ -108,8 +126,8 @@ export default function UserManagement() {
             <thead>
               <tr>
                 <th>用户信息</th>
-                <th>手机号</th>
-                <th>会员等级</th>
+                <th>身份角色</th>
+                <th>发帖配额(免/付)</th>
                 <th>钱包余额</th>
                 <th>实名状态</th>
                 <th>账号状态</th>
@@ -122,13 +140,17 @@ export default function UserManagement() {
                 <tr key={user.id}>
                   <td>
                     <div className="font-semibold">{user.nickname}</div>
-                    <div className="text-xs text-muted mt-2 font-mono">ID: {user.id.slice(0, 8)}...</div>
+                    <div className="text-xs text-muted mt-2 font-mono">
+                      {user.phone}
+                    </div>
                   </td>
-                  <td className="font-medium text-secondary">{user.phone}</td>
                   <td>
-                    <span className={`badge ${(user.membershipTier || 'free') === 'free' ? 'badge-neutral' : (user.membershipTier || 'free') === 'vip' ? 'badge-warning' : 'badge-danger'}`}>
-                      {(user.membershipTier || 'free').toUpperCase()}
+                    <span className={`badge ${user.role === 'MERCHANT_VERIFIED' ? 'badge-success' : 'badge-neutral'}`}>
+                      {user.role === 'MERCHANT_VERIFIED' ? '认证商家' : '普通用户'}
                     </span>
+                  </td>
+                  <td className="font-medium text-secondary">
+                    {user.freeQuota} / {user.paidQuota}
                   </td>
                   <td className="font-bold text-success text-lg">
                     ￥{(user.walletBalance || 0).toFixed(2)}
@@ -149,11 +171,11 @@ export default function UserManagement() {
                   </td>
                   <td className="text-right">
                     <div className="flex justify-end gap-2">
-                      <button onClick={() => handleRecharge(user.id, user.walletBalance || 0)} className="glass-button secondary p-2" title="调额">
-                        <DollarSign size={16} className="text-primary" /> 调额
+                      <button onClick={() => handleQuota(user.id, user.freeQuota || 0, user.paidQuota || 0)} className="glass-button secondary p-2" title="配额">
+                        <Award size={16} className="text-primary" /> 配额
                       </button>
-                      <button onClick={() => handleMembership(user.id, user.membershipTier || 'free')} className="glass-button secondary p-2" title="身份">
-                        <Award size={16} className="text-warning" /> 身份
+                      <button onClick={() => handleRecharge(user.id, user.walletBalance || 0)} className="glass-button secondary p-2" title="资金">
+                        <DollarSign size={16} className="text-warning" /> 资金
                       </button>
                       <button onClick={() => handleStatus(user.id, user.status)} className="glass-button secondary p-2" title={user.status === 'banned' ? '解封' : '封禁'}>
                         <Ban size={16} className={user.status === 'banned' ? "text-success" : "text-danger"} /> {user.status === 'banned' ? '解封' : '封禁'}

@@ -1,4 +1,4 @@
-package com.lianshan.lslife.ui.theme
+package com.qingyuan.lslife.ui.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme

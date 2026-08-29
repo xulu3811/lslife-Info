@@ -1,11 +1,11 @@
-package com.lianshan.lslife.di
+package com.qingyuan.lslife.di
 
 import android.content.Context
 import androidx.room.Room
-import com.lianshan.lslife.core.database.AppDatabase
-import com.lianshan.lslife.core.database.ChatSessionDao
-import com.lianshan.lslife.core.database.ImDao
-import com.lianshan.lslife.core.database.MerchantDao
+import com.qingyuan.lslife.core.database.AppDatabase
+import com.qingyuan.lslife.core.database.ChatSessionDao
+import com.qingyuan.lslife.core.database.ImDao
+import com.qingyuan.lslife.core.database.MerchantDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

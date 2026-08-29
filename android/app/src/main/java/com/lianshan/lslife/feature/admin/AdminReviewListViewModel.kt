@@ -1,9 +1,9 @@
-package com.lianshan.lslife.feature.admin
+package com.qingyuan.lslife.feature.admin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lianshan.lslife.core.model.Post
-import com.lianshan.lslife.core.model.PostUser
+import com.qingyuan.lslife.core.model.Post
+import com.qingyuan.lslife.core.model.PostUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +21,7 @@ data class AdminReviewListState(
 
 @HiltViewModel
 class AdminReviewListViewModel @Inject constructor(
-    private val api: com.lianshan.lslife.core.network.ApiService
+    private val api: com.qingyuan.lslife.core.network.ApiService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AdminReviewListState())

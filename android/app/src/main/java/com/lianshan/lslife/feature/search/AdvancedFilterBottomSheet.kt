@@ -1,4 +1,4 @@
-package com.lianshan.lslife.feature.search
+package com.qingyuan.lslife.feature.search
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -14,13 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.lianshan.lslife.core.model.CategorySchemaResponse
+import com.qingyuan.lslife.core.model.CategorySchemaResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdvancedFilterBottomSheet(
     schema: CategorySchemaResponse?,
-    categoryTree: List<com.lianshan.lslife.core.model.CategoryNode>,
+    categoryTree: List<com.qingyuan.lslife.core.model.CategoryNode>,
     selectedCategory: String?,
     publisherType: String?,
     listingType: String?,
@@ -102,7 +102,7 @@ fun AdvancedFilterBottomSheet(
                     }
                     items(categoryTree) { node ->
                         var isSelected = false
-                        fun checkSelected(n: com.lianshan.lslife.core.model.CategoryNode, target: String?): Boolean {
+                        fun checkSelected(n: com.qingyuan.lslife.core.model.CategoryNode, target: String?): Boolean {
                             if (target == null) return false
                             if (n.id == target) return true
                             return n.children.any { checkSelected(it, target) }

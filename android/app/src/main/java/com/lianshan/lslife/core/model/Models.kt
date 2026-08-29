@@ -1,4 +1,4 @@
-package com.lianshan.lslife.core.model
+package com.qingyuan.lslife.core.model
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -210,7 +210,7 @@ data class Post(
     val merchant: PostMerchant? = null,
 ) {
     val tradeMode: TradeMode
-        get() = com.lianshan.lslife.feature.publish.getEffectiveTradeMode(_tradeMode, category)
+        get() = com.qingyuan.lslife.feature.publish.getEffectiveTradeMode(_tradeMode, category)
 }
 
 
