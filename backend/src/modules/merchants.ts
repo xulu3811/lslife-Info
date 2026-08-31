@@ -210,6 +210,36 @@ router.get(
   })
 );
 
+/** 商家一键确认正常营业 (保活打卡) */
+router.post(
+  '/certify/confirm-active',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const userId = req.userId!;
+    const cert = await prisma.merchantCertification.findUnique({ where: { userId } });
+    
+    if (!cert) {
+      throw new ApiError(404, '您尚未提交商家认证');
+    }
+
+    if (cert.status !== 'APPROVED' && cert.status !== 'SUSPENDED') {
+      throw new ApiError(400, '当前商家状态无法进行保活打卡');
+    }
+
+    const now = new Date();
+    // 假设 SUSPENDED 状态单纯是因为逾期未打卡，可以自动恢复（可选逻辑）。这里只更新打卡时间。
+    const updatedCert = await prisma.merchantCertification.update({
+      where: { userId },
+      data: {
+        lastConfirmedAt: now,
+        status: 'APPROVED', // 恢复正常状态
+      }
+    });
+
+    return ok(res, { ...updatedCert, storePhotos: JSON.parse(updatedCert.storePhotos) }, '打卡成功，您的店铺状态已更新为正常营业');
+  })
+);
+
 export default router;
 
 /** 营业执照 OCR 模拟端点 */

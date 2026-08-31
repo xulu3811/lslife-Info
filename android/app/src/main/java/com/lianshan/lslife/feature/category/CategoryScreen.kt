@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -96,27 +97,29 @@ fun CategoryScreen(
                                 .fillMaxWidth()
                                 .padding(top = 20.dp, bottom = 22.dp, start = 12.dp, end = 12.dp)
                         ) {
-                            // 带有品牌色标记的精致标题
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(bottom = 18.dp, start = 8.dp)
+                                modifier = Modifier.padding(bottom = 20.dp, start = 4.dp)
                             ) {
-                                Box(
+                                // 还原旧式蓝色竖线
+                                Spacer(
                                     modifier = Modifier
-                                        .size(width = 4.dp, height = 16.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.primary)
+                                        .width(4.dp)
+                                        .height(18.dp)
+                                        .clip(RoundedCornerShape(2.dp))
+                                        .background(Color(0xFF2196F3))
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = group.category.name,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1F2937) // 深灰，更有品质感
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFF111827)
                                 )
                             }
                             
-                            // 4列布局
+                            // Flex 布局网格
                             val items = group.subCategories
                             val chunks = items.chunked(4)
                             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -124,17 +127,19 @@ fun CategoryScreen(
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        for (i in 0 until 4) {
-                                            if (i < rowItems.size) {
-                                                val subCategory = rowItems[i]
-                                                ProductCategoryItem(
-                                                    category = subCategory,
-                                                    modifier = Modifier.weight(1f),
-                                                    onClick = { onCategoryClick(subCategory.id) }
-                                                )
-                                            } else {
-                                                Spacer(modifier = Modifier.weight(1f))
-                                            }
+                                        // 智能计算占位，当不足 4 个时适当拉宽点击区域以平衡视觉
+                                        val fillCount = if (rowItems.size == 1) 3 else if (rowItems.size == 2) 1 else 0
+                                        
+                                        rowItems.forEach { subCategory ->
+                                            ProductCategoryItem(
+                                                category = subCategory,
+                                                modifier = Modifier.weight(1f),
+                                                onClick = { onCategoryClick(subCategory.id) }
+                                            )
+                                        }
+                                        
+                                        repeat(fillCount) {
+                                            Spacer(modifier = Modifier.weight(1f))
                                         }
                                     }
                                 }
@@ -160,22 +165,21 @@ fun ProductCategoryItem(
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // M3 规范的清爽底座 (放大尺寸以对齐首页视觉比例)
+        // 还原方形圆角边框
         Surface(
-            modifier = Modifier.size(60.dp),
+            modifier = Modifier.size(64.dp),
             shape = RoundedCornerShape(20.dp),
-            color = Color(0xFFF0F4F9) // Google M3 Signature Light Blue-Gray
+            color = Color(0xFFF4F6F9) // 极浅蓝灰色，符合图1样式
         ) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                 val iconUrl = category.iconUrl ?: ""
                 if (iconUrl.isNotEmpty()) {
                     val baseUrl = com.qingyuan.lslife.BuildConfig.API_BASE_URL
                     val absoluteUrl = if (iconUrl.startsWith("http") || iconUrl.startsWith("android.resource://")) iconUrl else "${baseUrl.removeSuffix("/")}${if (iconUrl.startsWith("/")) "" else "/"}$iconUrl"
-                    
                     AsyncImage(
                         model = absoluteUrl,
                         contentDescription = category.name,
-                        modifier = Modifier.size(46.dp), // 增大实物图尺寸，与首页金刚区保持一致
+                        modifier = Modifier.size(46.dp), // 增大 15% (原 40.dp)
                         contentScale = ContentScale.Fit
                     )
                 }
@@ -187,8 +191,8 @@ fun ProductCategoryItem(
         Text(
             text = category.name,
             fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF4B5563), // 柔和的深灰
+            fontWeight = FontWeight.Bold, // 加粗以平衡大图标
+            color = Color(0xFF374151), // 更深更清晰的文字颜色
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

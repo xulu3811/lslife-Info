@@ -96,7 +96,7 @@ model UserDeviceLogin {
 model MerchantCertification {
   id                 String   @id @default(cuid())
   userId             String   @unique
-  status             String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  status             String   @default("PENDING") // PENDING, APPROVED, REJECTED, SUSPENDED
   certType           String   @default("ENTERPRISE") // ENTERPRISE | INDIVIDUAL
   storeName          String
   categoryId         String
@@ -105,6 +105,8 @@ model MerchantCertification {
   businessLicenseUrl String?
   storePhotos        String   @default("[]") // JSON string array of URLs
   rejectReason       String?
+  expireAt           DateTime? // 资质到期时间 (年审)
+  lastConfirmedAt    DateTime? // 最近一次确认营业时间 (季度保活)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -236,7 +238,7 @@ model Post {
   longitude        Float?
   locationName     String?
   attributes       String   @default("{}") // JSON 动态属性
-  status           String   @default("published") // pending_review | published | rejected | removed
+  status           String   @default("published") // pending_review | published | rejected | removed | expired | archived
   reviewNote       String?
   sellerType       String   @default("INDIVIDUAL") // INDIVIDUAL | MERCHANT
   marketingHook    String?  // 营销钩子文案
@@ -252,6 +254,7 @@ model Post {
   imageHashes      String   @default("[]") // 新增：图片哈希数组，用于去重
   isShadowBanned   Boolean  @default(false) // 新增：是否被影子封禁 (不展示在 Feeds 中)
 
+  expireAt         DateTime?  // 新增：信息生命周期到期时间
   createdAt        DateTime @default(now())
 
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)

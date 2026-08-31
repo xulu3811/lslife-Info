@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../utils/axios';
-import { Search, DollarSign, Award, Users, Ban } from 'lucide-react';
+import { Search, DollarSign, Award, Users, Ban, ShieldCheck } from 'lucide-react';
 
 export default function UserManagement() {
   const [users, setUsers] = useState<any[]>([]);
@@ -94,35 +94,35 @@ export default function UserManagement() {
     <div className="flex-col gap-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-3">
-          <Users size={28} className="text-primary" /> 
+          <Users size={28} style={{ color: 'var(--g-blue)' }} /> 
           用户管理大盘
         </h1>
       </div>
 
-      <div className="glass-panel p-6 mb-6 flex justify-between items-center">
-        <h2 className="text-lg font-medium m-0 text-secondary">全站用户检索</h2>
+      <div className="md-card flex flex-wrap justify-between items-center mb-6" style={{ padding: '16px 24px' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 500, margin: 0, color: 'var(--text-secondary)' }}>全站用户检索</h2>
         <div className="relative" style={{ width: '300px' }}>
-          <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+          <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>
             <Search size={18} />
           </div>
           <input 
             type="text" 
             placeholder="搜索手机号或昵称" 
-            className="glass-input"
-            style={{ paddingLeft: '40px' }}
+            className="md-input w-full"
+            style={{ paddingLeft: '36px' }}
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
       </div>
 
-      <div className="glass-panel glass-table-container">
+      <div className="md-card md-table-container">
         {loading ? (
-          <div className="p-8 text-center text-muted">加载中...</div>
+          <div className="md-empty-state">加载中...</div>
         ) : users.length === 0 ? (
-          <div className="p-8 text-center text-secondary">未找到相关用户</div>
+          <div className="md-empty-state">未找到相关用户</div>
         ) : (
-          <table className="glass-table">
+          <table className="md-table">
             <thead>
               <tr>
                 <th>用户信息</th>
@@ -132,53 +132,56 @@ export default function UserManagement() {
                 <th>实名状态</th>
                 <th>账号状态</th>
                 <th>注册时间</th>
-                <th className="text-right">操作</th>
+                <th style={{ textAlign: 'right' }}>操作</th>
               </tr>
             </thead>
             <tbody>
               {users.map(user => (
                 <tr key={user.id}>
                   <td>
-                    <div className="font-semibold">{user.nickname}</div>
-                    <div className="text-xs text-muted mt-2 font-mono">
+                    <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{user.nickname}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', fontFamily: 'monospace' }}>
                       {user.phone}
                     </div>
                   </td>
                   <td>
-                    <span className={`badge ${user.role === 'MERCHANT_VERIFIED' ? 'badge-success' : 'badge-neutral'}`}>
+                    <span className={`badge ${user.role === 'MERCHANT_VERIFIED' ? 'badge-success' : 'badge-danger'}`}>
                       {user.role === 'MERCHANT_VERIFIED' ? '认证商家' : '普通用户'}
                     </span>
                   </td>
-                  <td className="font-medium text-secondary">
-                    {user.freeQuota} / {user.paidQuota}
-                  </td>
-                  <td className="font-bold text-success text-lg">
-                    ￥{(user.walletBalance || 0).toFixed(2)}
-                  </td>
                   <td>
-                    <span className={`badge ${user.realNameStatus === 'verified' ? 'badge-success' : user.realNameStatus === 'pending' ? 'badge-warning' : 'badge-neutral'}`}>
-                      {user.realNameStatus === 'verified' ? '已实名' : 
-                        user.realNameStatus === 'pending' ? '待审核' : '未实名'}
+                    <span style={{ fontWeight: 500 }}>
+                      {user.freeQuota} / {user.paidQuota}
                     </span>
                   </td>
                   <td>
-                    <span className={`badge ${user.status === 'banned' ? 'badge-danger' : 'badge-success'}`}>
-                      {user.status === 'banned' ? '已封禁' : '正常'}
+                    <span style={{ color: 'var(--g-green)', fontWeight: 'bold' }}>
+                      ¥ {(user.walletBalance || 0).toFixed(2)}
                     </span>
                   </td>
-                  <td className="text-sm text-secondary">
+                  <td>
+                    <span className={`badge ${user.realNameStatus === 'verified' ? 'badge-success' : 'badge-danger'}`}>
+                      {user.realNameStatus === 'verified' ? '已实名' : '未实名'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`badge ${user.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
+                      {user.status === 'active' ? '正常' : '已封禁'}
+                    </span>
+                  </td>
+                  <td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => handleQuota(user.id, user.freeQuota || 0, user.paidQuota || 0)} className="glass-button secondary p-2" title="配额">
-                        <Award size={16} className="text-primary" /> 配额
+                  <td style={{ textAlign: 'right' }}>
+                    <div className="flex items-center justify-end gap-2">
+                      <button className="md-btn-icon" onClick={() => handleQuota(user.id, user.freeQuota || 0, user.paidQuota || 0)} title="修改配额">
+                        <Award size={16} />
                       </button>
-                      <button onClick={() => handleRecharge(user.id, user.walletBalance || 0)} className="glass-button secondary p-2" title="资金">
-                        <DollarSign size={16} className="text-warning" /> 资金
+                      <button className="md-btn-icon" style={{ color: 'var(--g-yellow)' }} onClick={() => handleRecharge(user.id, user.walletBalance || 0)} title="充值/扣款">
+                        <DollarSign size={16} />
                       </button>
-                      <button onClick={() => handleStatus(user.id, user.status)} className="glass-button secondary p-2" title={user.status === 'banned' ? '解封' : '封禁'}>
-                        <Ban size={16} className={user.status === 'banned' ? "text-success" : "text-danger"} /> {user.status === 'banned' ? '解封' : '封禁'}
+                      <button className="md-btn-icon" style={{ color: user.status === 'banned' ? 'var(--g-green)' : 'var(--g-red)' }} onClick={() => handleStatus(user.id, user.status)} title={user.status === 'banned' ? '解封' : '封禁'}>
+                        {user.status === 'banned' ? <ShieldCheck size={16} /> : <Ban size={16} />}
                       </button>
                     </div>
                   </td>
@@ -187,31 +190,14 @@ export default function UserManagement() {
             </tbody>
           </table>
         )}
+        {!loading && total > 20 && (
+           <div className="flex justify-between items-center mt-6 p-4 pt-0">
+             <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="md-btn md-btn-outline">上一页</button>
+             <span className="text-secondary font-medium" style={{ fontSize: '13px' }}>第 {page} 页 / 共 {Math.ceil(total / 20)} 页</span>
+             <button disabled={page * 20 >= total} onClick={() => setPage(p => p + 1)} className="md-btn md-btn-outline">下一页</button>
+           </div>
+        )}
       </div>
-      
-      {!loading && total > 20 && (
-        <div className="flex justify-between items-center mt-4">
-          <div className="text-sm text-secondary">
-            共 {total} 条记录，当前第 {page} 页
-          </div>
-          <div className="flex gap-2">
-            <button 
-              className="glass-button secondary p-2 px-4" 
-              disabled={page === 1}
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-            >
-              上一页
-            </button>
-            <button 
-              className="glass-button secondary p-2 px-4" 
-              disabled={page * 20 >= total}
-              onClick={() => setPage(p => p + 1)}
-            >
-              下一页
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

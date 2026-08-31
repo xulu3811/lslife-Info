@@ -1,6 +1,5 @@
 package com.qingyuan.lslife.feature.settings
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,11 +20,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.outlined.CleaningServices
-import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.PrivacyTip
+import androidx.compose.material.icons.outlined.PhoneAndroid
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -39,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,7 +60,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.qingyuan.lslife.BuildConfig
 import com.qingyuan.lslife.core.model.NotificationMode
-import com.qingyuan.lslife.core.model.ThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,11 +67,16 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onOpenAbout: () -> Unit,
     onOpenPrivacy: () -> Unit,
+    onOpenBindPhone: () -> Unit = {},
+    onOpenBindEmail: () -> Unit = {},
+    onOpenChangePassword: () -> Unit = {},
     onLoggedOut: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
+    val maskedPhone = state.phone?.let { if (it.length >= 11) "${it.substring(0, 3)}****${it.substring(7)}" else it } ?: "未绑定"
+    val maskedEmail = state.email?.let { if (it.indexOf("@") > 1) "${it.substring(0, 2)}***${it.substring(it.indexOf("@"))}" else it } ?: "未设置"
     var confirmClear by remember { mutableStateOf(false) }
     var confirmLogout by remember { mutableStateOf(false) }
 
@@ -85,7 +92,7 @@ fun SettingsScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = Color(0xFFF3F5F8),
         snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             TopAppBar(
@@ -94,7 +101,7 @@ fun SettingsScreen(
                         "设置与隐私", 
                         fontSize = 17.sp, 
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = Color(0xFF374151)
                     ) 
                 },
                 navigationIcon = {
@@ -102,11 +109,11 @@ fun SettingsScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack, 
                             contentDescription = "返回",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = Color(0xFF374151)
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF3F5F8)),
             )
         },
     ) { padding ->
@@ -117,116 +124,100 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
-            // 一、 显示偏好模块
-            SettingsSectionTitle("显示偏好")
-            SettingsCard {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            Icons.Outlined.DarkMode,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                "外观主题", 
-                                fontSize = 14.sp, 
-                                fontWeight = FontWeight.SemiBold, 
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                "切换跟随系统或深浅色模式", 
-                                fontSize = 11.sp, 
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    JoybuySegmentedControl(
-                        items = ThemeMode.entries,
-                        selectedItem = state.themeMode,
-                        itemLabel = { it.label },
-                        onItemSelected = { viewModel.setThemeMode(it) }
-                    )
-                }
+            
+            // 模块 1: 账号与安全
+            SettingsGroupCard(title = "账号与安全") {
+                SettingsActionRow(
+                    icon = Icons.Outlined.PhoneAndroid,
+                    title = "手机号绑定",
+                    subtitle = "更换或解绑手机号",
+                    rightText = maskedPhone,
+                    onClick = onOpenBindPhone
+                )
+                SettingsActionRow(
+                    icon = Icons.Outlined.Email,
+                    title = "安全邮箱",
+                    subtitle = "用于接收重要通知与账单",
+                    rightText = maskedEmail,
+                    onClick = onOpenBindEmail
+                )
+                SettingsActionRow(
+                    icon = Icons.Outlined.Lock,
+                    title = "修改密码",
+                    subtitle = "定期更改密码以保障账号安全",
+                    onClick = onOpenChangePassword,
+                    showDivider = false
+                )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 二、 消息与存储模块
-            SettingsSectionTitle("消息与存储")
-            SettingsCard {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            Icons.Outlined.Notifications,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                "消息通知提醒", 
-                                fontSize = 14.sp, 
-                                fontWeight = FontWeight.SemiBold, 
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                "选择接收同城消息的提醒方式", 
-                                fontSize = 11.sp, 
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    JoybuySegmentedControl(
-                        items = NotificationMode.entries,
-                        selectedItem = state.notificationMode,
-                        itemLabel = { it.label },
-                        onItemSelected = { viewModel.setNotificationMode(it) }
+            // 模块 2: 消息与存储
+            SettingsGroupCard(title = "消息与存储") {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                ) {
+                    Icon(
+                        Icons.Outlined.Notifications,
+                        contentDescription = null,
+                        tint = Color(0xFF374151).copy(alpha = 0.8f),
+                        modifier = Modifier.size(20.dp)
                     )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "消息通知提醒", 
+                            fontSize = 14.sp, 
+                            fontWeight = FontWeight.Medium, 
+                            color = Color(0xFF374151)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            "选择接收同城消息的提醒方式", 
+                            fontSize = 11.sp, 
+                            color = Color(0xFF9CA3AF)
+                        )
+                    }
                 }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp)
-                        .height(0.5.dp)
-                        .background(MaterialTheme.colorScheme.outlineVariant)
+                Spacer(modifier = Modifier.height(12.dp))
+                M3SegmentedControl(
+                    items = NotificationMode.entries,
+                    selectedItem = state.notificationMode,
+                    itemLabel = { it.label },
+                    onItemSelected = { viewModel.setNotificationMode(it) },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(
+                    modifier = Modifier.padding(start = 50.dp, end = 16.dp), 
+                    thickness = 0.5.dp, 
+                    color = Color(0xFFF3F4F6)
                 )
 
-                JoybuyActionRow(
+                SettingsActionRow(
                     icon = Icons.Outlined.CleaningServices,
                     title = "清理本地缓存",
                     subtitle = "清除临时图片与商家数据缓存",
-                    rightText = if (state.clearingCache) "清理中…" else "立即清理",
+                    rightText = if (state.clearingCache) "清理中..." else "立即清理",
                     onClick = { confirmClear = true },
                     showDivider = false
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 三、 条款与关于模块
-            SettingsSectionTitle("关于与条款")
-            SettingsCard {
-                JoybuyActionRow(
+            // 模块 3: 关于与条款
+            SettingsGroupCard(title = "关于与条款") {
+                SettingsActionRow(
                     icon = Icons.Outlined.PrivacyTip,
                     title = "隐私政策与服务协议",
                     subtitle = "了解同城信息安全与保护方式",
                     onClick = onOpenPrivacy,
                     showDivider = true
                 )
-                JoybuyActionRow(
+                SettingsActionRow(
                     icon = Icons.Outlined.Info,
                     title = "关于同城清远",
                     subtitle = "当前版本 v${BuildConfig.VERSION_NAME}",
@@ -235,23 +226,23 @@ fun SettingsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // 四、 退出登录模块 (Joybuy 典雅白卡胶囊设计)
+            // 退出登录按钮
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(46.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surface)
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Color.White)
                     .clickable { confirmLogout = true },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "退出登录",
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.error
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFEF4444)
                 )
             }
 
@@ -260,7 +251,7 @@ fun SettingsScreen(
             Text(
                 text = "© 2026 清远壮族瑶族自治县 · 智慧同城生活平台",
                 fontSize = 10.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                color = Color(0xFF9CA3AF),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -271,7 +262,7 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { confirmClear = false },
             title = { Text("清理本地缓存？", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
-            text = { Text("清理后商家与商品图片将在下次浏览时重新拉取，不会删除您的个人账号与发布信息。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            text = { Text("清理将释放存储空间，不会影响您的正常使用。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -289,8 +280,8 @@ fun SettingsScreen(
     if (confirmLogout) {
         AlertDialog(
             onDismissRequest = { confirmLogout = false },
-            title = { Text("退出当前账号？", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
-            text = { Text("退出后需要重新输入手机号登录以使用同城发布和互动功能。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            title = { Text("退出登录？", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
+            text = { Text("退出后将无法接收同城商家的实时私聊消息。", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -307,30 +298,28 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SettingsSectionTitle(title: String) {
-    Text(
-        text = title,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Medium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
-    )
-}
-
-@Composable
-private fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
+private fun SettingsGroupCard(title: String, content: @Composable ColumnScope.() -> Unit) {
     Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
-        shadowElevation = 0.dp,
         modifier = Modifier.fillMaxWidth(),
-        content = { Column(modifier = Modifier.fillMaxWidth(), content = content) }
-    )
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White,
+        shadowElevation = 0.dp
+    ) {
+        Column(modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF374151),
+                modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 4.dp)
+            )
+            content()
+        }
+    }
 }
 
 @Composable
-private fun <T> JoybuySegmentedControl(
+private fun <T> M3SegmentedControl(
     items: List<T>,
     selectedItem: T,
     itemLabel: (T) -> String,
@@ -341,8 +330,8 @@ private fun <T> JoybuySegmentedControl(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(3.dp),
+            .background(Color(0xFFF3F5F8))
+            .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         items.forEach { item ->
@@ -352,15 +341,15 @@ private fun <T> JoybuySegmentedControl(
                     .weight(1f)
                     .height(32.dp)
                     .clip(RoundedCornerShape(6.dp))
-                    .background(if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent)
+                    .background(if (isSelected) Color.White else Color.Transparent)
                     .clickable { onItemSelected(item) },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = itemLabel(item),
                     fontSize = 12.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    color = if (isSelected) Color(0xFF374151) else Color(0xFF9CA3AF)
                 )
             }
         }
@@ -368,7 +357,7 @@ private fun <T> JoybuySegmentedControl(
 }
 
 @Composable
-private fun JoybuyActionRow(
+private fun SettingsActionRow(
     icon: ImageVector,
     title: String,
     subtitle: String? = null,
@@ -376,34 +365,33 @@ private fun JoybuyActionRow(
     onClick: () -> Unit,
     showDivider: Boolean = true,
 ) {
-    Column {
+    Column(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp)
-                .clickable(onClick = onClick)
-                .padding(horizontal = 14.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 icon,
                 contentDescription = title,
-                tint = MaterialTheme.colorScheme.onSurface,
+                tint = Color(0xFF374151).copy(alpha = 0.8f),
                 modifier = Modifier.size(20.dp)
             )
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     title,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = Color(0xFF374151)
                 )
                 if (subtitle != null) {
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         subtitle,
                         fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Color(0xFF9CA3AF)
                     )
                 }
             }
@@ -411,24 +399,22 @@ private fun JoybuyActionRow(
                 Text(
                     rightText,
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color(0xFF9CA3AF)
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(8.dp))
             }
             Icon(
-                Icons.Filled.ChevronRight,
+                Icons.AutoMirrored.Filled.ArrowForwardIos,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.outlineVariant,
-                modifier = Modifier.size(16.dp)
+                tint = Color(0xFFD1D5DB),
+                modifier = Modifier.size(14.dp)
             )
         }
         if (showDivider) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 44.dp, end = 14.dp)
-                    .height(0.5.dp)
-                    .background(MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 50.dp, end = 16.dp), 
+                thickness = 0.5.dp, 
+                color = Color(0xFFF3F4F6)
             )
         }
     }

@@ -88,6 +88,7 @@ class LsRepository @Inject constructor(
     suspend fun quota() = safeCall { api.quota() }
     suspend fun getDiscoverPosts(categoryId: String?) = safeCall { api.getDiscoverPosts(categoryId) }
     suspend fun post(id: String) = safeCall { api.post(id) }
+    suspend fun refreshPost(id: String) = safeCall { api.refreshPost(id) }
     suspend fun toggleFavorite(id: String) = safeCall { api.toggleFavorite(id) }
     suspend fun getFavorites(page: Int = 1, pageSize: Int = 50) = safeCall { api.getFavorites(page, pageSize) }
     suspend fun getFootprints(page: Int = 1, pageSize: Int = 50) = safeCall { api.getFootprints(page, pageSize) }
@@ -136,6 +137,7 @@ class LsRepository @Inject constructor(
     // 商家认证
     suspend fun getMerchantCertifyStatus(): Result<MerchantCertification?> = safeCall { api.merchantCertifyStatus() }
     suspend fun submitMerchantCertification(req: MerchantCertifyRequest) = safeCall { api.submitMerchantCertification(req) }
+    suspend fun confirmActive() = safeCall { api.confirmActive() }
     suspend fun performBusinessOcr(url: String) = safeCall { api.performBusinessOcr(OcrRequest(url)) }
     
     suspend fun getUserPublicProfile(userId: String): Result<PublicUserResponse> = safeCall { api.getUserPublicProfile(userId) }

@@ -41,55 +41,55 @@ export function SystemSecurity() {
     <div className="flex-col gap-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-3">
-          <ShieldCheck size={28} className="text-success" /> 
+          <ShieldCheck size={28} style={{ color: 'var(--g-green)' }} /> 
           系统安全控制中心
         </h1>
-        <div className="badge badge-success text-sm py-2 px-4">
+        <div className="badge badge-success text-sm py-2 px-4 flex items-center">
           <Server size={14} className="mr-1" /> 防火墙运行中
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-6">
         {/* Password Reset Module */}
-        <div className="glass-panel p-8">
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2 m-0 text-primary">
-            <Key size={22} /> 管理员鉴权重置
+        <div className="md-card" style={{ padding: '32px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Key size={22} style={{ color: 'var(--g-blue)' }} /> 管理员鉴权重置
           </h2>
           <form onSubmit={handlePasswordUpdate} className="flex-col gap-5">
-            <div>
-              <label className="block text-sm font-medium text-secondary mb-2">当前授权密码</label>
+            <div className="flex-col gap-2">
+              <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>当前授权密码</label>
               <input
                 type="password"
-                className="glass-input"
+                className="md-input w-full"
                 placeholder="请输入旧密码"
                 value={currentPassword}
                 onChange={e => setCurrentPassword(e.target.value)}
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-secondary mb-2">新的高强度密码</label>
+            <div className="flex-col gap-2">
+              <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>新的高强度密码</label>
               <input
                 type="password"
-                className="glass-input"
+                className="md-input w-full"
                 placeholder="至少包含数字与字母，长度 8 位以上"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-secondary mb-2">二次确认密码</label>
+            <div className="flex-col gap-2">
+              <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>二次确认密码</label>
               <input
                 type="password"
-                className="glass-input"
+                className="md-input w-full"
                 placeholder="请再次输入新密码"
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 required
               />
             </div>
-            <button type="submit" className="glass-button w-full mt-4" disabled={updating}>
+            <button type="submit" className="md-btn md-btn-primary w-full mt-4" disabled={updating}>
               {updating ? '密钥交换中...' : '提交重置并重新登录'}
             </button>
           </form>
@@ -97,66 +97,66 @@ export function SystemSecurity() {
 
         {/* Global Security Controls */}
         <div className="flex-col gap-6">
-          <div className="glass-panel p-8">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 m-0 text-danger">
-              <AlertOctagon size={22} /> 应急熔断机制
+          <div className="md-card" style={{ padding: '32px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertOctagon size={22} style={{ color: 'var(--g-red)' }} /> 应急熔断机制
             </h2>
-            <p className="text-sm text-secondary mb-6">
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '24px' }}>
               当发现平台存在严重漏洞或被恶意攻击时，可启用以下应急阻断预案。
             </p>
             <div className="flex-col gap-4">
-              <div className="flex justify-between items-center p-4" style={{ border: '1px solid var(--danger-bg)', borderRadius: 'var(--radius-md)', background: 'rgba(239, 68, 68, 0.05)' }}>
+              <div className="flex justify-between items-center p-4" style={{ border: '1px solid #f8d8d6', borderRadius: '12px', background: '#fce8e6' }}>
                 <div>
-                  <h3 className="m-0 text-base font-semibold text-danger mb-1">全局会话注销</h3>
-                  <div className="text-xs text-secondary">强行中断所有用户的 App 及 Web 登录状态，重新校验授权。</div>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: 'var(--g-red)' }}>全局会话注销</h3>
+                  <div style={{ fontSize: '12px', color: '#c5221f', marginTop: '4px' }}>强行中断所有用户的 App 及 Web 登录状态，重新校验授权。</div>
                 </div>
-                <button className="glass-button danger px-4" onClick={handleForceLogoutAll}>
+                <button className="md-btn md-btn-danger px-4" onClick={handleForceLogoutAll}>
                   执行踢出
                 </button>
               </div>
-              <div className="flex justify-between items-center p-4" style={{ border: '1px solid var(--warning-bg)', borderRadius: 'var(--radius-md)', background: 'rgba(245, 158, 11, 0.05)' }}>
+              <div className="flex justify-between items-center p-4" style={{ border: '1px solid #fce8b2', borderRadius: '12px', background: '#fef7e0' }}>
                 <div>
-                  <h3 className="m-0 text-base font-semibold text-warning mb-1">新用户注册通道阻断</h3>
-                  <div className="text-xs text-secondary">暂停接收新的账号注册请求，仅允许存量用户访问。</div>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#e37400' }}>新用户注册通道阻断</h3>
+                  <div style={{ fontSize: '12px', color: '#b06000', marginTop: '4px' }}>暂停接收新的账号注册请求，仅允许存量用户访问。</div>
                 </div>
-                <button className="glass-button secondary text-warning px-4">
+                <button className="md-btn md-btn-outline px-4" style={{ color: '#e37400', borderColor: '#fce8b2' }}>
                   暂未开启
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="glass-panel p-8 flex-1">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 m-0 text-info">
-              <Database size={22} /> 数据与服务状态监控
+          <div className="md-card flex-1" style={{ padding: '32px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Database size={22} style={{ color: 'var(--text-secondary)' }} /> 数据与服务状态监控
             </h2>
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 flex items-center gap-3" style={{ background: 'var(--bg-color)', borderRadius: 'var(--radius-md)' }}>
-                <Globe className="text-primary" size={24} />
+              <div className="p-4 flex items-center gap-3" style={{ background: 'var(--surface-hover)', borderRadius: '12px' }}>
+                <Globe style={{ color: 'var(--g-blue)' }} size={24} />
                 <div>
-                  <div className="text-xs text-secondary mb-1">当前管理后台 IP</div>
-                  <div className="text-sm font-mono font-semibold">115.191.6.95</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>当前管理后台 IP</div>
+                  <div style={{ fontSize: '14px', fontFamily: 'monospace', fontWeight: 600, marginTop: '2px' }}>115.191.6.95</div>
                 </div>
               </div>
-              <div className="p-4 flex items-center gap-3" style={{ background: 'var(--bg-color)', borderRadius: 'var(--radius-md)' }}>
-                <Clock className="text-info" size={24} />
+              <div className="p-4 flex items-center gap-3" style={{ background: 'var(--surface-hover)', borderRadius: '12px' }}>
+                <Clock style={{ color: 'var(--g-green)' }} size={24} />
                 <div>
-                  <div className="text-xs text-secondary mb-1">系统已连续运行</div>
-                  <div className="text-sm font-mono font-semibold">14 Days, 8 Hours</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>系统已连续运行</div>
+                  <div style={{ fontSize: '14px', fontFamily: 'monospace', fontWeight: 600, marginTop: '2px' }}>14 Days, 8 Hours</div>
                 </div>
               </div>
-              <div className="p-4 flex items-center gap-3" style={{ background: 'var(--bg-color)', borderRadius: 'var(--radius-md)' }}>
-                <Smartphone className="text-success" size={24} />
+              <div className="p-4 flex items-center gap-3" style={{ background: 'var(--surface-hover)', borderRadius: '12px' }}>
+                <Smartphone style={{ color: 'var(--g-yellow)' }} size={24} />
                 <div>
-                  <div className="text-xs text-secondary mb-1">客户端长连接 (WS)</div>
-                  <div className="text-sm font-mono font-semibold">849 在线活跃</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>客户端长连接 (WS)</div>
+                  <div style={{ fontSize: '14px', fontFamily: 'monospace', fontWeight: 600, marginTop: '2px' }}>849 在线活跃</div>
                 </div>
               </div>
-              <div className="p-4 flex items-center gap-3" style={{ background: 'var(--bg-color)', borderRadius: 'var(--radius-md)' }}>
-                <ShieldCheck className="text-warning" size={24} />
+              <div className="p-4 flex items-center gap-3" style={{ background: 'var(--surface-hover)', borderRadius: '12px' }}>
+                <ShieldCheck style={{ color: 'var(--text-primary)' }} size={24} />
                 <div>
-                  <div className="text-xs text-secondary mb-1">安全审计日志</div>
-                  <div className="text-sm font-mono font-semibold">23,194 条记录</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>安全审计日志</div>
+                  <div style={{ fontSize: '14px', fontFamily: 'monospace', fontWeight: 600, marginTop: '2px' }}>23,194 条记录</div>
                 </div>
               </div>
             </div>

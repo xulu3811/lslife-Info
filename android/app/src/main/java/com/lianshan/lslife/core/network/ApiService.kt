@@ -139,6 +139,9 @@ interface ApiService {
     @GET("posts/{id}")
     suspend fun post(@Path("id") id: String): ApiEnvelope<Post>
 
+    @POST("posts/{id}/refresh")
+    suspend fun refreshPost(@Path("id") id: String): ApiEnvelope<Post>
+
     @POST("posts/{id}/favorite")
     suspend fun toggleFavorite(@Path("id") id: String): ApiEnvelope<FavoriteToggleResponse>
 
@@ -266,6 +269,9 @@ interface ApiService {
 
     @POST("merchants/certify")
     suspend fun submitMerchantCertification(@Body body: MerchantCertifyRequest): ApiEnvelope<MerchantCertification>
+    
+    @POST("merchants/certify/confirm-active")
+    suspend fun confirmActive(): ApiEnvelope<MerchantCertification>
     
     @POST("merchants/certify/ocr")
     suspend fun performBusinessOcr(@Body body: OcrRequest): ApiEnvelope<BusinessOcrResponse>

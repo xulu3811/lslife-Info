@@ -10,7 +10,6 @@ const menuItems = [
   { path: '/categories', label: '类目管理', icon: <Layers size={20} /> },
   { path: '/merchants', label: '商家管理', icon: <Store size={20} /> },
   { path: '/app-version', label: 'App 版本管理', icon: <PackageOpen size={20} /> },
-  { path: '/settings', label: '系统设置', icon: <Settings size={20} /> },
 ];
 
 export default function AdminLayout() {
@@ -22,85 +21,80 @@ export default function AdminLayout() {
     navigate('/login');
   };
 
+  const currentTitle = menuItems.find(i => location.pathname.startsWith(i.path))?.label || '系统设置';
+
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <div 
-        className="glass-panel flex-col" 
-        style={{ 
-          width: 260, 
-          position: 'fixed', 
-          top: 16, 
-          bottom: 16, 
-          left: 16, 
-          display: 'flex', 
-          zIndex: 10 
-        }}
-      >
-        <div className="flex items-center gap-3 p-6" style={{ borderBottom: '1px solid var(--surface-border)' }}>
-          <img src="/favicon.png" alt="LsLife Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
+    <div className="layout-container">
+      {/* Material Left Sidebar */}
+      <aside className="md-sidebar">
+        <div className="md-sidebar-header">
+          <img src="/admin-web/logo.png" alt="qylife Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
           <div>
-            <h2 className="text-lg font-semibold m-0">LsLife Admin</h2>
-            <span className="text-xs text-success">● 安全防御运行中</span>
+            <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>qylife</h2>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Admin Console</span>
           </div>
         </div>
 
-        <div className="flex-col flex-1 p-4 gap-2" style={{ overflowY: 'auto' }}>
+        <nav className="md-nav">
           {menuItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className="flex items-center gap-3 py-2 px-4 w-full text-left"
-                style={{
-                  background: isActive ? 'var(--danger-bg)' : 'transparent',
-                  color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
-                  border: 'none',
-                  borderRadius: 'var(--radius-md)',
-                  cursor: 'pointer',
-                  fontWeight: isActive ? 600 : 500,
-                  transition: 'all 0.2s ease',
-                }}
+                className={`md-nav-item ${isActive ? 'active' : ''}`}
               >
                 {item.icon}
                 {item.label}
               </button>
             );
           })}
-        </div>
-
-        <div className="p-4" style={{ borderTop: '1px solid var(--surface-border)' }}>
+          
+          <div style={{ margin: '12px 0', borderTop: '1px solid var(--border-color)' }}></div>
+          
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 py-2 px-4 w-full text-danger font-medium text-left"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-            }}
+            onClick={() => navigate('/settings')}
+            className={`md-nav-item ${location.pathname.startsWith('/settings') ? 'active' : ''}`}
           >
-            <LogOut size={20} />
-            安全登出
+            <Settings size={20} />
+            系统设置
           </button>
-        </div>
-      </div>
+        </nav>
+      </aside>
 
       {/* Main Content Area */}
-      <div className="flex-col flex-1" style={{ marginLeft: 292, padding: '16px 16px 16px 0', minHeight: '100vh' }}>
-        <header className="glass-panel flex justify-between items-center px-6 py-4 mb-6">
-          <h1 className="text-xl font-semibold m-0 text-gradient">
-            {menuItems.find(i => location.pathname.startsWith(i.path))?.label || '管理控制台'}
-          </h1>
+      <div className="md-main">
+        {/* Top App Bar */}
+        <header className="md-topbar">
+          <h1 style={{ fontSize: '20px', fontWeight: 500, margin: 0 }}>{currentTitle}</h1>
+          
           <div className="flex items-center gap-4">
-            <span className="text-sm text-secondary">最后登录IP: 115.191.6.95 (已白名单)</span>
-            <div className="flex items-center justify-center font-bold" style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), #FF7E67)', color: '#fff', boxShadow: '0 4px 12px rgba(229, 57, 53, 0.2)' }}>
+            <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+              Server IP: 115.191.6.95
+            </span>
+            <div 
+              style={{ 
+                width: '36px', 
+                height: '36px', 
+                borderRadius: '50%', 
+                background: 'var(--g-blue)', 
+                color: '#fff', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+              onClick={handleLogout}
+              title="登出"
+            >
               A
             </div>
           </div>
         </header>
 
-        <main className="flex-col flex-1">
+        {/* Page Content */}
+        <main className="md-content">
           <Outlet />
         </main>
       </div>

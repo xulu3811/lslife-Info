@@ -5,6 +5,7 @@ import { env } from './config/env.js';
 import { prisma } from './lib/prisma.js';
 
 import { dfaEngine } from './services/dfa.js';
+import { startLifecycleCron } from './services/lifecycle.js';
 
 const app = createApp();
 const server = http.createServer(app);
@@ -12,6 +13,9 @@ attachRealtime(server);
 
 // Initialize DFA engine
 dfaEngine.init().catch(console.error);
+
+// Start Lifecycle Cron
+startLifecycleCron();
 
 // ================= 推广中心：定时过期任务 =================
 setInterval(async () => {

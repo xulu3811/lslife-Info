@@ -91,6 +91,18 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun confirmMerchantActive() {
+        viewModelScope.launch {
+            val res = repo.confirmActive()
+            if (res.isSuccess) {
+                _state.update { it.copy(message = "打卡成功，店铺状态已恢复") }
+                load(isSilent = true)
+            } else {
+                _state.update { it.copy(message = res.exceptionOrNull()?.message ?: "打卡失败") }
+            }
+        }
+    }
+
     fun subscribe(tier: String) {
         viewModelScope.launch {
             repo.subscribe(tier)

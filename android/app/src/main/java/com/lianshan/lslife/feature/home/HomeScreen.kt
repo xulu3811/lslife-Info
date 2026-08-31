@@ -36,6 +36,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -499,27 +500,36 @@ private fun HomeBannerCarousel(
 private fun KingkongCategoryGrid(
     onCategoryClick: (String) -> Unit
 ) {
-    Column(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 4.dp, start = 8.dp, end = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(top = 8.dp, bottom = 8.dp, start = 8.dp, end = 8.dp),
+        shape = RoundedCornerShape(24.dp),
+        color = Color.White,
+        shadowElevation = 0.dp
     ) {
-        val row1 = page1Categories.take(5)
-        val row2 = page1Categories.drop(5).take(5)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val row1 = page1Categories.take(5)
+            val row2 = page1Categories.drop(5).take(5)
 
-        Row(modifier = Modifier.fillMaxWidth()) {
-            row1.forEach { cat ->
-                KingkongItemView(cat, modifier = Modifier.weight(1f)) { id ->
-                    onCategoryClick(id)
+            Row(modifier = Modifier.fillMaxWidth()) {
+                row1.forEach { cat ->
+                    KingkongItemView(cat, modifier = Modifier.weight(1f)) { id ->
+                        onCategoryClick(id)
+                    }
                 }
             }
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            row2.forEach { cat ->
-                KingkongItemView(cat, modifier = Modifier.weight(1f)) { id ->
-                    onCategoryClick(id)
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(modifier = Modifier.fillMaxWidth()) {
+                row2.forEach { cat ->
+                    KingkongItemView(cat, modifier = Modifier.weight(1f)) { id ->
+                        onCategoryClick(id)
+                    }
                 }
             }
         }
@@ -534,30 +544,28 @@ private fun KingkongItemView(
 ) {
     Column(
         modifier = modifier
-            .padding(vertical = 4.dp)
             .clickable { onClick(cat.id) },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 彻底移除生硬的圆形白底与边框，让3D实物图标自然悬浮，极大增强呼吸感与空间感
-                androidx.compose.material3.Surface(
-            modifier = Modifier.size(60.dp),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-            color = androidx.compose.ui.graphics.Color(0xFFF0F4F9)
-        ) {
-            androidx.compose.foundation.layout.Box(contentAlignment = androidx.compose.ui.Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                AsyncImage(
-                    model = cat.iconUrl,
-                    contentDescription = cat.name,
-                    modifier = Modifier.size(46.dp)
-                )
-            }
+        // 移除灰底圆环，采用无边框设计凸显高清图片
+        // 针对某些长宽比较特殊、视觉上显得偏小的实物图，进行代码层的智能放大
+        val scaleFactor = when {
+            cat.name.contains("二手") -> 1.4f // 放大二手房产
+            cat.name.contains("拼车") -> 1.3f // 放大拼车租车
+            else -> 1.0f
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        
+        AsyncImage(
+            model = cat.iconUrl,
+            contentDescription = cat.name,
+            modifier = Modifier.size(48.dp).scale(scaleFactor)
+        )
+        Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = cat.name,
-            fontSize = 12.sp, // 与分类页协调
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Medium,
+            fontSize = 12.sp,
+            color = Color(0xFF374151), // 更深更清晰的文字颜色
+            fontWeight = FontWeight.Bold, // 加粗以平衡大图标
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -579,27 +587,20 @@ private fun FeedTabHeader(
         "NEARBY" to "附近"
     )
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        // 移除多余的视觉留白，提升空间利用率 (原本这里有 18dp Spacer)
-
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp) // 与金刚区对齐
+    ) {
         Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.surface,
-            shadowElevation = 0.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 6.dp)
-                .shadow(
-                    elevation = 8.dp,
-                    shape = RoundedCornerShape(12.dp),
-                    spotColor = Color(0x14000000), // 柔和的浅色底层阴影，扩散自然
-                    ambientColor = Color(0x0A000000)
-                )
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White, // 纯白卡片，无阴影
+            modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp), // 减少内边距缩小高度
+                    .padding(horizontal = 16.dp, vertical = 10.dp), // 舒适内边距
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
@@ -614,8 +615,8 @@ private fun FeedTabHeader(
                         ) {
                             Text(
                                 text = name,
-                                fontSize = if (selected) 14.sp else 12.sp, // 缩小字体
-                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                                fontSize = if (selected) 16.sp else 14.sp, // 增大字体
+                                fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Medium,
                                 color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             if (selected) {
@@ -667,13 +668,13 @@ private fun StandardFeedCard(
             .clickable { onClick() }
             
     ) {
-        Column(modifier = Modifier.padding(bottom = 8.dp)) {
+        Column(modifier = Modifier.padding(bottom = 12.dp)) {
             val imageUrl = post.images.firstOrNull()
             if (!imageUrl.isNullOrEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(1.5f, matchHeightConstraintsFirst = false) // 限制为 3:2 比例，显著降低图片高度
+                        .aspectRatio(1.5f, matchHeightConstraintsFirst = false) // 限制为 3:2 比例
                         .background(androidx.compose.ui.graphics.Color(0xFFF3F5F8)),
                     contentAlignment = Alignment.Center
                 ) {
@@ -684,20 +685,22 @@ private fun StandardFeedCard(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+            } else {
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 12.dp)) {
                 Text(
                     text = post.title ?: "同城发布",
-                    fontSize = 13.sp, // 缩小至13.sp
+                    fontSize = 14.sp, // 增大至14.sp，提升层级
                     fontWeight = FontWeight.Bold, // 保持粗体
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(8.dp)) // 从10.dp缩小至8.dp，内边距更紧凑
+                Spacer(modifier = Modifier.height(12.dp)) // 内边距更舒展
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -711,11 +714,11 @@ private fun StandardFeedCard(
                         size = 20.dp
                     )
                     
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     
                     Text(
                         text = authorName,
-                        fontSize = 12.sp, // 发布者昵称 11.sp
+                        fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -743,29 +746,29 @@ private fun StandardFeedCard(
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(8.dp)) // 增大联系按钮与前面内容的间距
                     
                     Surface(
                         shape = RoundedCornerShape(12.dp),
                         color = Color(0xFFE3F2FD),
                         modifier = Modifier
-                            .height(24.dp) // 按钮高度更迷你
+                            .height(26.dp) // 按钮高度微调
                             .clickable { onChatClick() }
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp) // 缩小内边距
+                            modifier = Modifier.padding(horizontal = 10.dp) // 增加内边距
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Chat,
                                 contentDescription = "联系",
                                 tint = Color(0xFF4285F4),
-                                modifier = Modifier.size(11.dp) // Icon 缩小
+                                modifier = Modifier.size(12.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "联系",
-                                fontSize = 10.sp, // 文字缩小至 10.sp
+                                fontSize = 11.sp, // 文字微调
                                 fontWeight = FontWeight.Medium,
                                 color = Color(0xFF4285F4)
                             )

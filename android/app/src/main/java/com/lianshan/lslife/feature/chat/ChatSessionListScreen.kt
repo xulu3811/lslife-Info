@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -58,19 +59,19 @@ fun ChatSessionListScreen(
     
 
     Scaffold(
-        
-        containerColor = androidx.compose.ui.graphics.Color(0xFFF3F5F8),
+        containerColor = androidx.compose.ui.graphics.Color.White, // MD3 无界列表背景纯白
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar( // 居中对齐，更显饱满
                 title = { 
                     Text(
                         text = "消息", 
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                     ) 
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = androidx.compose.ui.graphics.Color(0xFFF3F5F8),
-                    scrolledContainerColor = androidx.compose.ui.graphics.Color(0xFFF3F5F8)
+
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = androidx.compose.ui.graphics.Color.White,
+                    scrolledContainerColor = androidx.compose.ui.graphics.Color.White
                 )
             )
         }
@@ -89,14 +90,11 @@ fun ChatSessionListScreen(
                 return@Column
             }
 
-            androidx.compose.material3.Surface(
+            // 移除多余的 Surface 卡片容器，实现全宽 (Full-width) 布局
+            Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp).padding(bottom = 16.dp),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
-                color = androidx.compose.ui.graphics.Color.White,
-                shadowElevation = 0.dp
             ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -212,7 +210,9 @@ fun ChatSessionItem(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = session.peerName,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    ),
                     color = MaterialTheme.colorScheme.onBackground,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { PackageOpen, Upload, Trash2, ToggleLeft, ToggleRight, AlertTriangle, CheckCircle, Plus, RefreshCw } from 'lucide-react';
+﻿import { useEffect, useRef, useState } from 'react';
+import { PackageOpen, Upload, Trash2, ToggleLeft, ToggleRight, AlertTriangle, CheckCircle, Plus, RefreshCw, XCircle } from 'lucide-react';
 import api from '../utils/axios';
 
 interface AppVersion {
@@ -66,7 +66,6 @@ export default function AppVersionManagement() {
     fetchVersions();
   }, []);
 
-  // APK file upload handler
   const handleApkFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -82,7 +81,7 @@ export default function AppVersionManagement() {
         onUploadProgress: (evt) => {
           if (evt.total) setUploadProgress(Math.round((evt.loaded * 100) / evt.total));
         },
-        timeout: 300_000, // 5min for large APK
+        timeout: 300_000,
       });
       const { url, fileSize, md5 } = res.data.data;
       setForm((prev) => ({ ...prev, downloadUrl: url, fileSize: String(fileSize), md5: md5 || '' }));
@@ -152,288 +151,201 @@ export default function AppVersionManagement() {
       await api.delete(`/admin/versions/${v.id}`);
       showToast('删除成功');
       fetchVersions();
-    } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || '删除失败';
-      showToast(msg, 'error');
+    } catch {
+      showToast('删除失败', 'error');
     }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Toast */}
+    <div className="flex-col gap-6 relative">
+      {/* Toast Notification */}
       {toast && (
-        <div style={{
-          position: 'fixed', top: 24, right: 24, zIndex: 9999,
-          padding: '12px 20px', borderRadius: 12, fontWeight: 500,
-          background: toast.type === 'success' ? '#22c55e' : '#ef4444',
-          color: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-          display: 'flex', alignItems: 'center', gap: 8,
-          animation: 'fadeIn 0.2s ease',
-        }}>
-          {toast.type === 'success' ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
-          {toast.msg}
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 p-4 rounded-lg shadow-lg" style={{ background: toast.type === 'success' ? '#e6f4ea' : '#fce8e6', color: toast.type === 'success' ? '#137333' : '#c5221f', border: `1px solid ${toast.type === 'success' ? '#ceead6' : '#fad2cf'}`, transition: 'all 0.3s ease' }}>
+          {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertTriangle size={20} />}
+          <span className="font-medium text-sm">{toast.msg}</span>
         </div>
       )}
 
-      {/* Header */}
-      <div className="glass-panel p-6" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <PackageOpen size={22} color="#fff" />
-          </div>
-          <div>
-            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>App 版本管理 (OTA)</h2>
-            <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>发布新版本 · 管理更新策略 · 控制强制升级</p>
-          </div>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-3">
+            <PackageOpen size={28} style={{ color: 'var(--g-blue)' }} /> 
+            App 版本管理 (OTA)
+          </h1>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '8px' }}>发布新版本、管理更新策略、控制强制升级</p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button
-            onClick={fetchVersions}
-            className="flex items-center gap-2"
-            style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid var(--surface-border)', background: 'transparent', cursor: 'pointer', color: 'var(--text-secondary)', fontWeight: 500 }}
-          >
-            <RefreshCw size={14} /> 刷新
+        <div className="flex gap-3">
+          <button className="md-btn md-btn-outline" onClick={fetchVersions}>
+            <RefreshCw size={16} /> 刷新
           </button>
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2"
-            style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', cursor: 'pointer', fontWeight: 600, boxShadow: '0 4px 12px rgba(99,102,241,0.3)' }}
-          >
+          <button className="md-btn md-btn-primary" onClick={() => setShowForm(true)}>
             <Plus size={16} /> 发布新版本
           </button>
         </div>
       </div>
 
-      {/* Publish Form Modal */}
-      {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowForm(false); }}
-        >
-          <div className="glass-panel" style={{ width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', padding: 32 }}>
-            <h3 style={{ margin: '0 0 24px', fontSize: 18, fontWeight: 700 }}>🚀 发布新版本</h3>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <div>
-                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>版本名称 <span style={{ color: '#ef4444' }}>*</span></label>
-                  <input
-                    value={form.versionName}
-                    onChange={e => setForm(p => ({ ...p, versionName: e.target.value }))}
-                    placeholder="例: 5.02"
-                    required
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--surface-border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14, boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>版本号 (versionCode) <span style={{ color: '#ef4444' }}>*</span></label>
-                  <input
-                    type="number"
-                    value={form.versionCode}
-                    onChange={e => setForm(p => ({ ...p, versionCode: e.target.value }))}
-                    placeholder="例: 502"
-                    required
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--surface-border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14, boxSizing: 'border-box' }}
-                  />
-                </div>
-              </div>
-
-              {/* APK Upload */}
-              <div>
-                <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>上传 APK 文件</label>
-                <div
-                  onClick={() => apkInputRef.current?.click()}
-                  style={{
-                    border: '2px dashed var(--surface-border)', borderRadius: 10, padding: '20px 16px',
-                    textAlign: 'center', cursor: apkUploading ? 'not-allowed' : 'pointer',
-                    background: 'var(--surface)', transition: 'border-color 0.2s',
-                    opacity: apkUploading ? 0.7 : 1,
-                  }}
-                >
-                  <Upload size={24} color="var(--text-secondary)" style={{ margin: '0 auto 8px' }} />
-                  {apkUploading ? (
-                    <div>
-                      <p style={{ margin: '0 0 8px', fontSize: 13, color: 'var(--text-secondary)' }}>上传中... {uploadProgress}%</p>
-                      <div style={{ height: 6, background: 'var(--surface-border)', borderRadius: 3 }}>
-                        <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'linear-gradient(90deg, #6366f1, #8b5cf6)', borderRadius: 3, transition: 'width 0.3s' }} />
-                      </div>
+      <div className="md-card">
+        <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0, padding: '24px 24px 16px', color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)' }}>
+          历史版本列表
+        </h2>
+        
+        {loading ? (
+          <div className="md-empty-state">加载中...</div>
+        ) : versions.length === 0 ? (
+          <div className="md-empty-state">
+            <PackageOpen size={48} style={{ color: 'var(--text-secondary)', marginBottom: '16px', opacity: 0.5 }} />
+            暂无版本记录，点击“发布新版本”开始
+          </div>
+        ) : (
+          <table className="md-table">
+            <thead>
+              <tr>
+                <th>版本标识</th>
+                <th>更新包大小</th>
+                <th>发布内容</th>
+                <th>分发策略</th>
+                <th>当前状态</th>
+                <th style={{ textAlign: 'right' }}>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {versions.map(v => (
+                <tr key={v.id}>
+                  <td>
+                    <div className="flex items-center gap-2">
+                      <span style={{ fontWeight: 600, fontSize: '16px', color: 'var(--g-blue)' }}>v{v.versionName}</span>
+                      {v.isActive && <span className="badge badge-success" style={{ padding: '2px 6px', fontSize: '10px' }}>Active</span>}
                     </div>
-                  ) : (
-                    <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
-                      点击选择 APK 文件（最大 150MB）<br />
-                      <span style={{ fontSize: 11, color: '#6366f1' }}>上传后将自动填入下载URL、文件大小、MD5</span>
-                    </p>
-                  )}
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', fontFamily: 'monospace' }}>
+                      Code: {v.versionCode}
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ fontWeight: 500 }}>{formatBytes(v.fileSize)}</div>
+                    {v.md5 && (
+                      <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontFamily: 'monospace', width: '120px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={v.md5}>
+                        MD5: {v.md5}
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ maxWidth: '300px' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', whiteSpace: 'pre-wrap' }}>
+                      {v.releaseNotes}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                      {new Date(v.createdAt).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td>
+                    <button 
+                      onClick={() => handleToggleForced(v)}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      {v.isForced ? (
+                        <ToggleRight size={24} style={{ color: 'var(--g-red)' }} />
+                      ) : (
+                        <ToggleLeft size={24} style={{ color: 'var(--text-secondary)' }} />
+                      )}
+                      <span style={{ fontSize: '13px', fontWeight: 500, color: v.isForced ? 'var(--g-red)' : 'var(--text-secondary)' }}>
+                        {v.isForced ? '强更激活' : '可选更新'}
+                      </span>
+                    </button>
+                  </td>
+                  <td>
+                    <button 
+                      onClick={() => handleToggleActive(v)}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      {v.isActive ? (
+                        <ToggleRight size={24} style={{ color: 'var(--g-green)' }} />
+                      ) : (
+                        <ToggleLeft size={24} style={{ color: 'var(--text-secondary)' }} />
+                      )}
+                      <span style={{ fontSize: '13px', fontWeight: 500, color: v.isActive ? 'var(--g-green)' : 'var(--text-secondary)' }}>
+                        {v.isActive ? '提供下载' : '已停用'}
+                      </span>
+                    </button>
+                  </td>
+                  <td style={{ textAlign: 'right' }}>
+                    <div className="flex items-center justify-end gap-2">
+                      <a href={v.downloadUrl} target="_blank" rel="noopener noreferrer" className="md-btn-icon" style={{ color: 'var(--g-blue)' }} title="下载安装包">
+                        <PackageOpen size={16} />
+                      </a>
+                      <button className="md-btn-icon" style={{ color: 'var(--g-red)' }} onClick={() => handleDelete(v)} title="永久删除">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Upload/Publish Modal */}
+      {showForm && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="md-card flex-col" style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="flex justify-between items-center" style={{ padding: '24px', borderBottom: '1px solid var(--border-color)' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>发布新版本</h2>
+              <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>&times;</button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="flex-col gap-6" style={{ padding: '24px' }}>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex-col gap-2">
+                  <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>版本号 (Version Name) *</label>
+                  <input type="text" className="md-input" required placeholder="如 8.0.1" value={form.versionName} onChange={e => setForm({...form, versionName: e.target.value})} />
                 </div>
-                <input ref={apkInputRef} type="file" accept=".apk,application/vnd.android.package-archive" style={{ display: 'none' }} onChange={handleApkFileChange} />
-              </div>
-
-              <div>
-                <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>APK 下载 URL <span style={{ color: '#ef4444' }}>*</span></label>
-                <input
-                  value={form.downloadUrl}
-                  onChange={e => setForm(p => ({ ...p, downloadUrl: e.target.value }))}
-                  placeholder="https://mentalhlp.site/apks/lslife_xxx.apk"
-                  required
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--surface-border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14, boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>更新日志 <span style={{ color: '#ef4444' }}>*</span></label>
-                <textarea
-                  value={form.releaseNotes}
-                  onChange={e => setForm(p => ({ ...p, releaseNotes: e.target.value }))}
-                  placeholder={'1. 修复了若干已知问题\n2. 优化了启动速度\n3. 新增版本管理功能'}
-                  required
-                  rows={4}
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--surface-border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14, resize: 'vertical', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <div>
-                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>文件大小（字节）</label>
-                  <input
-                    type="number"
-                    value={form.fileSize}
-                    onChange={e => setForm(p => ({ ...p, fileSize: e.target.value }))}
-                    placeholder="自动填入"
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--surface-border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14, boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>MD5 校验</label>
-                  <input
-                    value={form.md5}
-                    onChange={e => setForm(p => ({ ...p, md5: e.target.value }))}
-                    placeholder="自动填入"
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--surface-border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14, boxSizing: 'border-box' }}
-                  />
+                <div className="flex-col gap-2">
+                  <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>构建号 (Version Code) *</label>
+                  <input type="number" className="md-input" required placeholder="如 8000001" value={form.versionCode} onChange={e => setForm({...form, versionCode: e.target.value})} />
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: 16 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontWeight: 500, fontSize: 14 }}>
-                  <input type="checkbox" checked={form.isForced} onChange={e => setForm(p => ({ ...p, isForced: e.target.checked }))} />
-                  <AlertTriangle size={14} color="#f59e0b" /> 强制更新（用户必须升级）
+              <div className="flex-col gap-2">
+                <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>APK 安装包直链 URL *</label>
+                <div className="flex gap-2">
+                  <input type="url" className="md-input flex-1" required placeholder="请输入以 http 开头的 apk 下载链接" value={form.downloadUrl} onChange={e => setForm({...form, downloadUrl: e.target.value})} />
+                  <input type="file" accept=".apk" ref={apkInputRef} style={{ display: 'none' }} onChange={handleApkFileChange} />
+                  <button type="button" className="md-btn md-btn-outline flex items-center gap-2" onClick={() => apkInputRef.current?.click()} disabled={apkUploading}>
+                    {apkUploading ? <span style={{ fontSize: '13px' }}>上传中 {uploadProgress}%</span> : <><Upload size={16} /> 本地上传</>}
+                  </button>
+                </div>
+                {apkUploading && (
+                  <div style={{ width: '100%', height: '4px', background: 'var(--surface-hover)', borderRadius: '2px', overflow: 'hidden', marginTop: '4px' }}>
+                    <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--g-blue)', transition: 'width 0.3s' }}></div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-col gap-2">
+                <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>更新日志 (Release Notes) *</label>
+                <textarea className="md-input" required rows={4} placeholder="分条列出本次更新的内容..." value={form.releaseNotes} onChange={e => setForm({...form, releaseNotes: e.target.value})}></textarea>
+              </div>
+
+              <div className="flex gap-6 p-4" style={{ background: 'var(--surface-hover)', borderRadius: '12px' }}>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.isForced} onChange={e => setForm({...form, isForced: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                  <span style={{ fontSize: '14px', fontWeight: 500 }}>是否强制升级 (低于此版本的均强制弹窗)</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontWeight: 500, fontSize: 14 }}>
-                  <input type="checkbox" checked={form.isActive} onChange={e => setForm(p => ({ ...p, isActive: e.target.checked }))} />
-                  <CheckCircle size={14} color="#22c55e" /> 立即激活（作为当前下发版本）
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.isActive} onChange={e => setForm({...form, isActive: e.target.checked})} style={{ width: '16px', height: '16px' }} />
+                  <span style={{ fontSize: '14px', fontWeight: 500 }}>提交后立即激活 (面向客户端)</span>
                 </label>
               </div>
 
-              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  style={{ flex: 1, padding: '11px 0', borderRadius: 8, border: '1px solid var(--surface-border)', background: 'transparent', color: 'var(--text)', cursor: 'pointer', fontWeight: 500 }}
-                >
-                  取消
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting || apkUploading}
-                  style={{ flex: 2, padding: '11px 0', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', cursor: 'pointer', fontWeight: 600, opacity: submitting ? 0.7 : 1 }}
-                >
-                  {submitting ? '发布中...' : '🚀 确认发布'}
+              <div className="flex justify-end gap-3 pt-4" style={{ borderTop: '1px solid var(--border-color)' }}>
+                <button type="button" className="md-btn md-btn-outline" onClick={() => setShowForm(false)}>取消</button>
+                <button type="submit" className="md-btn md-btn-primary" disabled={submitting}>
+                  {submitting ? '发布中...' : '确认发布'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
-      {/* Version List */}
-      <div className="glass-panel" style={{ overflow: 'hidden' }}>
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--surface-border)' }}>
-          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>历史版本列表</h3>
-        </div>
-
-        {loading ? (
-          <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-secondary)' }}>加载中...</div>
-        ) : versions.length === 0 ? (
-          <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-secondary)' }}>
-            <PackageOpen size={40} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
-            <p>暂无版本记录，点击"发布新版本"开始</p>
-          </div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-              <thead>
-                <tr style={{ background: 'var(--surface)', borderBottom: '1px solid var(--surface-border)' }}>
-                  {['版本名称', '版本号', '文件大小', '状态', '强制', '更新日志', '发布时间', '操作'].map(h => (
-                    <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {versions.map((v, i) => (
-                  <tr key={v.id} style={{ borderBottom: i < versions.length - 1 ? '1px solid var(--surface-border)' : 'none', transition: 'background 0.15s' }}>
-                    <td style={{ padding: '14px 16px', fontWeight: 700 }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        {v.isActive && <span style={{ background: '#22c55e', color: '#fff', fontSize: 11, padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>当前</span>}
-                        v{v.versionName}
-                      </span>
-                    </td>
-                    <td style={{ padding: '14px 16px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{v.versionCode}</td>
-                    <td style={{ padding: '14px 16px', color: 'var(--text-secondary)' }}>{formatBytes(v.fileSize)}</td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <button
-                        onClick={() => handleToggleActive(v)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: v.isActive ? '#22c55e' : 'var(--text-secondary)' }}
-                        title={v.isActive ? '点击停用' : '点击激活'}
-                      >
-                        {v.isActive ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
-                        <span style={{ fontSize: 12 }}>{v.isActive ? '激活' : '停用'}</span>
-                      </button>
-                    </td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <button
-                        onClick={() => handleToggleForced(v)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, color: v.isForced ? '#f59e0b' : 'var(--text-secondary)' }}
-                        title={v.isForced ? '点击改为可选' : '点击改为强制'}
-                      >
-                        <AlertTriangle size={16} />
-                        <span style={{ fontSize: 12 }}>{v.isForced ? '强制' : '可选'}</span>
-                      </button>
-                    </td>
-                    <td style={{ padding: '14px 16px', maxWidth: 220 }}>
-                      <p style={{ margin: 0, fontSize: 12, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={v.releaseNotes}>
-                        {v.releaseNotes}
-                      </p>
-                    </td>
-                    <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', fontSize: 12 }}>
-                      {new Date(v.createdAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td style={{ padding: '14px 16px' }}>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <a
-                          href={v.downloadUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          title="下载 APK"
-                          style={{ padding: '6px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.1)', color: '#6366f1', textDecoration: 'none', display: 'flex', alignItems: 'center' }}
-                        >
-                          <Upload size={14} />
-                        </a>
-                        <button
-                          onClick={() => handleDelete(v)}
-                          disabled={v.isActive}
-                          title={v.isActive ? '不能删除激活版本' : '删除版本'}
-                          style={{ padding: '6px 10px', borderRadius: 6, background: v.isActive ? 'transparent' : 'rgba(239,68,68,0.1)', color: v.isActive ? 'var(--text-secondary)' : '#ef4444', border: 'none', cursor: v.isActive ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', opacity: v.isActive ? 0.4 : 1 }}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

@@ -33,4 +33,7 @@ interface AdminApiService {
 
     @POST("admin/security/force-logout-all")
     suspend fun forceLogoutAll(): ApiEnvelope<JsonObject>
+
+    @GET("admin/server-status")
+    suspend fun getServerStatus(): ApiEnvelope<ServerMonitorData>
 }

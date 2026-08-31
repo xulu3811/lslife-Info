@@ -97,49 +97,55 @@ export default function CategoryManagement() {
     <div className="flex-col gap-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-3">
-          <Layers size={28} className="text-primary" /> 
+          <Layers size={28} style={{ color: 'var(--g-blue)' }} /> 
           服务类目管理
         </h1>
-        <button className="glass-button primary p-2 px-4 flex items-center gap-2" onClick={() => handleOpenModal()}>
+        <button className="md-btn md-btn-primary" onClick={() => handleOpenModal()}>
           <Plus size={18} /> 新增类目
         </button>
       </div>
 
-      <div className="glass-panel glass-table-container">
+      <div className="md-card md-table-container">
         {loading ? (
-          <div className="p-8 text-center text-muted">加载中...</div>
+          <div className="md-empty-state">加载中...</div>
         ) : (
-          <table className="glass-table">
+          <table className="md-table">
             <thead>
               <tr>
                 <th>类目名称 (ID)</th>
-                <th>图标 / 图标URL</th>
+                <th>图标</th>
                 <th>父级ID</th>
                 <th>排序</th>
                 <th>属性</th>
                 <th>状态</th>
-                <th className="text-right">操作</th>
+                <th style={{ textAlign: 'right' }}>操作</th>
               </tr>
             </thead>
             <tbody>
               {categories.map(cat => (
                 <tr key={cat.id}>
                   <td>
-                    <div className="font-semibold text-primary">{cat.name}</div>
-                    <div className="text-xs text-muted font-mono mt-1">{cat.id}</div>
+                    <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{cat.name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>{cat.id}</div>
                   </td>
                   <td>
                     {cat.iconUrl ? (
-                      <img src={cat.iconUrl} alt="icon" className="w-8 h-8 object-cover rounded-md border border-gray-200" style={{ width: 32, height: 32 }} />
+                      <img 
+                        src={cat.iconUrl.startsWith('http') ? cat.iconUrl : (cat.iconUrl.startsWith('/') ? `${window.location.origin}${cat.iconUrl}` : `${window.location.origin}/${cat.iconUrl}`)} 
+                        alt="icon" 
+                        style={{ width: '32px', height: '32px', objectFit: 'contain', borderRadius: '4px' }} 
+                        onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.removeAttribute('style'); }}
+                      />
                     ) : (
-                      <span className="text-xs text-muted">无图标</span>
+                      <span className="text-xs text-secondary">无</span>
                     )}
+                    <span className="text-xs text-secondary" style={{ display: cat.iconUrl ? 'none' : 'block' }}>无</span>
                   </td>
-                  <td className="text-sm font-mono text-secondary">{cat.parentId || '-'}</td>
+                  <td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{cat.parentId || '-'}</td>
                   <td>{cat.sortOrder}</td>
                   <td>
                     <div className="flex gap-2">
-                      <span className={`badge ${cat.isLeaf ? 'badge-primary' : 'badge-neutral'}`}>
+                      <span className={`badge ${cat.isLeaf ? 'badge-success' : 'badge-danger'}`}>
                         {cat.isLeaf ? '叶子节点' : '目录'}
                       </span>
                       {cat.isHot && (
@@ -152,12 +158,12 @@ export default function CategoryManagement() {
                       {cat.isActive ? '启用' : '禁用'}
                     </span>
                   </td>
-                  <td className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <button className="glass-button secondary p-2" onClick={() => handleOpenModal(cat)} title="编辑">
-                        <Edit2 size={16} className="text-primary" />
+                  <td style={{ textAlign: 'right' }}>
+                    <div className="flex items-center justify-end gap-2">
+                      <button className="md-btn-icon" onClick={() => handleOpenModal(cat)} title="编辑">
+                        <Edit2 size={16} />
                       </button>
-                      <button className="glass-button danger p-2" onClick={() => handleDelete(cat.id)} title="删除">
+                      <button className="md-btn-icon" style={{ color: 'var(--g-red)' }} onClick={() => handleDelete(cat.id)} title="删除">
                         <Trash2 size={16} />
                       </button>
                     </div>

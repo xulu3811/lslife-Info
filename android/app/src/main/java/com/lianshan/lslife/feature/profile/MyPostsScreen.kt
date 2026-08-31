@@ -87,6 +87,7 @@ fun MyPostsScreen(
                     onEdit = { onEditPost(post.id) },
                     onDelist = { viewModel.updateStatus(post.id, "removed") },
                     onRelist = { viewModel.updateStatus(post.id, "pending_review") },
+                    onRefresh = { viewModel.refreshPost(post.id) },
                     onDelete = { viewModel.deletePost(post.id) }
                 )
             }
@@ -100,6 +101,7 @@ private fun MyPostCard(
     onEdit: () -> Unit,
     onDelist: () -> Unit,
     onRelist: () -> Unit,
+    onRefresh: () -> Unit,
     onDelete: () -> Unit
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -108,13 +110,15 @@ private fun MyPostCard(
         "pending_review", "AI_REVIEWING", "MANUAL_REVIEWING" -> "审核中"
         "rejected", "REJECTED" -> "已驳回"
         "removed", "REMOVED" -> "已下架"
+        "expired", "EXPIRED" -> "已过期"
+        "archived", "ARCHIVED" -> "已归档"
         else -> post.status
     }
     val statusTone = when (post.status) {
         "published", "PUBLISHED" -> StatusTone.Success
         "pending_review", "AI_REVIEWING", "MANUAL_REVIEWING" -> StatusTone.Warning
         "rejected", "REJECTED" -> StatusTone.Error
-        "removed", "REMOVED" -> StatusTone.Neutral
+        "removed", "REMOVED", "expired", "EXPIRED", "archived", "ARCHIVED" -> StatusTone.Neutral
         else -> StatusTone.Neutral
     }
 
@@ -174,13 +178,21 @@ private fun MyPostCard(
                     Text("修改")
                 }
                 
+                if (post.status == "published" || post.status == "PUBLISHED") {
+                    TextButton(onClick = onRefresh, colors = ButtonDefaults.textButtonColors(contentColor = GoogleBlue)) {
+                        Icon(Icons.Outlined.Publish, null, modifier = Modifier.size(16.dp)) // 可以换个Icon，用Publish暂代
+                        Spacer(Modifier.width(4.dp))
+                        Text("擦亮")
+                    }
+                }
+
                 if (post.status == "published" || post.status == "PUBLISHED" || post.status == "pending_review" || post.status == "MANUAL_REVIEWING" || post.status == "AI_REVIEWING") {
                     TextButton(onClick = onDelist, colors = ButtonDefaults.textButtonColors(contentColor = GoogleGrey)) {
                         Icon(Icons.Outlined.VisibilityOff, null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
                         Text("下架")
                     }
-                } else if (post.status == "removed" || post.status == "REMOVED" || post.status == "rejected" || post.status == "REJECTED") {
+                } else if (post.status == "removed" || post.status == "REMOVED" || post.status == "rejected" || post.status == "REJECTED" || post.status == "expired" || post.status == "EXPIRED") {
                     TextButton(onClick = onRelist, colors = ButtonDefaults.textButtonColors(contentColor = GoogleBlue)) {
                         Icon(Icons.Outlined.Publish, null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))

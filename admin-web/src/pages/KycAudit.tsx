@@ -42,19 +42,26 @@ export default function KycAudit() {
     <div className="flex-col gap-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-3">
-          <UserCheck size={28} className="text-primary" /> 
+          <UserCheck size={28} style={{ color: 'var(--g-blue)' }} /> 
           实名认证 (KYC) 审核大盘
         </h1>
       </div>
 
-      <div className="glass-panel p-6">
-        <div className="flex gap-6 mb-6" style={{ borderBottom: '1px solid var(--surface-border)' }}>
+      <div className="md-card">
+        <div className="flex gap-6 mb-6" style={{ borderBottom: '1px solid var(--border-color)' }}>
           {tabs.map(t => (
             <div 
               key={t.id}
               onClick={() => setTab(t.id as any)}
-              className={`pb-3 cursor-pointer transition-all duration-200 ${tab === t.id ? 'text-primary font-semibold' : 'text-secondary font-medium'}`}
-              style={{ borderBottom: tab === t.id ? '2px solid var(--primary)' : '2px solid transparent' }}
+              style={{
+                paddingBottom: '12px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                fontWeight: tab === t.id ? 600 : 500,
+                color: tab === t.id ? 'var(--g-blue)' : 'var(--text-secondary)',
+                borderBottom: tab === t.id ? '2px solid var(--g-blue)' : '2px solid transparent',
+                marginBottom: '-1px'
+              }}
             >
               {t.label}
             </div>
@@ -62,27 +69,27 @@ export default function KycAudit() {
         </div>
         
         {loading ? (
-          <div className="p-8 text-center text-muted">加载中...</div>
+          <div className="md-empty-state">加载中...</div>
         ) : users.length === 0 ? (
-          <div className="p-8 text-center text-secondary">
+          <div className="md-empty-state">
             {tab === 'pending' ? '暂无需要审核的实名认证。' : '暂无相关记录。'}
           </div>
         ) : (
           <div className="flex-col gap-4">
             {users.map(user => (
-              <div key={user.id} className="p-4" style={{ border: '1px solid var(--surface-border)', borderRadius: 'var(--radius-md)', background: 'rgba(255,255,255,0.3)' }}>
+              <div key={user.id} style={{ padding: '20px', border: '1px solid var(--border-color)', borderRadius: '12px', background: 'var(--surface-hover)' }}>
                 <div className="flex justify-between mb-4">
                   <div className="flex gap-3 items-center">
-                    <span className="font-semibold text-lg">{user.realName || '未知姓名'}</span>
-                    <span className="badge badge-info font-mono">{user.phone}</span>
+                    <span style={{ fontWeight: 600, fontSize: '18px', color: 'var(--text-primary)' }}>{user.realName || '未知姓名'}</span>
+                    <span className="badge badge-success" style={{ fontFamily: 'monospace' }}>{user.phone}</span>
                   </div>
                   <div className="flex gap-2">
                     {tab === 'pending' && (
                       <>
-                        <button onClick={() => handleAudit(user.id, 'approve')} className="glass-button success p-2 px-3">
+                        <button onClick={() => handleAudit(user.id, 'approve')} className="md-btn md-btn-primary">
                           <CheckCircle size={16} /> 通过
                         </button>
-                        <button onClick={() => handleAudit(user.id, 'reject')} className="glass-button danger p-2 px-3">
+                        <button onClick={() => handleAudit(user.id, 'reject')} className="md-btn md-btn-danger">
                           <XCircle size={16} /> 驳回
                         </button>
                       </>
@@ -90,30 +97,30 @@ export default function KycAudit() {
                   </div>
                 </div>
                 
-                <div className="text-sm text-secondary flex-col gap-2">
-                  <span>用户昵称: <span className="font-medium text-primary">{user.nickname}</span></span>
-                  <span>身份证哈希: <span className="font-mono text-muted">{user.idCardHash || '无'}</span></span>
-                  <span>最近更新: {new Date(user.updatedAt).toLocaleString()}</span>
+                <div className="flex-col gap-2" style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                  <div>用户昵称: <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{user.nickname}</span></div>
+                  <div>身份证哈希: <span style={{ fontFamily: 'monospace' }}>{user.idCardHash || '无'}</span></div>
+                  <div>最近更新: {new Date(user.updatedAt).toLocaleString()}</div>
                 </div>
                 
                 {tab === 'pending' && (
                   <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
                     {user.idCardFrontImage && (
                       <div className="flex-col gap-1 items-center">
-                        <span className="text-xs text-secondary font-medium">正面照</span>
-                        <img src={user.idCardFrontImage} alt="正面照" className="h-32 object-contain bg-white/20 rounded-md p-1" style={{ border: '1px dashed var(--surface-border)' }} />
+                        <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>正面照</span>
+                        <img src={user.idCardFrontImage} alt="正面照" style={{ height: '128px', objectFit: 'contain', background: 'var(--surface)', borderRadius: '8px', padding: '4px', border: '1px dashed var(--border-color)' }} />
                       </div>
                     )}
                     {user.idCardBackImage && (
                       <div className="flex-col gap-1 items-center">
-                        <span className="text-xs text-secondary font-medium">反面照</span>
-                        <img src={user.idCardBackImage} alt="反面照" className="h-32 object-contain bg-white/20 rounded-md p-1" style={{ border: '1px dashed var(--surface-border)' }} />
+                        <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>反面照</span>
+                        <img src={user.idCardBackImage} alt="反面照" style={{ height: '128px', objectFit: 'contain', background: 'var(--surface)', borderRadius: '8px', padding: '4px', border: '1px dashed var(--border-color)' }} />
                       </div>
                     )}
                     {user.idCardHandheldImage && (
                       <div className="flex-col gap-1 items-center">
-                        <span className="text-xs text-secondary font-medium">手持照</span>
-                        <img src={user.idCardHandheldImage} alt="手持照" className="h-32 object-contain bg-white/20 rounded-md p-1" style={{ border: '1px dashed var(--surface-border)' }} />
+                        <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>手持照</span>
+                        <img src={user.idCardHandheldImage} alt="手持照" style={{ height: '128px', objectFit: 'contain', background: 'var(--surface)', borderRadius: '8px', padding: '4px', border: '1px dashed var(--border-color)' }} />
                       </div>
                     )}
                   </div>

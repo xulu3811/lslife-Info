@@ -50,12 +50,7 @@ fun InfoPublishCard(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = Color(0x0F000000),
-                ambientColor = Color(0x0A000000)
-            )
+            
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         color = Color.White,

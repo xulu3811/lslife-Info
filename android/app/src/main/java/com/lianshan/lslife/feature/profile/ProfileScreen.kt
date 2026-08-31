@@ -86,7 +86,7 @@ fun ProfileScreen(
             color = Color.White,
             shadowElevation = 0.dp
         ) {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPersonalInfo() },
                     verticalAlignment = Alignment.CenterVertically
@@ -98,23 +98,24 @@ fun ProfileScreen(
                             .size(56.dp)
                             .clip(CircleShape)
                             .border(2.dp, Brush.sweepGradient(listOf(Color(0xFF4285F4), Color(0xFFEA4335), Color(0xFFFBBC05), Color(0xFF34A853))), CircleShape)
+                            .background(Color(0xFFF3F4F6))
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = user?.nickname ?: "未登录",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1F2937)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = user?.nickname ?: "未登录",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF111827)
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically, 
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             if (user?.role == "ADMIN" || user?.role == "SUPERADMIN") {
                                 M3Badge(text = "平台管理", bgColor = Color(0xFFE0E7FF), textColor = Color(0xFF4338CA))
                             }
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             if (user?.realNameStatus == "verified") {
                                 M3Badge(text = "已实名", bgColor = Color(0xFFD1FAE5), textColor = Color(0xFF059669))
                             } else {
@@ -130,12 +131,13 @@ fun ProfileScreen(
                     Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, null, modifier = Modifier.size(16.dp), tint = Color(0xFF9CA3AF))
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    M3StatItem(count = "0", label = "收藏", onClick = onOpenFavorites)
-                    M3StatItem(count = "6", label = "足迹", onClick = onOpenFootprints)
-                    M3StatItem(count = "0/0", label = "关注/粉丝", onClick = onOpenFollowList)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                    M3StatItem(count = "${user?.favoritesCount ?: 0}", label = "收藏", onClick = onOpenFavorites)
+                    M3StatItem(count = "${user?.footprintsCount ?: 0}", label = "足迹", onClick = onOpenFootprints)
+                    M3StatItem(count = "${user?.followingCount ?: 0}", label = "关注", onClick = onOpenFollowList)
+                    M3StatItem(count = "${user?.followersCount ?: 0}", label = "粉丝", onClick = onOpenFollowList)
                 }
             }
         }
@@ -172,16 +174,29 @@ fun ProfileScreen(
         // 5. Trust & Services
         M3GroupCard(title = "信任与服务") {
             M3MenuRow(icon = Icons.Outlined.VerifiedUser, title = "实名认证", rightText = if (user?.realNameStatus == "verified") "已实名" else "去认证", onClick = onOpenRealName)
-            M3MenuRow(icon = Icons.Outlined.Storefront, title = "商家入驻/店铺认证", rightText = when (state.merchantCertStatus) { "PENDING" -> "审核中"; "APPROVED" -> "已认证"; "REJECTED" -> "被驳回"; else -> "去认证" }, onClick = { if (state.merchantCertStatus != "PENDING" && state.merchantCertStatus != "APPROVED") onOpenMerchantCertify() }, showDivider = false)
+            M3MenuRow(icon = Icons.Outlined.Storefront, title = "商家入驻/店铺认证", rightText = when (state.merchantCertStatus) { "PENDING" -> "审核中"; "APPROVED" -> "已认证"; "REJECTED" -> "被驳回"; "SUSPENDED" -> "异常(需打卡)"; else -> "去认证" }, onClick = { if (state.merchantCertStatus != "PENDING" && state.merchantCertStatus != "APPROVED" && state.merchantCertStatus != "SUSPENDED") onOpenMerchantCertify() }, showDivider = false)
         }
 
         // 6. Settings & System
         M3GroupCard(title = "更多服务") {
-            M3MenuRow(icon = Icons.Outlined.Settings, title = "系统设置", onClick = { /* TODO */ })
-            M3MenuRow(icon = Icons.Outlined.ExitToApp, title = "退出登录", onClick = { viewModel.logout() }, showDivider = false, titleColor = Color(0xFFEF4444))
+            M3MenuRow(icon = Icons.Outlined.Settings, title = "设置与隐私", onClick = onOpenSettings, showDivider = false)
         }
         
         Spacer(modifier = Modifier.height(8.dp))
+    }
+
+    if (state.merchantCertStatus == "SUSPENDED") {
+        AlertDialog(
+            onDismissRequest = { /* Force confirmation, so dismiss not allowed */ },
+            title = { Text("资质即将到期 / 长期未打卡") },
+            text = { Text("您的商家服务长时间未维护或资质即将过期。请确认您的店铺仍在正常营业中，以恢复商家的正常展示和权益。") },
+            confirmButton = {
+                Button(onClick = { viewModel.confirmMerchantActive() }) {
+                    Text("确认正常营业")
+                }
+            },
+            properties = androidx.compose.ui.window.DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+        )
     }
 }
 
@@ -193,13 +208,13 @@ fun M3GroupCard(title: String, content: @Composable ColumnScope.() -> Unit) {
         color = Color.White,
         shadowElevation = 0.dp
     ) {
-        Column(modifier = Modifier.padding(top = 12.dp, bottom = 2.dp)) {
+        Column(modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)) {
             Text(
                 text = title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF374151),
-                modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 4.dp)
+                fontSize = 15.sp, // 标题升级
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF1F2937), // 更深的颜色
+                modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp)
             )
             content()
         }
@@ -212,20 +227,21 @@ fun M3GridItem(icon: ImageVector, label: String, onClick: () -> Unit, badgeCount
         modifier = modifier.then(Modifier.clickable { onClick() }.padding(vertical = 4.dp)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // 移除多余的灰色圆形底座，释放图标本体，增大图标尺寸
         Box(
-            modifier = Modifier.size(38.dp).clip(CircleShape).background(Color(0xFFF3F5F8)),
+            modifier = Modifier.size(40.dp),
             contentAlignment = Alignment.Center
         ) {
             if (badgeCount > 0) {
                 BadgedBox(badge = { Badge { Text(if (badgeCount > 99) "99+" else badgeCount.toString()) } }) {
-                    Icon(icon, null, modifier = Modifier.size(20.dp), tint = Color(0xFF1F2937))
+                    Icon(icon, null, modifier = Modifier.size(24.dp), tint = Color(0xFF1F2937))
                 }
             } else {
-                Icon(icon, null, modifier = Modifier.size(20.dp), tint = Color(0xFF1F2937))
+                Icon(icon, null, modifier = Modifier.size(24.dp), tint = Color(0xFF1F2937))
             }
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = label, fontSize = 11.sp, color = Color(0xFF4B5563))
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(text = label, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color(0xFF4B5563))
     }
 }
 
@@ -235,9 +251,15 @@ fun M3StatItem(count: String, label: String, onClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.clickable { onClick() }.padding(horizontal = 12.dp, vertical = 4.dp)
     ) {
-        Text(text = count, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(text = label, fontSize = 11.sp, color = Color(0xFF6B7280))
+        // 使用 Display 级别字体，放大主次对比
+        Text(
+            text = count, 
+            fontSize = 24.sp, 
+            fontWeight = FontWeight.ExtraBold, 
+            color = Color(0xFF111827)
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(text = label, fontSize = 11.sp, color = Color(0xFF9CA3AF)) // 更浅的次级灰色
     }
 }
 
@@ -245,14 +267,14 @@ fun M3StatItem(count: String, label: String, onClick: () -> Unit) {
 fun M3MenuRow(icon: ImageVector, title: String, rightText: String? = null, showDivider: Boolean = true, titleColor: Color = Color(0xFF374151), onClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp), // 强制高度至少 56dp，保障触控热区
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, null, modifier = Modifier.size(20.dp), tint = titleColor.copy(alpha = 0.8f))
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(text = title, fontSize = 14.sp, color = titleColor, modifier = Modifier.weight(1f))
+            Icon(icon, null, modifier = Modifier.size(22.dp), tint = titleColor.copy(alpha = 0.8f))
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(text = title, fontSize = 15.sp, color = titleColor, modifier = Modifier.weight(1f))
             if (rightText != null) {
-                Text(text = rightText, fontSize = 12.sp, color = Color(0xFF9CA3AF))
+                Text(text = rightText, fontSize = 13.sp, color = Color(0xFF9CA3AF))
                 Spacer(modifier = Modifier.width(8.dp))
             }
             Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, null, modifier = Modifier.size(14.dp), tint = Color(0xFFD1D5DB))

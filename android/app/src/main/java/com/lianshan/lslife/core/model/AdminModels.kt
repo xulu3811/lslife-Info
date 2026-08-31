@@ -5,11 +5,12 @@ import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class AdminDashboardData(
-    val newUsers: Int = 0,
-    val revenue: Double = 0.0,
-    val pendingReviews: Int = 0,
-    val pendingKyc: Int = 0,
-    val pendingMerchantCerts: Int = 0
+    val totalUsers: Int = 0,
+    val totalMembers: Int = 0,
+    val kycPercentage: String = "0%",
+    val verifiedMerchants: Int = 0,
+    val serverStorageStatus: String = "未知",
+    val totalRecharge: Double = 0.0
 )
 
 @Serializable
@@ -103,4 +104,43 @@ data class AdminActionRequest(
 @Serializable
 data class AdminStatusRequest(
     val status: String
+)
+
+@Serializable
+data class ServerMonitorRam(
+    val total: String,
+    val used: String,
+    val percent: Float
+)
+
+@Serializable
+data class ServerMonitorCpu(
+    val cores: Int,
+    val loadAvg: Float,
+    val percent: Float
+)
+
+@Serializable
+data class ServerMonitorDisk(
+    val total: String,
+    val used: String,
+    val percent: Int
+)
+
+@Serializable
+data class ServerMonitorPm2(
+    val name: String,
+    val status: String,
+    val memory: String,
+    val cpu: Float,
+    val restarts: Int,
+    val uptime: Long
+)
+
+@Serializable
+data class ServerMonitorData(
+    val ram: ServerMonitorRam,
+    val cpu: ServerMonitorCpu,
+    val disk: ServerMonitorDisk,
+    val pm2: List<ServerMonitorPm2>
 )

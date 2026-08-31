@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, User, KeyRound } from 'lucide-react';
+import { Lock, User, KeyRound, ShieldCheck } from 'lucide-react';
 import api from '../utils/axios';
-import '../index.css';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -26,7 +25,7 @@ export default function Login() {
     try {
       const res = await api.post('/admin/login', { username, password });
       localStorage.setItem('admin_token', res.data.data?.token || 'mock_token');
-      navigate('/dashboard');
+      navigate('/admin-web/dashboard');
     } catch (err: any) {
       alert(err.response?.data?.message || '登录失败');
       setLoading(false);
@@ -34,28 +33,29 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
-      <div className="glass-panel p-8 w-full" style={{ maxWidth: '440px' }}>
-        <div className="text-center mb-8">
-          <div className="inline-flex mb-4">
-            <img src="/favicon.png" alt="LsLife Logo" style={{ width: '72px', height: '72px', objectFit: 'contain', filter: 'drop-shadow(0 8px 16px rgba(229, 57, 53, 0.25))' }} />
+    <div className="flex items-center justify-center min-h-screen" style={{ background: 'var(--surface-hover)' }}>
+      <div className="md-card flex-col items-center" style={{ width: '100%', maxWidth: '440px', padding: '48px 40px' }}>
+        
+        <div className="text-center mb-10 flex-col items-center">
+          <div className="inline-flex mb-6" style={{ background: '#fff', borderRadius: '24px', padding: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' }}>
+            <img src="/admin-web/logo.png" alt="qylife Logo" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
           </div>
-          <h1 className="text-gradient text-3xl mb-2">LsLife Admin</h1>
-          <p className="m-0 text-secondary font-medium">系统管理与安全控制台</p>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px 0' }}>qylife Admin</h1>
+          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)', fontWeight: 500 }}>同城清远 - 系统管理与安全控制台</p>
         </div>
 
-        <form onSubmit={handleLogin} className="flex-col gap-6">
+        <form onSubmit={handleLogin} className="flex-col gap-5 w-full">
           {!showMfa ? (
             <>
-              <div>
-                <label className="block mb-2 text-sm text-secondary font-medium">管理账号</label>
-                <div className="relative">
-                  <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>
+              <div className="flex-col gap-2">
+                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>管理账号</label>
+                <div className="relative flex items-center">
+                  <div style={{ position: 'absolute', left: '16px', color: 'var(--text-secondary)' }}>
                     <User size={18} />
                   </div>
                   <input
                     type="text"
-                    className="glass-input w-full"
+                    className="md-input w-full"
                     style={{ paddingLeft: '44px', paddingTop: '12px', paddingBottom: '12px' }}
                     placeholder="输入管理员账号"
                     value={username}
@@ -64,15 +64,15 @@ export default function Login() {
                 </div>
               </div>
               
-              <div>
-                <label className="block mb-2 text-sm text-secondary font-medium">访问密码</label>
-                <div className="relative">
-                  <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>
+              <div className="flex-col gap-2">
+                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>访问密码</label>
+                <div className="relative flex items-center">
+                  <div style={{ position: 'absolute', left: '16px', color: 'var(--text-secondary)' }}>
                     <Lock size={18} />
                   </div>
                   <input
                     type="password"
-                    className="glass-input w-full"
+                    className="md-input w-full"
                     style={{ paddingLeft: '44px', paddingTop: '12px', paddingBottom: '12px' }}
                     placeholder="输入管理密码"
                     value={password}
@@ -82,16 +82,19 @@ export default function Login() {
               </div>
             </>
           ) : (
-            <div className="animate-fade-in">
-              <label className="block mb-2 text-sm text-secondary font-medium">两步验证 (2FA) 代码</label>
-              <div className="relative">
-                <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>
+            <div style={{ animation: 'fadeIn 0.3s ease' }}>
+              <div className="flex items-center justify-between mb-2">
+                <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>两步验证 (2FA) 代码</label>
+                <ShieldCheck size={16} style={{ color: 'var(--g-green)' }} />
+              </div>
+              <div className="relative flex items-center">
+                <div style={{ position: 'absolute', left: '16px', color: 'var(--text-secondary)' }}>
                   <KeyRound size={18} />
                 </div>
                 <input
                   type="text"
-                  className="glass-input w-full text-center"
-                  style={{ paddingLeft: '44px', letterSpacing: '8px', fontSize: '20px', fontWeight: 'bold' }}
+                  className="md-input w-full"
+                  style={{ paddingLeft: '44px', paddingTop: '16px', paddingBottom: '16px', letterSpacing: '8px', fontSize: '24px', fontWeight: 700, textAlign: 'center' }}
                   placeholder="000000"
                   maxLength={6}
                   value={totp}
@@ -99,7 +102,7 @@ export default function Login() {
                   autoFocus
                 />
               </div>
-              <p className="text-xs text-secondary mt-3 text-center">
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '12px', textAlign: 'center' }}>
                 请打开您的 Authenticator 应用获取 6 位安全验证码
               </p>
             </div>
@@ -107,8 +110,8 @@ export default function Login() {
 
           <button 
             type="submit" 
-            className="glass-button w-full mt-2" 
-            style={{ padding: '14px' }}
+            className="md-btn md-btn-primary w-full mt-4" 
+            style={{ padding: '14px', fontSize: '15px' }}
             disabled={loading}
           >
             {loading ? '身份校验中...' : (showMfa ? '安全登录' : '下一步 (2FA校验)')}

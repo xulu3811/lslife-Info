@@ -218,7 +218,9 @@ data class MerchantCertification(
     val contactPhone: String,
     val businessLicenseUrl: String? = null,
     val storePhotos: List<String> = emptyList(),
-    val rejectReason: String? = null
+    val rejectReason: String? = null,
+    val expireAt: String? = null,
+    val lastConfirmedAt: String? = null
 )
 
 @Serializable

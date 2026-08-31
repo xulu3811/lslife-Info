@@ -1,4 +1,4 @@
-﻿package com.qingyuan.lslife.feature.home
+package com.qingyuan.lslife.feature.home
 
 import android.content.Intent
 import android.net.Uri
@@ -291,10 +291,9 @@ fun MomentImageGrid(images: List<String>, baseUrl: String) {
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .widthIn(max = 180.dp)
-                .heightIn(max = 180.dp)
-                .aspectRatio(1f, matchHeightConstraintsFirst = false)
-                .clip(RoundedCornerShape(6.dp))
+                .fillMaxWidth()
+                .aspectRatio(1.5f, matchHeightConstraintsFirst = false) // 3:2 比例，与商品卡片一致
+                .clip(RoundedCornerShape(12.dp)) // 更平滑的大圆角
                 .background(Color(0xFFF3F5F8))
         )
     } else {
@@ -311,7 +310,7 @@ fun MomentImageGrid(images: List<String>, baseUrl: String) {
                             modifier = Modifier
                                 .weight(1f)
                                 .aspectRatio(1f)
-                                .clip(RoundedCornerShape(6.dp))
+                                .clip(RoundedCornerShape(8.dp))
                                 .background(Color(0xFFF3F5F8))
                         )
                     }

@@ -1,6 +1,7 @@
 package com.qingyuan.lslife.feature.admin
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -10,8 +11,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.MonetizationOn
-import androidx.compose.material.icons.filled.PendingActions
+import androidx.compose.material.icons.filled.CardMembership
 import androidx.compose.material.icons.filled.Storefront
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,7 +31,8 @@ import com.qingyuan.lslife.core.model.AdminDashboardData
 @Composable
 fun AdminDashboardScreen(
     viewModel: AdminViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToMonitor: () -> Unit
 ) {
     val dashboardState by viewModel.dashboardState.collectAsState()
 
@@ -66,8 +69,8 @@ fun AdminDashboardScreen(
                 ) {
                     item {
                         M3DashboardCard(
-                            title = "新增用户(24H)",
-                            value = data.newUsers.toString(),
+                            title = "注册用户(总数)",
+                            value = data.totalUsers.toString(),
                             icon = Icons.Default.Group,
                             iconTint = Color(0xFF4285F4),
                             iconBg = Color(0xFFE8F0FE)
@@ -75,38 +78,48 @@ fun AdminDashboardScreen(
                     }
                     item {
                         M3DashboardCard(
-                            title = "平台营收",
-                            value = "￥${data.revenue}",
-                            icon = Icons.Default.MonetizationOn,
-                            iconTint = Color(0xFF34A853),
-                            iconBg = Color(0xFFE6F4EA)
-                        )
-                    }
-                    item {
-                        M3DashboardCard(
-                            title = "待审核内容",
-                            value = data.pendingReviews.toString(),
-                            icon = Icons.Default.PendingActions,
+                            title = "平台会员(总数)",
+                            value = data.totalMembers.toString(),
+                            icon = Icons.Default.CardMembership,
                             iconTint = Color(0xFFF9AB00),
                             iconBg = Color(0xFFFEF7E0)
                         )
                     }
                     item {
                         M3DashboardCard(
-                            title = "待实名认证",
-                            value = data.pendingKyc.toString(),
+                            title = "已实名认证(百分比)",
+                            value = data.kycPercentage,
                             icon = Icons.Default.VerifiedUser,
-                            iconTint = Color(0xFFEA4335),
-                            iconBg = Color(0xFFFCE8E6)
+                            iconTint = Color(0xFF34A853),
+                            iconBg = Color(0xFFE6F4EA)
                         )
                     }
                     item {
                         M3DashboardCard(
-                            title = "待认证商家",
-                            value = data.pendingMerchantCerts.toString(),
+                            title = "已认证商家(数量)",
+                            value = data.verifiedMerchants.toString(),
                             icon = Icons.Default.Storefront,
                             iconTint = Color(0xFF8E24AA),
                             iconBg = Color(0xFFF3E5F5)
+                        )
+                    }
+                    item {
+                        M3DashboardCard(
+                            title = "服务器监控模块",
+                            value = "点击查看",
+                            icon = Icons.Default.Storage,
+                            iconTint = Color(0xFFEA4335),
+                            iconBg = Color(0xFFFCE8E6),
+                            onClick = onNavigateToMonitor
+                        )
+                    }
+                    item {
+                        M3DashboardCard(
+                            title = "用户累计充值金额",
+                            value = "￥${data.totalRecharge}",
+                            icon = Icons.Default.MonetizationOn,
+                            iconTint = Color(0xFF00ACC1),
+                            iconBg = Color(0xFFE0F7FA)
                         )
                     }
                 }
@@ -125,10 +138,11 @@ fun M3DashboardCard(
     value: String,
     icon: ImageVector,
     iconTint: Color,
-    iconBg: Color
+    iconBg: Color,
+    onClick: (() -> Unit)? = null
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().let { if (onClick != null) it.clickable { onClick() } else it },
         shape = RoundedCornerShape(20.dp),
         color = Color.White,
         shadowElevation = 1.dp

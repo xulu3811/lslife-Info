@@ -92,6 +92,11 @@ import com.qingyuan.lslife.feature.wallet.WalletScreen
 import com.qingyuan.lslife.feature.settings.AboutScreen
 import com.qingyuan.lslife.feature.settings.PrivacyScreen
 import com.qingyuan.lslife.feature.settings.SettingsScreen
+import com.qingyuan.lslife.feature.settings.BindPhoneScreen
+import com.qingyuan.lslife.feature.settings.BindEmailScreen
+import com.qingyuan.lslife.feature.settings.ChangePasswordScreen
+import com.qingyuan.lslife.feature.settings.ChangePhoneScreen
+import com.qingyuan.lslife.feature.settings.ChangeEmailScreen
 import com.qingyuan.lslife.ui.navigation.Routes
 import com.qingyuan.lslife.ui.components.PublishMenuBottomSheet
 
@@ -187,59 +192,39 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                                     }
                                 },
                                 icon = {
-                                    if (isPublish) {
-                                        Surface(
-                                            modifier = Modifier.size(48.dp),
-                                            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
-                                            color = MaterialTheme.colorScheme.primary,
-                                            shadowElevation = 0.dp
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                                Icon(
-                                                    Icons.Filled.Add,
-                                                    contentDescription = stringResource(tab.labelRes),
-                                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                                    modifier = Modifier.size(24.dp),
-                                                )
-                                            }
-                                        }
-                                    } else {
-                                        if (isMessages && unreadCount > 0) {
-                                            BadgedBox(
-                                                badge = {
-                                                    Badge(
-                                                        containerColor = androidx.compose.ui.graphics.Color(0xFFE53935),
-                                                        contentColor = androidx.compose.ui.graphics.Color.White
-                                                    ) {
-                                                        val text = if (unreadCount > 99) "99+" else unreadCount.toString()
-                                                        Text(text)
-                                                    }
+                                    if (isMessages && unreadCount > 0) {
+                                        BadgedBox(
+                                            badge = {
+                                                Badge(
+                                                    containerColor = androidx.compose.ui.graphics.Color(0xFFE53935),
+                                                    contentColor = androidx.compose.ui.graphics.Color.White
+                                                ) {
+                                                    val text = if (unreadCount > 99) "99+" else unreadCount.toString()
+                                                    Text(text)
                                                 }
-                                            ) {
-                                                Icon(
-                                                    if (selected) tab.selectedIcon else tab.unselectedIcon,
-                                                    contentDescription = stringResource(tab.labelRes),
-                                                    modifier = Modifier.size(19.dp),
-                                                )
                                             }
-                                        } else {
+                                        ) {
                                             Icon(
                                                 if (selected) tab.selectedIcon else tab.unselectedIcon,
                                                 contentDescription = stringResource(tab.labelRes),
-                                                modifier = Modifier.size(19.dp),
+                                                modifier = Modifier.size(24.dp),
                                             )
                                         }
-                                    }
-                                },
-                                label = if (isPublish) null else {
-                                    {
-                                        Text(
-                                            text = stringResource(tab.labelRes),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontSize = 10.sp,
-                                            fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Medium,
+                                    } else {
+                                        Icon(
+                                            if (selected) tab.selectedIcon else tab.unselectedIcon,
+                                            contentDescription = stringResource(tab.labelRes),
+                                            modifier = Modifier.size(24.dp),
                                         )
                                     }
+                                },
+                                label = {
+                                    Text(
+                                        text = stringResource(tab.labelRes),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Medium,
+                                    )
                                 },
                                 colors = NavigationBarItemDefaults.colors(
                                     selectedIconColor = androidx.compose.ui.graphics.Color(0xFF041E49),
@@ -479,6 +464,12 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
             }
             composable(Routes.ADMIN_DASHBOARD) {
                 com.qingyuan.lslife.feature.admin.AdminDashboardScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToMonitor = { navController.navigate(Routes.ADMIN_SERVER_MONITOR) }
+                )
+            }
+            composable(Routes.ADMIN_SERVER_MONITOR) {
+                com.qingyuan.lslife.feature.admin.ServerMonitorScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
@@ -506,7 +497,9 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                     onOpenGovernanceCenter = { navController.navigate(Routes.ADMIN_DASHBOARD) },
                     onOpenPromotionCenter = { navController.navigate("promotion_center") },
                     onLoggedOut = {
-                        navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                        navController.navigate(Routes.LOGIN) { 
+                            popUpTo(navController.graph.id) { inclusive = true }
+                        }
                     },
                 )
             }
@@ -613,10 +606,33 @@ fun LsLifeApp(sessionViewModel: SessionViewModel = hiltViewModel()) {
                     onBack = { navController.popBackStack() },
                     onOpenAbout = { navController.navigate(Routes.ABOUT) },
                     onOpenPrivacy = { navController.navigate(Routes.PRIVACY) },
+                    onOpenBindPhone = { navController.navigate(Routes.BIND_PHONE) },
+                    onOpenBindEmail = { navController.navigate(Routes.BIND_EMAIL) },
+                    onOpenChangePassword = { navController.navigate(Routes.CHANGE_PASSWORD) },
                     onLoggedOut = {
-                        navController.navigate(Routes.LOGIN) { popUpTo(0) }
+                        navController.navigate(Routes.LOGIN) { 
+                            popUpTo(navController.graph.id) { inclusive = true }
+                        }
                     },
                 )
+            }
+                        composable(Routes.BIND_PHONE) {
+                BindPhoneScreen(onBack = { navController.popBackStack() }, onChangePhone = { navController.navigate(Routes.CHANGE_PHONE) })
+            }
+                        composable(Routes.BIND_EMAIL) {
+                BindEmailScreen(onBack = { navController.popBackStack() }, onChangeEmail = { navController.navigate(Routes.CHANGE_EMAIL) })
+            }
+                        composable(Routes.CHANGE_PASSWORD) {
+                ChangePasswordScreen(
+                    onBack = { navController.popBackStack() },
+                    onForgotPassword = { navController.navigate(Routes.FORGOT_PASSWORD) }
+                )
+            }
+                        composable(Routes.CHANGE_PHONE) {
+                ChangePhoneScreen(onBack = { navController.popBackStack() })
+            }
+                        composable(Routes.CHANGE_EMAIL) {
+                ChangeEmailScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.ABOUT) { AboutScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.PRIVACY) { PrivacyScreen(onBack = { navController.popBackStack() }) }

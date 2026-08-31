@@ -8,6 +8,12 @@ import { asyncHandler } from '../middleware/error.js';
 import { requireAdminAuth } from '../middleware/auth.js';
 import { signToken } from '../lib/jwt.js';
 
+import os from 'os';
+import { exec } from 'child_process';
+import util from 'util';
+
+const execAsync = util.promisify(exec);
+
 const router = Router();
 
 /** 管理后台登录（公开） */
@@ -46,68 +52,46 @@ router.use(requireAdminAuth);
 router.get(
   '/dashboard',
   asyncHandler(async (_req, res) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const newUsers = await prisma.user.count({ where: { createdAt: { gte: today } } });
-    const todayPosts = await prisma.post.count({ where: { createdAt: { gte: today } } });
-
-    const todayRecharge = await prisma.walletTransaction.aggregate({ 
-      _sum: { amount: true },
-      where: { bizType: 'recharge', createdAt: { gte: today } }
-    });
-
-    const pendingReviews = await prisma.post.count({ 
-      where: { status: { in: ['pending_review', 'MANUAL_REVIEWING'] } } 
-    });
-    const pendingProfileReviews = await prisma.user.count({
-      where: { profileReviewStatus: 'MANUAL_REVIEWING' }
-    });
-    const pendingKyc = await prisma.user.count({
-      where: { realNameStatus: 'pending' }
-    });
-    const pendingMerchantCerts = await prisma.merchantCertification.count({
-      where: { status: 'PENDING_REVIEW' }
+    // 1. 注册用户（总数）
+    const totalUsers = await prisma.user.count();
+    
+    // 2. 平台会员（总数）
+    const totalMembers = await prisma.user.count({ 
+      where: { membershipTier: { in: ['vip', 'premium'] } } 
     });
     
-    const totalPending = pendingReviews + pendingProfileReviews + pendingKyc + pendingMerchantCerts;
-
-    // Generate trendData for the past 7 days
-    const trendData = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      d.setHours(0, 0, 0, 0);
-      const nextD = new Date(d);
-      nextD.setDate(nextD.getDate() + 1);
-      
-      const dayUsers = await prisma.user.count({
-        where: { createdAt: { gte: d, lt: nextD } }
-      });
-      
-      const dayPosts = await prisma.post.count({
-        where: { createdAt: { gte: d, lt: nextD } }
-      });
-
-      trendData.push({
-        date: d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }),
-        users: dayUsers,
-        posts: dayPosts
-      });
+    // 3. 已实名认证（百分比）
+    const kycUsers = await prisma.user.count({ where: { realNameStatus: 'verified' } });
+    const kycPercentage = totalUsers === 0 ? "0%" : `${Math.round((kycUsers / totalUsers) * 100)}%`;
+    
+    // 4. 已认证商家（数量）
+    const verifiedMerchants = await prisma.merchant.count({ where: { status: 'active' } });
+    
+    // 5. 服务器存储状态
+    let serverStorageStatus = "未知";
+    try {
+      const dbSizeQuery = await prisma.$queryRaw<{ db_size: string }[]>`SELECT pg_size_pretty(pg_database_size(current_database())) as db_size`;
+      if (dbSizeQuery && dbSizeQuery.length > 0) {
+         serverStorageStatus = dbSizeQuery[0].db_size;
+      }
+    } catch (e) {
+      console.error('Failed to query db size', e);
     }
 
+    // 6. 用户累计充值金额
+    const totalRechargeAgg = await prisma.walletTransaction.aggregate({ 
+      _sum: { amount: true },
+      where: { bizType: 'recharge' }
+    });
+    const totalRecharge = totalRechargeAgg._sum.amount || 0;
+
     return ok(res, {
-      newUsers,
-      todayPosts,
-      revenue: todayRecharge._sum.amount || 0,
-      pendingReviews: totalPending,
-      details: {
-        posts: pendingReviews,
-        profiles: pendingProfileReviews,
-        kyc: pendingKyc,
-        merchants: pendingMerchantCerts
-      },
-      trendData
+      totalUsers,
+      totalMembers,
+      kycPercentage,
+      verifiedMerchants,
+      serverStorageStatus,
+      totalRecharge
     });
   }),
 );
@@ -1091,6 +1075,74 @@ router.get(
     });
 
     return ok(res, posts);
+  })
+);
+
+/** 获取服务器状态 */
+router.get(
+  '/server-status',
+  requireAdminAuth,
+  asyncHandler(async (req, res) => {
+    // 1. RAM
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    const memUsagePercent = (usedMem / totalMem) * 100;
+
+    // 2. CPU
+    const cpus = os.cpus();
+    const loadAvg = os.loadavg()[0]; // 1 min load average
+    const cpuUsagePercent = Math.min((loadAvg / cpus.length) * 100, 100);
+
+    // 3. Disk
+    let diskUsagePercent = 0;
+    let diskTotal = '0';
+    let diskUsed = '0';
+    try {
+        const { stdout } = await execAsync('df -k / | tail -1');
+        const parts = stdout.trim().split(/\s+/);
+        if (parts.length >= 5) {
+            const totalKb = parseInt(parts[1], 10);
+            const usedKb = parseInt(parts[2], 10);
+            diskTotal = (totalKb / 1024 / 1024).toFixed(1) + ' GB';
+            diskUsed = (usedKb / 1024 / 1024).toFixed(1) + ' GB';
+            diskUsagePercent = parseInt(parts[4].replace('%', ''), 10);
+        }
+    } catch (e) {}
+
+    // 4. PM2 Status
+    let pm2List = [];
+    try {
+        const { stdout } = await execAsync('pm2 jlist');
+        const processes = JSON.parse(stdout);
+        pm2List = processes.map((p: any) => ({
+            name: p.name,
+            status: p.pm2_env.status,
+            memory: (p.monit.memory / 1024 / 1024).toFixed(1) + ' MB',
+            cpu: p.monit.cpu,
+            restarts: p.pm2_env.restart_time,
+            uptime: Date.now() - p.pm2_env.pm_uptime
+        }));
+    } catch (e) {}
+
+    return ok(res, {
+        ram: {
+            total: (totalMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+            used: (usedMem / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+            percent: parseFloat(memUsagePercent.toFixed(1))
+        },
+        cpu: {
+            cores: cpus.length,
+            loadAvg: parseFloat(loadAvg.toFixed(2)),
+            percent: parseFloat(cpuUsagePercent.toFixed(1))
+        },
+        disk: {
+            total: diskTotal,
+            used: diskUsed,
+            percent: diskUsagePercent
+        },
+        pm2: pm2List
+    });
   })
 );
 

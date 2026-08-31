@@ -21,6 +21,8 @@ data class SettingsUiState(
     val clearingCache: Boolean = false,
     val loggedOut: Boolean = false,
     val message: String? = null,
+    val phone: String? = null,
+    val email: String? = null,
 )
 
 @HiltViewModel
@@ -37,13 +39,16 @@ class SettingsViewModel @Inject constructor(
             combine(
                 tokenStore.themeModeFlow,
                 tokenStore.notificationModeFlow,
-            ) { themeMode, notificationMode ->
-                themeMode to notificationMode
-            }.collect { (themeMode, notificationMode) ->
+                authRepository.currentUser
+            ) { themeMode, notificationMode, user ->
+                Triple(themeMode, notificationMode, user)
+            }.collect { (themeMode, notificationMode, user) ->
                 _state.update {
                     it.copy(
                         themeMode = themeMode,
                         notificationMode = notificationMode,
+                        phone = user?.phone,
+                        email = user?.email
                     )
                 }
             }
@@ -89,6 +94,18 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             authRepository.logout()
             _state.update { it.copy(loggedOut = true) }
+        }
+    }
+
+    fun changePassword(oldPassword: String, newPassword: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            authRepository.changePassword(oldPassword, newPassword)
+                .onSuccess {
+                    onSuccess()
+                }
+                .onFailure {
+                    onError(it.message ?: "密码修改失败")
+                }
         }
     }
 }

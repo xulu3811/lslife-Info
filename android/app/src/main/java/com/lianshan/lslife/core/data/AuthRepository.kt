@@ -43,6 +43,9 @@ class AuthRepository @Inject constructor(
         safeCall { api.login(LoginRequest(phone, password)) }
             .onSuccess { tokenStore.save(it.token) }
 
+    suspend fun changePassword(oldPassword: String, newPassword: String): Result<Map<String, Boolean>> =
+        safeCall { api.changePassword(com.qingyuan.lslife.core.network.ChangePasswordRequest(oldPassword, newPassword)) }
+
     suspend fun me(): Result<User> = safeCall { api.me() }.onSuccess { _currentUser.value = it }
 
     suspend fun performOcr(imageUrl: String): Result<com.qingyuan.lslife.core.network.OcrResponse> =

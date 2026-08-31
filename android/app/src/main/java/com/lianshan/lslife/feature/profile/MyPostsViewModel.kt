@@ -64,6 +64,19 @@ class MyPostsViewModel @Inject constructor(
         }
     }
 
+    fun refreshPost(id: String) {
+        _state.update { it.copy(loading = true) }
+        viewModelScope.launch {
+            val res = repository.refreshPost(id)
+            if (res.isSuccess) {
+                _state.update { it.copy(message = "擦亮成功！") }
+                load()
+            } else {
+                _state.update { it.copy(loading = false, message = res.exceptionOrNull()?.message ?: "擦亮失败") }
+            }
+        }
+    }
+
     fun deletePost(id: String) {
         _state.update { it.copy(loading = true) }
         viewModelScope.launch {

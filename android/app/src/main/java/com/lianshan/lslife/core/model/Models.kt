@@ -53,6 +53,7 @@ data class HomeMatrixData(
 data class User(
     val id: String,
     val phone: String,
+    val email: String? = null,
     val nickname: String,
     val role: String = "USER",
     val avatar: String? = null,
@@ -81,6 +82,7 @@ data class User(
 data class AdminUserListItem(
     val id: String,
     val phone: String,
+    val email: String? = null,
     val nickname: String,
     val avatar: String? = null,
     val status: String = "active",
@@ -144,6 +146,7 @@ data class Merchant(
     val description: String,
     val address: String,
     val phone: String,
+    val email: String? = null,
     val ownerId: String? = null,
 )
 
@@ -162,6 +165,7 @@ data class Address(
     val id: String,
     val name: String,
     val phone: String,
+    val email: String? = null,
     val tag: String,
     val address: String,
     val isDefault: Boolean,

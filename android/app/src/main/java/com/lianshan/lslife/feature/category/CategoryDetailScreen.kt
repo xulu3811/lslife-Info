@@ -86,7 +86,7 @@ fun CategoryDetailScreen(
                 }
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = Color(0xFFF3F5F8)
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -181,7 +181,7 @@ fun ModernCategoryHeader(
 ) {
     Surface(
         color = Color.White,
-        shadowElevation = 2.dp,
+        shadowElevation = 0.dp,
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -213,8 +213,8 @@ fun ModernCategoryHeader(
 
                 // 右侧主体：药丸形三合一组件
                 Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(24.dp),
+                    color = Color(0xFFF3F5F8),
                     modifier = Modifier
                         .weight(1f)
                         .height(44.dp)
@@ -254,7 +254,7 @@ fun ModernCategoryHeader(
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surface)
+                                .background(Color.White)
                                 .clickable { onFilterClick() },
                             contentAlignment = Alignment.Center
                         ) {
@@ -324,6 +324,8 @@ fun ModernCategoryHeader(
                 }
 
             }
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFE5E7EB))
         }
     }
 }
@@ -366,7 +368,7 @@ private fun FilterBottomSheetContent(
 
         Button(
             onClick = onDismiss,
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onBackground),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4285F4)),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
@@ -394,14 +396,14 @@ private fun OptGrid(
             Box(
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(if (isSel) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.surfaceVariant)
+                    .background(if (isSel) Color(0xFFE8F0FE) else Color(0xFFF3F5F8))
                     .clickable { onSelect(option) }
                     .padding(horizontal = 14.dp, vertical = 7.dp)
             ) {
                 Text(
                     text = option,
                     fontSize = 12.sp,
-                    color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isSel) Color(0xFF1A73E8) else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
                 )
             }
@@ -422,12 +424,7 @@ fun ServiceListFeedCard(
         shadowElevation = 0.dp,
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = Color(0x0F000000),
-                ambientColor = Color(0x0A000000)
-            )
+            
             .clickable { onClick() }
     ) {
         Row(

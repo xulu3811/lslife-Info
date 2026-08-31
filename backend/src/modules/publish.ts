@@ -245,6 +245,10 @@ router.post(
     }
 
     const post = await prisma.$transaction(async (tx) => {
+      const now = new Date();
+      const expireDays = body.postType === 'MOMENT' ? 3 : 30;
+      const initialExpireAt = new Date(now.getTime() + expireDays * 24 * 60 * 60 * 1000);
+
       const newPost = await tx.post.create({
         data: {
           userId: user.id,
@@ -273,6 +277,7 @@ router.post(
           imageHashes: JSON.stringify(body.imageHashes),
           isShadowBanned,
           isUrgent,
+          expireAt: initialExpireAt,
         },
       });
 
@@ -617,6 +622,53 @@ router.get(
       })),
     });
   }),
+);
+
+/** 擦亮/刷新帖子 */
+router.post(
+  '/:id/refresh',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const user = (req as any).currentUser;
+
+    const post = await prisma.post.findUnique({ where: { id } });
+    if (!post) throw new ApiError(404, '帖子不存在');
+    
+    // 权限校验
+    if (post.userId !== user.id && user.role !== 'ADMIN' && user.role !== 'SUPERADMIN') {
+      throw new ApiError(403, '无权操作此帖子');
+    }
+
+    if (post.postType === 'MOMENT') {
+      throw new ApiError(400, '同城动态不支持刷新');
+    }
+
+    const now = new Date();
+    // 续期 30 天
+    const newExpireAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    const updatedPost = await prisma.post.update({
+      where: { id },
+      data: {
+        refreshedAt: now,
+        expireAt: newExpireAt,
+        status: 'published' // 如果之前是 expired，重新激活
+      }
+    });
+
+    // 记录消费流水 (可选: 这里可以接入积分/猫币扣除逻辑)
+    await prisma.valueAddedLog.create({
+      data: {
+        userId: user.id,
+        postId: id,
+        action: 'REFRESH',
+        cost: 0 // 目前免费擦亮，后续可修改
+      }
+    });
+
+    return ok(res, updatedPost, '擦亮成功，信息已重新靠前排序并在30天内有效');
+  })
 );
 
 router.get(

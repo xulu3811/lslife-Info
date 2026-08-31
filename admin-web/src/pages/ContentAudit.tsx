@@ -68,17 +68,17 @@ export default function ContentAudit() {
     <div className="flex-col gap-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-3">
-          <MessageSquareWarning size={28} className="text-primary" /> 
+          <MessageSquareWarning size={28} style={{ color: 'var(--g-blue)' }} /> 
           C2C 闲置与服务审核
         </h1>
       </div>
 
-      <div className="glass-panel p-6 mb-6 flex gap-4 items-center">
-        <h2 className="text-lg font-medium m-0 text-secondary mr-4">审核队列</h2>
+      <div className="md-card flex items-center gap-4 mb-6" style={{ padding: '16px 24px' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 500, margin: 0, color: 'var(--text-secondary)' }}>审核队列</h2>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="glass-input"
+          className="md-input"
           style={{ width: '240px' }}
         >
           <option value="pending_review">待审核排队中</option>
@@ -87,11 +87,13 @@ export default function ContentAudit() {
         </select>
       </div>
 
-      <div className="glass-panel glass-table-container">
+      <div className="md-card md-table-container">
         {loading ? (
-          <div className="p-8 text-center text-muted">加载中...</div>
+          <div className="md-empty-state">加载中...</div>
+        ) : posts.length === 0 ? (
+          <div className="md-empty-state">暂无帖子数据</div>
         ) : (
-          <table className="glass-table">
+          <table className="md-table">
             <thead>
               <tr>
                 <th>发布者</th>
@@ -99,28 +101,28 @@ export default function ContentAudit() {
                 <th>图集</th>
                 <th>提交时间</th>
                 <th>当前状态</th>
-                <th className="text-right">审核操作</th>
+                <th style={{ textAlign: 'right' }}>审核操作</th>
               </tr>
             </thead>
             <tbody>
               {posts.map((post) => (
                 <tr key={post.id}>
                   <td>
-                    <div className="font-semibold">{post.user?.nickname}</div>
-                    <div className="text-xs text-secondary mt-1">{post.user?.phone}</div>
+                    <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{post.user?.nickname}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>{post.user?.phone}</div>
                   </td>
                   <td style={{ maxWidth: '300px' }}>
-                    <div className="font-semibold text-base mb-2">
-                      <span className="badge badge-neutral mr-2">
+                    <div style={{ fontWeight: 500, fontSize: '15px', marginBottom: '8px' }}>
+                      <span className="badge badge-success" style={{ marginRight: '8px' }}>
                         {categoryMap[post.category] || post.category.replace('cat_', '')}
                       </span>
                       {post.title}
                     </div>
-                    <div className="text-sm text-secondary truncate" style={{ maxWidth: '280px' }} title={post.description}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '280px' }} title={post.description}>
                       {post.description}
                     </div>
                     {post.price !== undefined && post.price !== null && (
-                      <div className="text-danger font-bold mt-2">
+                      <div style={{ color: 'var(--g-red)', fontWeight: 'bold', marginTop: '8px' }}>
                         ¥ {post.price}
                       </div>
                     )}
@@ -128,16 +130,16 @@ export default function ContentAudit() {
                   <td>
                     <div className="flex gap-2">
                       {post.images && post.images.slice(0, 3).map((img, i) => (
-                        <img key={i} src={img} alt="post" style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--surface-border)' }} />
+                        <img key={i} src={img.startsWith('http') ? img : (img.startsWith('/') ? `${window.location.origin}${img}` : `${window.location.origin}/${img}`)} alt="post" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }} />
                       ))}
                       {post.images && post.images.length > 3 && (
-                        <div className="text-xs font-semibold text-secondary flex items-center justify-center" style={{ width: 48, height: 48, borderRadius: 8, background: 'rgba(0,0,0,0.05)' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'var(--surface-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
                           +{post.images.length - 3}
                         </div>
                       )}
                     </div>
                   </td>
-                  <td className="text-sm text-secondary">
+                  <td style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
                     {new Date(post.createdAt).toLocaleString()}
                   </td>
                   <td>
@@ -145,32 +147,25 @@ export default function ContentAudit() {
                       {post.status === 'published' || post.status === 'PUBLISHED' ? '已发布' : ['pending_review', 'MANUAL_REVIEWING', 'AI_REVIEWING'].includes(post.status) ? '审核中' : '已驳回'}
                     </span>
                   </td>
-                  <td className="text-right">
+                  <td style={{ textAlign: 'right' }}>
                     {['pending_review', 'MANUAL_REVIEWING', 'AI_REVIEWING'].includes(post.status) && (
-                      <div className="flex justify-end gap-2">
-                        <button className="glass-button success p-2 px-3" onClick={() => handleAudit(post.id, 'approve')}>
+                      <div className="flex items-center justify-end gap-2">
+                        <button className="md-btn md-btn-primary" style={{ padding: '4px 12px' }} onClick={() => handleAudit(post.id, 'approve')}>
                           <Check size={16} /> 通过
                         </button>
-                        <button className="glass-button danger p-2 px-3" onClick={() => handleAudit(post.id, 'reject')}>
+                        <button className="md-btn md-btn-danger" style={{ padding: '4px 12px' }} onClick={() => handleAudit(post.id, 'reject')}>
                           <X size={16} /> 驳回
                         </button>
                       </div>
                     )}
                     {(post.status === 'published' || post.status === 'PUBLISHED') && (
-                      <div className="flex justify-end gap-2">
-                        <button className="glass-button danger p-2 px-3" onClick={() => handleAudit(post.id, 'ban')}>
-                          <Ban size={16} /> 违规下架
-                        </button>
-                      </div>
+                      <button className="md-btn md-btn-danger" style={{ padding: '4px 12px' }} onClick={() => handleAudit(post.id, 'ban')}>
+                        <Ban size={16} /> 下架违规
+                      </button>
                     )}
                   </td>
                 </tr>
               ))}
-              {posts.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-muted">暂无帖子数据</td>
-                </tr>
-              )}
             </tbody>
           </table>
         )}
