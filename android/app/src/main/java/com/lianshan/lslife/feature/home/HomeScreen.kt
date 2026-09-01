@@ -61,6 +61,12 @@ import com.qingyuan.lslife.ui.theme.Dimens
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+
 private data class CategoryBadgeItem(
     val id: String,
     val name: String,
@@ -99,6 +105,43 @@ fun HomeScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val gridState = rememberLazyStaggeredGridState()
+    val coroutineScope = rememberCoroutineScope()
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
+        onResult = { permissions ->
+            val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true || 
+                          permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+            if (granted) {
+                coroutineScope.launch {
+                    val town = com.qingyuan.lslife.core.utils.LocationHelper.getCurrentTown(context)
+                    if (town != null) {
+                        viewModel.updateLocation(town)
+                    } else {
+                        Toast.makeText(context, "自动定位失败，请手动选择", Toast.LENGTH_SHORT).show()
+                        viewModel.setShowLocationPicker(true)
+                    }
+                }
+            } else {
+                Toast.makeText(context, "未获得定位权限，请手动选择", Toast.LENGTH_SHORT).show()
+                viewModel.setShowLocationPicker(true)
+            }
+        }
+    )
+
+    // 初次启动自动请求定位或静默获取定位
+    LaunchedEffect(Unit) {
+        val hasFine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (hasFine || hasCoarse) {
+            val town = com.qingyuan.lslife.core.utils.LocationHelper.getCurrentTown(context)
+            if (town != null) {
+                viewModel.updateLocation(town)
+            }
+        } else {
+            locationPermissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+        }
+    }
 
     // 搜索热词自动轮播
     var hotwordIndex by remember { mutableIntStateOf(0) }
@@ -132,6 +175,14 @@ fun HomeScreen(
         )
     }
 
+    if (state.showLocationPicker && state.addressNodes.isNotEmpty()) {
+        com.qingyuan.lslife.ui.components.AddressPickerBottomSheet(
+            addressNodes = state.addressNodes,
+            onDismissRequest = { viewModel.setShowLocationPicker(false) },
+            onAddressSelected = { viewModel.updateLocation(it.split("-").lastOrNull() ?: it) }
+        )
+    }
+
     LaunchedEffect(gridState, state.loading, state.loadingMore, state.hasMore) {
         snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .collect { lastIndex ->
@@ -155,7 +206,24 @@ fun HomeScreen(
             locationText = state.currentLocation,
             hotword = state.searchHotwords.getOrElse(hotwordIndex) { "搜索本地商户、商品、服务" },
             unreadCount = unreadCount,
-            onLocationClick = { Toast.makeText(context, "当前定位：清远壮族瑶族自治县", Toast.LENGTH_SHORT).show() },
+            onLocationClick = { 
+                val hasFine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                val hasCoarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                if (hasFine || hasCoarse) {
+                    coroutineScope.launch {
+                        Toast.makeText(context, "正在获取位置...", Toast.LENGTH_SHORT).show()
+                        val town = com.qingyuan.lslife.core.utils.LocationHelper.getCurrentTown(context)
+                        if (town != null) {
+                            viewModel.updateLocation(town)
+                        } else {
+                            Toast.makeText(context, "定位失败，请手动选择", Toast.LENGTH_SHORT).show()
+                            viewModel.setShowLocationPicker(true)
+                        }
+                    }
+                } else {
+                    locationPermissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                }
+            },
             onSearchClick = onSearchClick,
             onMessageClick = onMessageClick
         )
@@ -346,11 +414,15 @@ private fun TopSearchHeaderBar(
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(2.dp))
+            
+            val displayLocation = locationText.split("-").lastOrNull()?.take(5) ?: locationText
             Text(
-                text = locationText,
+                text = displayLocation,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 

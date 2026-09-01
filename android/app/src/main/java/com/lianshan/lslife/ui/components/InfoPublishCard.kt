@@ -53,12 +53,13 @@ fun InfoPublishCard(
             
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
+        color = if (post.isUrgent) Color(0xFFFFF0F0) else Color.White,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
     ) {
-        Column {
-            val cover = post.images.firstOrNull()
+        Box {
+            Column {
+                val cover = post.images.firstOrNull()
             if (cover != null) {
                 AsyncImage(
                     model = cover,
@@ -133,6 +134,48 @@ fun InfoPublishCard(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(Icons.Filled.Phone, contentDescription = "电话", tint = Color(0xFF34A853), modifier = Modifier.size(16.dp)) // Google Green
+                        }
+                    }
+                }
+            }
+            }
+
+            // Badges Overlay
+            if (post.isTop || post.isUrgent) {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (post.isTop) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFFFEF2F2))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                "置顶",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFDC2626)
+                            )
+                        }
+                    }
+                    if (post.isUrgent) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFFDC2626))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                "急售",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
                         }
                     }
                 }

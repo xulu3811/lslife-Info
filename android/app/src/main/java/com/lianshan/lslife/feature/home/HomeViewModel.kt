@@ -1,5 +1,7 @@
 package com.qingyuan.lslife.feature.home
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.qingyuan.lslife.core.data.CategoryRepository
@@ -18,6 +20,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+import com.qingyuan.lslife.core.data.AddressManager
+import com.qingyuan.lslife.core.data.AddressNode
 
 /** 同城信息类目（走 /posts），其余走商家 */
 val UGC_CATEGORIES = setOf(
@@ -41,6 +46,8 @@ data class HomeUiState(
     val attributesFilter: Map<String, Set<String>> = emptyMap(),
     val currentSchema: CategorySchemaResponse? = null,
     val showFilterBottomSheet: Boolean = false,
+    val showLocationPicker: Boolean = false,
+    val addressNodes: List<AddressNode> = emptyList(),
     val isUgcMode: Boolean = true,
     val page: Int = 1,
     val hasMore: Boolean = true,
@@ -58,18 +65,49 @@ data class HomeUiState(
 class HomeViewModel @Inject constructor(
     private val repo: LsRepository,
     private val categoryRepo: CategoryRepository,
+    private val addressManager: AddressManager,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
     val state: StateFlow<HomeUiState> = _state
 
     private var searchJob: Job? = null
+    
+    private val prefs = context.getSharedPreferences("home_cache", Context.MODE_PRIVATE)
 
     init {
+        val cachedPostsStr = prefs.getString("cached_posts", null)
+        var initialPosts: List<com.qingyuan.lslife.core.model.Post> = emptyList()
+        if (!cachedPostsStr.isNullOrEmpty()) {
+            try {
+                initialPosts = kotlinx.serialization.json.Json.decodeFromString(
+                    kotlinx.serialization.builtins.ListSerializer(com.qingyuan.lslife.core.model.Post.serializer()), 
+                    cachedPostsStr
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        if (initialPosts.isNotEmpty()) {
+            _state.update { it.copy(posts = initialPosts) }
+        }
+
+        viewModelScope.launch {
+            _state.update { it.copy(addressNodes = addressManager.getAddresses()) }
+        }
         observeCategoryTree()
         loadBanners()
 
         load()
+    }
+
+    fun setShowLocationPicker(show: Boolean) {
+        _state.update { it.copy(showLocationPicker = show) }
+    }
+
+    fun updateLocation(location: String) {
+        _state.update { it.copy(currentLocation = location, showLocationPicker = false) }
     }
 
     private fun observeCategoryTree() {
@@ -188,8 +226,11 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             if (showFullLoading) _state.update { it.copy(loading = true, error = null, isUgcMode = true) }
             
+            val isDefaultView = s.category == "all" && s.sort == "default" && s.query.isBlank() && s.attributesFilter.isEmpty() && s.publisherType == null && s.listingType == null
             if (page == 1 && showFullLoading) {
-                _state.update { it.copy(merchants = emptyList(), posts = emptyList()) }
+                if (!(isDefaultView && s.posts.isNotEmpty())) {
+                    _state.update { it.copy(merchants = emptyList(), posts = emptyList()) }
+                }
             }
 
             val catParam = if (s.category == "all" || s.category.isBlank()) null else s.category
@@ -212,6 +253,17 @@ class HomeViewModel @Inject constructor(
             )
                 .onSuccess { resPage ->
                     val list = resPage.list
+                    if (page == 1 && catParam == null && sortParam == null && queryParam == null && s.attributesFilter.isEmpty() && s.publisherType == null && s.listingType == null) {
+                        try {
+                            val json = kotlinx.serialization.json.Json.encodeToString(
+                                kotlinx.serialization.builtins.ListSerializer(com.qingyuan.lslife.core.model.Post.serializer()), 
+                                list
+                            )
+                            prefs.edit().putString("cached_posts", json).apply()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
                     _state.update {
                         val newPosts = if (page == 1) list else it.posts + list
                         val hasMore = resPage.page * resPage.pageSize < resPage.total

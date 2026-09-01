@@ -37,21 +37,6 @@ import com.qingyuan.lslife.ui.components.LoadingBox
 import com.qingyuan.lslife.ui.components.PaymentBottomSheet
 import kotlinx.coroutines.launch
 
-// Google Primary Colors
-private val GoogleBlue = Color(0xFF4285F4)
-private val GoogleRed = Color(0xFFEA4335)
-private val GoogleYellow = Color(0xFFFBBC05)
-private val GoogleGreen = Color(0xFF34A853)
-
-// Google Tonal Backgrounds
-private val GoogleBlueLight = Color(0xFFE8F0FE)
-private val GoogleRedLight = Color(0xFFFCE8E6)
-private val GoogleYellowLight = Color(0xFFFEF7E0)
-private val GoogleGreenLight = Color(0xFFE6F4EA)
-
-private val GoogleGreyBorder = Color(0xFFDADCE0)
-private val GoogleTextPrimary = Color(0xFF202124)
-private val GoogleTextSecondary = Color(0xFF5F6368)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -157,7 +142,7 @@ fun WalletScreen(
                                     "¥${"%.2f".format(selectedPackage.price)}",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = GoogleRed
+                                    color = MaterialTheme.colorScheme.error
                                 )
                             }
                             Text(
@@ -169,7 +154,7 @@ fun WalletScreen(
 
                         Button(
                             onClick = { showPaymentSheet = true },
-                            colors = ButtonDefaults.buttonColors(containerColor = GoogleBlue),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             shape = RoundedCornerShape(20.dp),
                             contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp),
                             modifier = Modifier.height(40.dp)
@@ -178,7 +163,7 @@ fun WalletScreen(
                                 "立即充值",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     }
@@ -207,87 +192,74 @@ fun WalletScreen(
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(horizontal = 16.dp, vertical = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .clip(CircleShape)
-                                    .background(GoogleBlueLight),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Outlined.AccountBalanceWallet,
-                                    contentDescription = null,
-                                    tint = GoogleBlue,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                "$virtualCoinName 当前余额",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Outlined.AccountBalanceWallet,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
+                        Spacer(Modifier.width(12.dp))
                         Text(
-                            "1 $virtualCoinName = 1.00元",
-                            fontSize = 11.sp,
+                            "当前余额：",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        AnimatedContent(targetState = uiState.coinBalance, label = "") { balance ->
+                            Text(
+                                text = balance.toString(),
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = virtualCoinName,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
                     }
-
-                    Spacer(Modifier.height(8.dp))
-
+                    
+                    // Compact Safe banner
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Bottom
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            AnimatedContent(targetState = uiState.coinBalance, label = "") { balance ->
-                                Text(
-                                    text = balance.toString(),
-                                    fontSize = 28.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = GoogleBlue
-                                )
-                            }
-                            Spacer(Modifier.width(4.dp))
-                            Text(
-                                text = virtualCoinName,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = GoogleBlue,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
-                        
-                        // Compact Safe banner
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 4.dp)) {
-                            Icon(
-                                Icons.Outlined.Security,
-                                contentDescription = null,
-                                tint = GoogleGreen,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Spacer(Modifier.width(2.dp))
-                            Text(
-                                "SSL 资金加密保障",
-                                fontSize = 10.sp,
-                                color = GoogleGreen
-                            )
-                        }
+                        Icon(
+                            Icons.Outlined.Security,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "SSL 加密保障",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
                     }
                 }
             }
@@ -297,9 +269,9 @@ fun WalletScreen(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                WalletFeatureItemCompact(icon = Icons.Outlined.Storefront, iconTint = GoogleBlue, title = "全场景通用")
-                WalletFeatureItemCompact(icon = Icons.Outlined.Bolt, iconTint = GoogleYellow, title = "极速到账")
-                WalletFeatureItemCompact(icon = Icons.AutoMirrored.Outlined.ReceiptLong, iconTint = GoogleGreen, title = "透明对账")
+                WalletFeatureItemCompact(icon = Icons.Outlined.Storefront, iconTint = MaterialTheme.colorScheme.primary, title = "全场景通用")
+                WalletFeatureItemCompact(icon = Icons.Outlined.Bolt, iconTint = MaterialTheme.colorScheme.tertiary, title = "极速到账")
+                WalletFeatureItemCompact(icon = Icons.AutoMirrored.Outlined.ReceiptLong, iconTint = MaterialTheme.colorScheme.secondary, title = "透明对账")
             }
 
             // Recharge Packages
@@ -436,11 +408,11 @@ private fun GooglePackageCard(
     Card(
         modifier = modifier.clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) GoogleBlueLight else MaterialTheme.colorScheme.surface
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(
             if (isSelected) 2.dp else 1.dp,
-            if (isSelected) GoogleBlue else MaterialTheme.colorScheme.outlineVariant
+            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -455,40 +427,40 @@ private fun GooglePackageCard(
             ) {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        text = "${pkg.coinsAmount}",
-                        fontSize = 16.sp,
+                        text = pkg.coinsAmount.toString(),
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isSelected) GoogleBlue else MaterialTheme.colorScheme.onBackground
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(Modifier.width(2.dp))
                     Text(
                         text = virtualCoinName,
-                        fontSize = 10.sp,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
-                        color = if (isSelected) GoogleBlue else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
                 if (pkg.bonusCoins > 0) {
-                    Spacer(Modifier.height(2.dp))
+                    Spacer(Modifier.height(4.dp))
                     Text(
                         text = "+ 赠 ${pkg.bonusCoins}",
-                        fontSize = 9.sp,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = GoogleRed
+                        color = MaterialTheme.colorScheme.primary
                     )
                 } else {
-                    Spacer(Modifier.height(2.dp))
-                    Text(text = "", fontSize = 9.sp) // placeholder for alignment
+                    Spacer(Modifier.height(4.dp))
+                    Text(text = "", fontSize = 11.sp) // placeholder for alignment
                 }
 
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(6.dp))
 
                 Text(
-                    text = "¥${"%.2f".format(pkg.price)}",
-                    fontSize = 12.sp,
+                    text = "¥${pkg.price}",
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isSelected) GoogleBlue else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
@@ -496,15 +468,16 @@ private fun GooglePackageCard(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .clip(RoundedCornerShape(bottomStart = 8.dp, topEnd = 12.dp))
-                        .background(GoogleRed)
-                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                        .padding(top = 6.dp, end = 6.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(MaterialTheme.colorScheme.tertiaryContainer)
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
                         text = badge,
-                        fontSize = 8.sp,
+                        fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                 }
             }
@@ -564,7 +537,7 @@ fun WalletLogsBottomSheet(
                         .height(200.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = GoogleBlue, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                 }
             } else if (logs.isEmpty()) {
                 Box(
@@ -627,7 +600,7 @@ fun WalletLogsBottomSheet(
                                     text = if (isPositive) "+${log.amount}" else "${log.amount}",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isPositive) GoogleGreen else GoogleRed
+                                    color = if (isPositive) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.error
                                 )
                                 Spacer(Modifier.height(2.dp))
                                 Text(

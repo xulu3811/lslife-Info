@@ -31,7 +31,6 @@ import com.qingyuan.lslife.core.model.Post
 import com.qingyuan.lslife.ui.components.LoadingBox
 import com.qingyuan.lslife.ui.components.PrimaryButton
 import com.qingyuan.lslife.ui.components.SoftCard
-import com.qingyuan.lslife.ui.theme.PrimaryRed
 import com.qingyuan.lslife.ui.theme.Dimens
 import kotlinx.coroutines.launch
 
@@ -64,7 +63,7 @@ fun PromotionCenterScreen(
                         "推广中心",
                         fontSize = 17.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1E293B)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
@@ -89,7 +88,7 @@ fun PromotionCenterScreen(
                     shadowElevation = 6.dp,
                     color = Color.White,
                     shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
-                    border = BorderStroke(0.5.dp, Color(0xFFE2E8F0))
+                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Row(
                         modifier = Modifier
@@ -113,7 +112,7 @@ fun PromotionCenterScreen(
                                 Icon(
                                     Icons.Outlined.Lightbulb,
                                     contentDescription = null,
-                                    tint = PrimaryRed,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(14.dp)
                                 )
                             }
@@ -130,7 +129,7 @@ fun PromotionCenterScreen(
                         
                         Button(
                             onClick = { showPostSelectorFor = "BUMP" },
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             shape = RoundedCornerShape(16.dp),
                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                             modifier = Modifier.height(32.dp)
@@ -186,13 +185,13 @@ fun PromotionCenterScreen(
                                         "昨日流量概览",
                                         fontSize = 13.5.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF1E293B)
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                                 Text(
                                     "每日 00:00 校准",
                                     fontSize = 11.sp,
-                                    color = Color(0xFF94A3B8)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
 
@@ -208,7 +207,7 @@ fun PromotionCenterScreen(
                                     modifier = Modifier
                                         .height(30.dp)
                                         .width(0.5.dp)
-                                        .background(Color(0xFFE2E8F0))
+                                        .background(MaterialTheme.colorScheme.outlineVariant)
                                         .align(Alignment.CenterVertically)
                                 )
                                 MinimalStatItem("联系意向", state.stats?.contactViews ?: 0)
@@ -216,7 +215,7 @@ fun PromotionCenterScreen(
                                     modifier = Modifier
                                         .height(30.dp)
                                         .width(0.5.dp)
-                                        .background(Color(0xFFE2E8F0))
+                                        .background(MaterialTheme.colorScheme.outlineVariant)
                                         .align(Alignment.CenterVertically)
                                 )
                                 MinimalStatItem("收藏次数", state.stats?.totalFavorites ?: 0)
@@ -236,7 +235,7 @@ fun PromotionCenterScreen(
                                 Icon(
                                     Icons.Outlined.TrendingUp,
                                     contentDescription = null,
-                                    tint = PrimaryRed,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Spacer(Modifier.width(6.dp))
@@ -274,7 +273,7 @@ fun PromotionCenterScreen(
                                     Icon(
                                         Icons.Outlined.ConfirmationNumber,
                                         contentDescription = null,
-                                        tint = PrimaryRed,
+                                        tint = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
@@ -285,34 +284,34 @@ fun PromotionCenterScreen(
                                             "曝光卡余额",
                                             fontSize = 13.5.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = Color(0xFF1E293B)
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                         Spacer(Modifier.width(6.dp))
                                         Text(
                                             "${state.stats?.bumpCards ?: 0}",
                                             fontSize = 18.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = PrimaryRed
+                                            color = MaterialTheme.colorScheme.primary
                                         )
                                         Text(
                                             " 张",
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Medium,
-                                            color = PrimaryRed
+                                            color = MaterialTheme.colorScheme.primary
                                         )
                                     }
                                     Spacer(Modifier.height(2.dp))
                                     Text(
                                         "优先抵扣置顶、擦亮与急售消耗",
                                         fontSize = 11.sp,
-                                        color = Color(0xFF94A3B8)
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
 
                             Button(
                                 onClick = { showRechargeDialog = true },
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                                 shape = RoundedCornerShape(16.dp),
                                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 5.dp),
                                 modifier = Modifier.height(30.dp)
@@ -335,7 +334,7 @@ fun PromotionCenterScreen(
                             "核心变现工具",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E293B),
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(bottom = 10.dp, start = 2.dp)
                         )
 
@@ -386,7 +385,7 @@ fun PromotionCenterScreen(
                             "近期推广记录",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1E293B),
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(top = 8.dp, bottom = 4.dp, start = 2.dp)
                         )
                     }
@@ -407,7 +406,7 @@ fun PromotionCenterScreen(
                                         task.post?.title ?: "已推广帖子",
                                         fontSize = 13.5.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = Color(0xFF1E293B),
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -447,6 +446,7 @@ fun PromotionCenterScreen(
             posts = state.myPosts,
             type = showPostSelectorFor!!,
             cardBalance = state.stats?.bumpCards ?: 0,
+            pcBalance = state.stats?.pcBalance ?: 0,
             onDismiss = { showPostSelectorFor = null },
             onRecharge = { 
                 showPostSelectorFor = null
@@ -560,7 +560,7 @@ private fun JoybuyToolCard(
                 text = title,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1E293B)
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(Modifier.height(2.dp))
@@ -601,6 +601,7 @@ fun PostSelectorBottomSheet(
     posts: List<Post>,
     type: String,
     cardBalance: Int,
+    pcBalance: Int,
     onDismiss: () -> Unit,
     onRecharge: () -> Unit,
     onConfirm: (postId: String, days: Int) -> Unit
@@ -608,11 +609,12 @@ fun PostSelectorBottomSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var selectedPostId by remember { mutableStateOf(posts.firstOrNull()?.id) }
     
-    val cost = when (type) {
+    val costCards = when (type) {
         "TOP" -> 5
         "TAG" -> 2
         else -> 1
     }
+    val PC_PER_CARD = 5
     
     val typeName = when (type) {
         "TOP" -> "同城置顶"
@@ -620,7 +622,9 @@ fun PostSelectorBottomSheet(
         else -> "智能擦亮"
     }
 
-    val isBalanceEnough = cardBalance >= cost
+    val cardsMissing = if (costCards > cardBalance) costCards - cardBalance else 0
+    val pcCost = cardsMissing * PC_PER_CARD
+    val isBalanceEnough = cardsMissing == 0 || pcBalance >= pcCost
     
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -643,7 +647,7 @@ fun PostSelectorBottomSheet(
                     text = "选择要开通【$typeName】的帖子",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -659,7 +663,7 @@ fun PostSelectorBottomSheet(
                     Text(
                         "暂无已发布的帖子，请先发布帖子",
                         fontSize = 13.sp,
-                        color = Color(0xFF94A3B8)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else {
@@ -680,7 +684,7 @@ fun PostSelectorBottomSheet(
                                 .border(
                                     BorderStroke(
                                         if (isSelected) 1.dp else 0.5.dp,
-                                        if (isSelected) PrimaryRed else Color(0xFFE2E8F0)
+                                        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
                                     ),
                                     RoundedCornerShape(10.dp)
                                 )
@@ -693,7 +697,7 @@ fun PostSelectorBottomSheet(
                                 text = post.title,
                                 fontSize = 13.sp,
                                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (isSelected) PrimaryRed else Color(0xFF1E293B),
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.weight(1f),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -703,8 +707,8 @@ fun PostSelectorBottomSheet(
                                 selected = isSelected,
                                 onClick = { selectedPostId = post.id },
                                 colors = RadioButtonDefaults.colors(
-                                    selectedColor = PrimaryRed,
-                                    unselectedColor = Color(0xFFCBD5E1)
+                                    selectedColor = MaterialTheme.colorScheme.primary,
+                                    unselectedColor = MaterialTheme.colorScheme.outline
                                 ),
                                 modifier = Modifier.size(20.dp)
                             )
@@ -729,10 +733,10 @@ fun PostSelectorBottomSheet(
                             color = Color(0xFF64748B)
                         )
                         Text(
-                            text = "$cost",
+                            text = "$costCards",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (!isBalanceEnough) PrimaryRed else Color(0xFF1E293B)
+                            color = if (!isBalanceEnough) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = " 张曝光卡",
@@ -740,25 +744,33 @@ fun PostSelectorBottomSheet(
                             color = Color(0xFF64748B)
                         )
                     }
-                    Text(
-                        text = "当前可用: $cardBalance 张",
-                        fontSize = 11.sp,
-                        color = if (!isBalanceEnough) PrimaryRed else Color(0xFF94A3B8)
-                    )
+                    if (cardsMissing > 0) {
+                        Text(
+                            text = "可用 $cardBalance 张, 需抵扣 $pcCost PC (余额 $pcBalance PC)",
+                            fontSize = 11.sp,
+                            color = if (!isBalanceEnough) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Text(
+                            text = "当前可用: $cardBalance 张",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
                 if (!isBalanceEnough) {
                     Button(
                         onClick = onRecharge,
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(20.dp),
                         modifier = Modifier.height(40.dp)
                     ) {
                         Text(
-                            "余额不足，去获取",
+                            "余额不足，去充值",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 } else {
@@ -770,8 +782,8 @@ fun PostSelectorBottomSheet(
                         },
                         enabled = selectedPostId != null,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = PrimaryRed,
-                            disabledContainerColor = Color(0xFFE2E8F0)
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            disabledContainerColor = MaterialTheme.colorScheme.outlineVariant
                         ),
                         shape = RoundedCornerShape(20.dp),
                         modifier = Modifier.height(40.dp)
@@ -780,7 +792,7 @@ fun PostSelectorBottomSheet(
                             "确认开通",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
@@ -818,7 +830,7 @@ fun RechargeCardsDialog(
                     Icon(
                         Icons.Outlined.AddCard,
                         contentDescription = null,
-                        tint = PrimaryRed,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -827,7 +839,7 @@ fun RechargeCardsDialog(
                     "充值曝光卡",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E293B)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         },
@@ -874,7 +886,7 @@ fun RechargeCardsDialog(
         confirmButton = {
             Button(
                 onClick = { onSelectPackage(selectedQty) },
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(18.dp),
                 modifier = Modifier.height(36.dp)
             ) {
@@ -918,7 +930,7 @@ private fun RechargePackageItem(
             .border(
                 BorderStroke(
                     if (isSelected) 1.dp else 0.5.dp,
-                    if (isSelected) PrimaryRed else Color(0xFFE2E8F0)
+                    if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
                 ),
                 RoundedCornerShape(10.dp)
             )
@@ -932,14 +944,14 @@ private fun RechargePackageItem(
                 "$qty 张曝光卡",
                 fontSize = 13.5.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                color = if (isSelected) PrimaryRed else Color(0xFF1E293B)
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
             )
             if (badge != null) {
                 Spacer(Modifier.width(6.dp))
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
-                        .background(PrimaryRed)
+                        .background(MaterialTheme.colorScheme.primary)
                         .padding(horizontal = 4.dp, vertical = 1.dp)
                 ) {
                     Text(
@@ -957,7 +969,7 @@ private fun RechargePackageItem(
                 Text(
                     originPrice,
                     fontSize = 10.sp,
-                    color = Color(0xFF94A3B8),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(end = 4.dp)
                 )
             }
@@ -965,7 +977,7 @@ private fun RechargePackageItem(
                 price,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isSelected) PrimaryRed else Color(0xFF1E293B)
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
             )
         }
     }

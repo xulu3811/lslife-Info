@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,19 +70,20 @@ fun <T> WheelPicker(
         contentAlignment = Alignment.Center
     ) {
         // Center selection highlight line
+        val surfaceVariantColor = MaterialTheme.colorScheme.surfaceVariant
         androidx.compose.foundation.Canvas(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(itemHeight)
         ) {
             drawLine(
-                color = Color.LightGray,
+                color = surfaceVariantColor,
                 start = androidx.compose.ui.geometry.Offset(0f, 0f),
                 end = androidx.compose.ui.geometry.Offset(size.width, 0f),
                 strokeWidth = 1.dp.toPx()
             )
             drawLine(
-                color = Color.LightGray,
+                color = surfaceVariantColor,
                 start = androidx.compose.ui.geometry.Offset(0f, size.height),
                 end = androidx.compose.ui.geometry.Offset(size.width, size.height),
                 strokeWidth = 1.dp.toPx()
@@ -114,7 +116,7 @@ fun <T> WheelPicker(
                         
                         val fontSize = if (isCenter) 16.sp else 14.sp
                         val fontWeight = if (isCenter) FontWeight.Bold else FontWeight.Normal
-                        val color = if (isCenter) Color(0xFFE53935) else Color.Black
+                        val color = if (isCenter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
 
                         Text(
                             text = itemToString(item),

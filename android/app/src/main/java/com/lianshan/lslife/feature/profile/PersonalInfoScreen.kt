@@ -8,9 +8,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.Surface
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -95,13 +102,13 @@ fun PersonalInfoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("个人信息") },
+                title = { Text("个人信息", fontWeight = FontWeight.Medium) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
         containerColor = MaterialTheme.colorScheme.background,
@@ -111,94 +118,168 @@ fun PersonalInfoScreen(
             return@Scaffold
         }
         val user = state.user
+        
         Column(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize()
-                .padding(Dimens.lg),
-            verticalArrangement = Arrangement.spacedBy(Dimens.md),
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SoftCard {
-                Column(Modifier.padding(horizontal = Dimens.md)) {
-                    val isReviewing = user?.profileReviewStatus == "AI_REVIEWING" || user?.profileReviewStatus == "MANUAL_REVIEWING"
-                    
-                    InfoRow(
-                        label = "头像" + if (isReviewing && user?.pendingAvatar != null) " (审核中)" else "",
-                        isEditable = true,
-                        onClick = onEditProfile,
-                    ) {
-                        AsyncImage(
-                            model = user?.avatar,
-                            contentDescription = "头像",
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop,
-                        )
-                    }
-                    HorizontalDivider()
-                    InfoRow(
-                        label = "昵称" + if (isReviewing && user?.pendingNickname != null) " (审核中)" else "",
-                        value = user?.nickname ?: "-",
-                        isEditable = true,
-                        onClick = onEditProfile,
-                    )
-                    HorizontalDivider()
-                    InfoRow("用户ID", user?.id?.takeLast(8)?.let { "LS-$it" } ?: "-")
-                    HorizontalDivider()
-                    InfoRow("手机号", maskPhone(user?.phone))
-                    HorizontalDivider()
-                    InfoRow(
-                        label = "会员",
-                        value = when (user?.membershipTier) {
-                            "vip" -> "超级会员"
-                            "premium" -> "至尊会员"
-                            else -> "普通用户"
-                        },
-                        isEditable = true,
-                        onClick = onOpenMembership,
+            val isReviewing = user?.profileReviewStatus == "AI_REVIEWING" || user?.profileReviewStatus == "MANUAL_REVIEWING"
+            
+            // Google Account Style Header
+            Spacer(modifier = Modifier.height(32.dp))
+            Box(
+                modifier = Modifier
+                    .size(96.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = onEditProfile),
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = user?.avatar,
+                    contentDescription = "头像",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+                // Edit Overlay
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = androidx.compose.ui.graphics.Color.White,
+                        modifier = Modifier.size(28.dp)
                     )
                 }
             }
+            if (isReviewing && user?.pendingAvatar != null) {
+                Text(
+                    text = "头像审核中",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable(onClick = onEditProfile)
+            ) {
+                Text(
+                    text = user?.nickname ?: "未设置昵称",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 8.dp).size(18.dp)
+                )
+            }
+            if (isReviewing && user?.pendingNickname != null) {
+                Text(
+                    text = "昵称审核中",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
             Text(
-                "点击头像、昵称或会员进入完整修改页",
-                style = MaterialTheme.typography.bodySmall,
+                text = user?.id?.takeLast(8)?.let { "ID: LS-$it" } ?: "ID: -",
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp)
             )
+            
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Information Cards
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "基本信息",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)
+                )
+                
+                Surface(
+                    shape = RoundedCornerShape(24.dp), // M3 extra large rounding for cards
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), // M3 Surface Variant
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column {
+                        M3ListItem(
+                            headline = "手机号",
+                            supporting = maskPhone(user?.phone)
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
+                        M3ListItem(
+                            headline = "会员身份",
+                            supporting = when (user?.membershipTier) {
+                                "vip" -> "超级会员"
+                                "premium" -> "至尊会员"
+                                else -> "普通用户"
+                            },
+                            trailingIcon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            onClick = onOpenMembership
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun InfoRow(
-    label: String,
-    value: String? = null,
-    isEditable: Boolean = false,
-    onClick: (() -> Unit)? = null,
-    trailing: (@Composable () -> Unit)? = null,
+private fun M3ListItem(
+    headline: String,
+    supporting: String,
+    trailingIcon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    onClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (isEditable && onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .padding(vertical = Dimens.md),
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-            if (trailing != null) trailing()
-            else if (value != null) {
-                Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-            }
-            if (isEditable) {
-                Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
+        Column {
+            Text(
+                text = headline,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = supporting,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        if (trailingIcon != null) {
+            Icon(
+                imageVector = trailingIcon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }

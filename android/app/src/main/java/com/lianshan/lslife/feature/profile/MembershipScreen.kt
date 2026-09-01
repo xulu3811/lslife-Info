@@ -1,9 +1,7 @@
 package com.qingyuan.lslife.feature.profile
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,7 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,8 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,18 +28,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.qingyuan.lslife.core.model.MembershipPlan
 import com.qingyuan.lslife.ui.components.LoadingBox
 import com.qingyuan.lslife.ui.components.PaymentBottomSheet
-import com.qingyuan.lslife.ui.components.SoftCard
-import com.qingyuan.lslife.ui.theme.PrimaryRed
-import com.qingyuan.lslife.ui.theme.Dimens
+import com.qingyuan.lslife.ui.components.NetworkImage
 
-/**
- * 会员权益中心 (Joybuy 欧美简约 3D Soft UI 重构版)
- * 设计规范:
- * 1. 顶部用户身份与尊享特权徽章卡
- * 2. 套餐 2 栏微选择器 (支持包月 / 包季选中高亮)
- * 3. 4 大核心特权 3D Soft UI 矩阵可视化网格
- * 4. 底部吸底结算与开通栏
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MembershipScreen(
@@ -53,6 +39,7 @@ fun MembershipScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var selectedPlanForPayment by remember { mutableStateOf<MembershipPlan?>(null) }
+    val user = state.user
 
     LaunchedEffect(Unit) { viewModel.load() }
     LaunchedEffect(state.message) {
@@ -62,7 +49,8 @@ fun MembershipScreen(
         }
     }
 
-    val isMerchant = state.user?.role?.contains("MERCHANT") == true || state.merchantCertStatus == "APPROVED"
+    val isMerchant = user?.role?.contains("MERCHANT") == true || state.merchantCertStatus == "APPROVED"
+    val isSuperAdmin = user?.role == "SUPERADMIN" || user?.role == "ADMIN"
 
     val merchantPlans = remember {
         listOf(
@@ -78,7 +66,7 @@ fun MembershipScreen(
                 name = "金牌商家包季",
                 price = 168.0,
                 period = "季",
-                benefits = listOf("每月50条免费发布额度", "AI智能文案无限次润色", "商家专属尊贵标识", "立省36元", "每月专享 20 张曝光卡")
+                benefits = listOf("每月50条免费发布额度", "AI智能文案无限次润色", "商家专属尊贵标识", "每月专享 20 张曝光卡", "立省36元")
             )
         )
     }
@@ -86,57 +74,44 @@ fun MembershipScreen(
     val personalPlans = remember {
         listOf(
             MembershipPlan(
-                tier = "urgent_tag_1",
-                name = "极速急售卡 · 1张",
-                price = 2.9,
-                period = "次",
-                benefits = listOf("信息流列表“急售”高亮标签", "优先展示权重", "24小时有效")
+                tier = "vip",
+                name = "VIP会员",
+                price = 19.9,
+                period = "月",
+                benefits = listOf("专属VIP尊贵标识", "发布信息免审核优先", "每月专享 30 张曝光卡")
             ),
             MembershipPlan(
-                tier = "urgent_tag_5",
-                name = "极速急售卡 · 5张",
-                price = 9.9,
-                period = "次",
-                benefits = listOf("信息流列表“急售”高亮标签", "优先展示权重", "买5送1，更划算")
+                tier = "premium",
+                name = "至尊会员",
+                price = 39.9,
+                period = "月",
+                benefits = listOf("专属至尊尊贵标识", "发布信息免审核优先", "专属客服极速响应", "每月专享 100 张曝光卡")
             )
         )
     }
 
-    val currentPlans = if (isMerchant) merchantPlans else personalPlans
+    val currentPlans = if (isMerchant && !isSuperAdmin) merchantPlans else personalPlans
     var activePlan by remember(isMerchant) { mutableStateOf(currentPlans.first()) }
 
     Scaffold(
-        containerColor = Color(0xFFF8FAFC),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "会员权益",
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1E293B)
-                    )
-                },
+                title = { Text("超级会员", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回",
-                            tint = Color(0xFF334155),
-                            modifier = Modifier.size(20.dp)
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
         bottomBar = {
             Surface(
                 shadowElevation = 8.dp,
-                color = Color.White,
-                shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
-                border = BorderStroke(0.5.dp, Color(0xFFE2E8F0))
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             ) {
                 Row(
                     modifier = Modifier
@@ -148,52 +123,27 @@ fun MembershipScreen(
                 ) {
                     Column {
                         Row(verticalAlignment = Alignment.Bottom) {
-                            Text(
-                                "实付: ",
-                                fontSize = 12.sp,
-                                color = Color(0xFF64748B)
-                            )
+                            Text("总计: ", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(
                                 "¥${activePlan.price}",
-                                fontSize = 20.sp,
+                                fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = PrimaryRed
-                            )
-                            Text(
-                                " / ${activePlan.period}",
-                                fontSize = 12.sp,
-                                color = Color(0xFF64748B)
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
-                        if (activePlan.tier == "merchant_vip_quarter") {
-                            Text(
-                                "已享包季特惠 · 立省 ¥36",
-                                fontSize = 10.5.sp,
-                                color = PrimaryRed,
-                                fontWeight = FontWeight.Medium
-                            )
-                        } else {
-                            Text(
-                                "开通即享全套特权与曝光卡",
-                                fontSize = 10.5.sp,
-                                color = Color(0xFF94A3B8)
-                            )
-                        }
+                        Text(
+                            "开通即享全套特权",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
 
                     Button(
                         onClick = { selectedPlanForPayment = activePlan },
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
-                        shape = RoundedCornerShape(20.dp),
-                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp),
-                        modifier = Modifier.height(42.dp)
+                        shape = RoundedCornerShape(24.dp),
+                        contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp)
                     ) {
-                        Text(
-                            "立即开通",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White
-                        )
+                        Text("立即开通", fontSize = 15.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -209,215 +159,128 @@ fun MembershipScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            // 一、 用户身份与特权状态卡 (Joybuy 欧美极简 Header)
-            SoftCard(modifier = Modifier.fillMaxWidth()) {
+            // Header User Info
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
+                    NetworkImage(
+                        url = user?.avatar,
+                        contentDescription = "Avatar",
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = user?.nickname ?: "未命名用户",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        val currentTierName = when(user?.membershipTier) {
+                            "vip" -> "VIP会员"
+                            "premium" -> "至尊会员"
+                            "merchant_vip_month", "merchant_vip_quarter" -> "金牌商家"
+                            else -> "普通用户"
+                        }
+                        
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFFFEF2F2)),
-                            contentAlignment = Alignment.Center
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
-                            Icon(
-                                if (isMerchant) Icons.Outlined.WorkspacePremium else Icons.Outlined.Person,
-                                contentDescription = null,
-                                tint = PrimaryRed,
-                                modifier = Modifier.size(20.dp)
+                            Text(
+                                text = "当前身份: $currentTierName",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
-                        Spacer(Modifier.width(12.dp))
-                        Column {
+                    }
+                }
+            }
+
+            // Plan Selection
+            Column {
+                Text(
+                    text = "选择您的会员套餐",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    currentPlans.forEach { plan ->
+                        val isSelected = activePlan.tier == plan.tier
+                        M3PlanCard(
+                            modifier = Modifier.weight(1f),
+                            plan = plan,
+                            isSelected = isSelected,
+                            onClick = { activePlan = plan }
+                        )
+                    }
+                }
+            }
+
+            // Benefits Details
+            Column {
+                Text(
+                    text = "尊享 ${activePlan.name} 特权",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        activePlan.benefits.forEach { benefit ->
                             Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Filled.CheckCircle,
+                                    contentDescription = "Check",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Text(
-                                    "当前身份 · ${if (isMerchant) "认证商家" else "个人用户"}",
+                                    text = benefit,
                                     fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E293B)
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
-                            Spacer(Modifier.height(2.dp))
-                            Text(
-                                if (isMerchant) "商家专属：开通阶梯包月，畅享无限曝光与AI赋能" else "个人专属：无需包月，按需购买急售卡",
-                                fontSize = 11.5.sp,
-                                color = Color(0xFF64748B)
-                            )
                         }
                     }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0xFFFEF2F2))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = if (isMerchant) "商家认证" else "个人认证",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = PrimaryRed
-                        )
-                    }
                 }
             }
 
-            // 二、 套餐选择卡片 (2 栏对称卡片选择器)
-            Text(
-                "选择开通套餐",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E293B),
-                modifier = Modifier.padding(start = 2.dp, top = 2.dp)
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                currentPlans.forEach { plan ->
-                    val isSelected = activePlan.tier == plan.tier
-                    val isQuarter = plan.tier == "merchant_vip_quarter" || plan.tier == "urgent_tag_5"
-
-                    JoybuyPlanCard(
-                        modifier = Modifier.weight(1f),
-                        plan = plan,
-                        isSelected = isSelected,
-                        badge = if (isQuarter) (if (isMerchant) "立省36元" else "买5送1") else null,
-                        originalPrice = if (isQuarter && isMerchant) "¥204" else null,
-                        onClick = { activePlan = plan }
-                    )
-                }
-            }
-
-            // 三、 核心权益矩阵 (Joybuy 4 栏 Soft UI 网格)
-            Text(
-                "尊享特权清单",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E293B),
-                modifier = Modifier.padding(start = 2.dp, top = 6.dp)
-            )
-
-            if (isMerchant) {
-                val isQuarterSelected = activePlan.tier == "merchant_vip_quarter"
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        BenefitGridCard(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Outlined.PostAdd,
-                            iconBg = Color(0xFFEFF6FF),
-                            iconTint = Color(0xFF2563EB),
-                            title = "每月50条发布额度",
-                            desc = "同城各分类无限次极速发布"
-                        )
-                        BenefitGridCard(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Outlined.AutoAwesome,
-                            iconBg = Color(0xFFFAF5FF),
-                            iconTint = Color(0xFF9333EA),
-                            title = "AI智能文案无限润色",
-                            desc = "DeepSeek 深度提炼高转化文案"
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        BenefitGridCard(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Outlined.WorkspacePremium,
-                            iconBg = Color(0xFFFFFBEB),
-                            iconTint = Color(0xFFD97706),
-                            title = "金牌商家尊贵标识",
-                            desc = "全端展示专属品牌认证标识"
-                        )
-                        BenefitGridCard(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Outlined.ConfirmationNumber,
-                            iconBg = Color(0xFFFEF2F2),
-                            iconTint = PrimaryRed,
-                            title = if (isQuarterSelected) "每月赠 20 张曝光卡" else "每月赠 15 张曝光卡",
-                            desc = if (isQuarterSelected) "价值 100 元，置顶擦亮优先抵扣" else "价值 75 元，置顶擦亮优先抵扣"
-                        )
-                    }
-                }
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        BenefitGridCard(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Outlined.LocalFireDepartment,
-                            iconBg = Color(0xFFFEF2F2),
-                            iconTint = PrimaryRed,
-                            title = "急售高亮专属底色",
-                            desc = "信息流第一眼抓住买家眼球"
-                        )
-                        BenefitGridCard(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Outlined.TrendingUp,
-                            iconBg = Color(0xFFF0FDF4),
-                            iconTint = Color(0xFF16A34A),
-                            title = "搜索前排优先展示",
-                            desc = "曝光权重提升 500%"
-                        )
-                    }
-                }
-            }
-
-            // 四、 服务保障说明
-            Spacer(Modifier.height(4.dp))
-            SoftCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        "开通须知与保障",
-                        fontSize = 12.5.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1E293B)
-                    )
-                    Text(
-                        "1. 会员权益与附赠曝光卡在支付成功后即刻自动到账生效。",
-                        fontSize = 11.sp,
-                        color = Color(0xFF64748B)
-                    )
-                    Text(
-                        "2. 会员赠送的曝光卡每月 1 号凌晨自动重置刷新，月底前可随时消耗。",
-                        fontSize = 11.sp,
-                        color = Color(0xFF64748B)
-                    )
-                    Text(
-                        "3. 如需开具发票或有对公转账需求，请联系平台官方客服。",
-                        fontSize = 11.sp,
-                        color = Color(0xFF64748B)
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
         }
 
         selectedPlanForPayment?.let { plan ->
@@ -433,157 +296,59 @@ fun MembershipScreen(
     }
 }
 
-/**
- * Joybuy 欧美极简套餐卡片
- */
 @Composable
-private fun JoybuyPlanCard(
+private fun M3PlanCard(
     modifier: Modifier = Modifier,
     plan: MembershipPlan,
     isSelected: Boolean,
-    badge: String?,
-    originalPrice: String?,
     onClick: () -> Unit
 ) {
-    Surface(
+    Card(
         modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) Color(0xFFFEF2F2) else Color.White,
-        border = BorderStroke(
-            if (isSelected) 1.5.dp else 0.5.dp,
-            if (isSelected) PrimaryRed else Color(0xFFE2E8F0)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
         ),
-        shadowElevation = if (isSelected) 2.dp else 0.dp
+        border = BorderStroke(
+            if (isSelected) 2.dp else 1.dp,
+            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 14.dp, horizontal = 8.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = plan.name,
-                fontSize = 13.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                color = if (isSelected) PrimaryRed else Color(0xFF1E293B),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
-
-            Spacer(Modifier.height(8.dp))
-
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
                     text = "¥",
-                    fontSize = 13.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isSelected) PrimaryRed else Color(0xFF1E293B)
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "${plan.price}",
-                    fontSize = 22.sp,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isSelected) PrimaryRed else Color(0xFF1E293B)
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = " / ${plan.period}",
-                    fontSize = 11.sp,
-                    color = Color(0xFF64748B)
+                    text = "/${plan.period}",
+                    fontSize = 12.sp,
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha=0.7f) else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
-            Spacer(Modifier.height(8.dp))
-
-            if (badge != null) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(PrimaryRed)
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = badge,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-            } else {
-                val subText = if (plan.period == "次") {
-                    val count = if (plan.tier == "urgent_tag_5") 5 else 1
-                    "折合每次 ¥${"%.2f".format(plan.price / count)}"
-                } else {
-                    "折合每日 ¥${"%.1f".format(plan.price / 30)}"
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(Color(0xFFF1F5F9))
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = subText,
-                        fontSize = 10.sp,
-                        color = Color(0xFF64748B),
-                        fontWeight = FontWeight.Normal
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * 权益矩阵 3D Soft UI 卡片
- */
-@Composable
-private fun BenefitGridCard(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    iconBg: Color,
-    iconTint: Color,
-    title: String,
-    desc: String
-) {
-    SoftCard(modifier = modifier) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(34.dp)
-                    .clip(CircleShape)
-                    .background(iconBg),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    icon,
-                    contentDescription = title,
-                    tint = iconTint,
-                    modifier = Modifier.size(17.dp)
-                )
-            }
-
-            Spacer(Modifier.height(10.dp))
-
-            Text(
-                text = title,
-                fontSize = 12.5.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1E293B)
-            )
-
-            Spacer(Modifier.height(2.dp))
-
-            Text(
-                text = desc,
-                fontSize = 10.5.sp,
-                color = Color(0xFF64748B),
-                lineHeight = 14.sp
-            )
         }
     }
 }

@@ -1,35 +1,34 @@
-﻿# 同城清远 (Qingyuan Smart Local Life Service Platform) - V9.0 深度交接与架构总结文档
+﻿# 同城清远 (Qingyuan Smart Local Life Service Platform) - V8.36 深度交接与架构总结文档
 
 ## 📌 项目定位与当前状态 (Project State & Objective Reality)
 本项目是一款针对县域级市场（目标覆盖人口 3~10 万，高并发支撑 3 万）量身打造的**纯净本地同城分类信息与生活服务平台**。
 
-历经多个版本的硬核迭代，目前项目已全面跨越至 **V9.0 (Material 3 重构与架构补全版)**。
-我们在 V8.0 品牌重塑的基础上，彻底完成了 Web 管理后台的现代化改造，并成功构建了 Android 客户端的 OTA 自动升级闭环：
-1. **Web 管理后台彻底重构为 Google Material 3 规范**：废弃了早期冗余且割裂的浮雕、玻璃拟态样式（Tailwind + CSS 混编），统一升级为原汁原味的 Google Workspace 风格。所有页面（包括 dashboard、实名认证审核、用户管理、系统安全控制、App版本管理、分类管理等）已实现高度一致的设计语言。
-2. **Dashboard 科技感数据大屏**：打通了 `/admin/server-status` 与前端 Dashboard，实现了高频轮询展示服务器 CPU、内存、磁盘以及 PM2 后端进程存活状态的实时监控图表。
-3. **OTA 热更新极速触达与闭环**：完善了 Web 端的 APK 拖拽/上传、MD5 校验与 URL 回填功能。客户端通过 WebSocket 实时监听 `APP_UPDATE_AVAILABLE` 指令，实现了后台一键强制或静默发版。
-4. **编译链路极致优化**：全面应用 `--no-daemon` 策略对抗 R8 混淆器导致的内存溢出，并在全局重构后平稳渡过了 Dagger/Hilt 依赖注入框架的缓存失效期。
+历经多个版本的硬核迭代，项目已全面跨越至 **V8.36 (原生秒开与全系 Material 3 纯净视觉版)**。
+在重构了 Web 管理后台和完善 OTA 自动升级闭环后，近期我们在客户端层面的极致性能与 UI 统一上取得了决定性成果：
+1. **商业推广模块彻底 M3 化**：对“我的钱包”、“超级会员”、“推广中心”等核心页面进行了彻底重构。移除了早期的“淘宝式大红尖角标签”与硬编码颜色，全系采用 MaterialTheme.colorScheme 的 primaryContainer、	ertiaryContainer 等动态语义色。
+2. **全局货币符号精简**：通过底层 strings.xml 将全站的“清远币”统一重构为极简的 **PC**，并重绘了单行平滑式的资产概览卡片，UI 空间利用率大幅提升。
+3. **首页秒开架构 (Offline-First Cache)**：引入本地强缓存引擎，冷启动 **0毫秒瞬间渲染** 首页瀑布流历史数据，彻底终结了 1-2 秒的骨架屏等待期。
+4. **原生轻量化 GPS 引擎**：彻底抛弃高德/腾讯等沉重的 LBS 地图 SDK，使用纯粹的原生 LocationManager 结合正则提取算法，直接输出“镇/街道”级纯文本。
 
 ---
 
 ## 🏗 核心模块、业务逻辑与算法 (Core Architecture & Logic)
 
-### 1. 统一合规审批流与发布拦截 (Unified Approval & Risk Control)
-*   **强鉴权拦截**：在 Node.js 后端的 `publish.ts` 中结合 `requireQuota` 中间件，严格要求用户必须是 `realNameStatus === 'verified'` 或 `isMerchant === true` 方可发帖，并特别保留了超级管理员的无视限制穿透 (Bypass) 权限。
-*   **状态机流转**：系统通过 `AI_REVIEWING` -> `MANUAL_REVIEWING` -> `PUBLISHED` 的状态机进行内容风控管控。
+### 1. 首页秒开与本地强缓存引擎 (Offline-First Cache)
+*   **极致体验**：利用 SharedPreferences + Kotlinx Serialization 将首页推荐列表静默落盘。ViewModel 在 init 阶段瞬间反序列化并渲染数据，实现“断网可见、秒级开屏”，后台再静默覆盖最新数据。
 
-### 2. 千人千面：基于 JSONB 的动态属性表单 (Dynamic Attributes Schema)
-*   **非结构化存储**：底层 PostgreSQL 采用 `attributes: Json?` 字段，实现免 Schema 变更的无限扩展。
-*   **动态渲染**：客户端利用 `CategorySchemaRegistry` 解析动态规则，在 Compose UI 中将其渲染成高级数据表格，支持多选高亮标签等复杂 UI。
+### 2. 轻量化原生位置解析算法 (Native Geolocation)
+*   **脱离 Map SDK**：封装 LocationHelper.kt。
+*   **正则行政区划提取**：通过正则 (?<=县|区|市)[^县区市]+?(镇|街道|乡) 直接将地理位置转换为下沉市场用户最关心的乡镇级纯文本，极大幅度减小了 APK 包体积和内存占用。
 
-### 3. AI 视觉引擎与 3D Soft UI (Aesthetics & AI Processing)
-*   **智能包围盒裁剪管线 (AI Icon Processing)**：摒弃传统扁平 SVG，利用 Python (`rembg` + `Pillow` 结合 Floodfill 算法) 对实物网图进行去背、极限裁剪，并统一输出为 512x512 包含留白呼吸感（Padding: 58px）的 RGBA 透明底 PNG。
-*   **Google Material 3 (Web 端)**：全面应用 `--g-blue`、`--g-red` 等标准色，以及 `md-card`、`md-input`、`md-btn` 等模块化原子 CSS 类，确保在 Chrome/Edge 浏览器下提供极度顺滑、克制的高级企业级后台体验。
+### 3. 千人千面：基于 JSONB 的动态属性表单 (Dynamic Attributes Schema)
+*   **非结构化存储**：底层 PostgreSQL 采用 ttributes: Json? 字段，实现免 Schema 变更的无限分类扩展。客户端利用 CategorySchemaRegistry 在 Compose UI 中动态渲染多选标签与表单。
 
 ### 4. 深度即时通讯与区块链级交易存证 (Deep IM & Blockchain Storage)
-*   **通信协议**：基于 WebSocket 的直连即时通讯，配合本地无损图片压缩与 Base64 文本流极速传输。
-*   **语音流媒体化**：通过后端 `/chat_audio` 静态路由直接投递 mp4/m4a 流媒体，客户端通过 MediaPlayer 处理 https 安全直连。
-*   **区块链级存证**：后端在落盘时执行 **AES-256-CBC** 对称加密，并利用上一条消息的哈希值计算 **SHA-256 级联哈希**，构建不可篡改的消息证据链。
+*   **安全通信协议**：基于 WebSocket 直连，后端执行 **AES-256-CBC** 对称加密。利用上一条消息的哈希值计算 **SHA-256 级联哈希**，构建不可篡改的消息证据链。
+
+### 5. 统一合规审批流与发布拦截 (Unified Approval & Risk Control)
+*   **强鉴权拦截**：Node.js 后端强行挂载风控中间件，系统通过 AI_REVIEWING -> MANUAL_REVIEWING -> PUBLISHED 的严格状态机控制非法内容外流。
 
 ---
 
@@ -37,62 +36,50 @@
 
 ### Android 客户端 (Frontend)
 *   **语言 / 核心 SDK**: Kotlin / Min SDK 24 / Target SDK 34 / JDK 17
-*   **UI 框架**: Jetpack Compose / Material3 / 全局 NavHost 路由
-*   **架构**: MVVM / 单向数据流 / Dagger Hilt 依赖注入 / Coroutines & StateFlow / Coil
-*   **网络与持久化**: Retrofit2 / OkHttp3 / WebSockets / Kotlinx Serialization / Room DB (`LocalConversationEntity`, `LocalMessageEntity`)
+*   **UI 框架**: Jetpack Compose / Material3 / 响应式动态色彩主题
+*   **架构**: MVVM / MVI 单向数据流 / Dagger Hilt 依赖注入 / Coroutines & StateFlow
+*   **网络与持久化**: Retrofit2 / OkHttp3 / WebSockets / Room DB (本地聊天缓存)
 
 ### 服务端 Web 与 API (Backend)
 *   **环境 / 框架**: Node.js / Express / TypeScript / PM2 热载托管
-*   **Web 框架 (admin-web)**: React / Vite / 纯 CSS3 自定义样式 (已移除冗余第三方框架)
-*   **数据库 / ORM**: PostgreSQL (5432, 外部隔离) / Prisma ORM
-*   **服务器交互**: Web 端与后端的部署分离，API BaseURL: `https://mentalhlp.site/api/` 或开发态下的 `/api` 相对路径代理。
+*   **Web 框架 (admin-web)**: React / Vite / 纯 CSS3 自定义 M3 样式
+*   **数据库 / ORM**: PostgreSQL (5432) / Prisma ORM
+*   **服务器端点**: API BaseURL: https://mentalhlp.site/api/
 
 ---
 
 ## 🛑 平台红线与开发原则 (Core Platform Rules)
 
-> **以下为同城清远体系的绝对红线，任何 Agent 或开发者不得违背：**
+> **以下为同城清远体系的绝对红线，新接手的 Agent 或开发者不得违背：**
 
 1. **纯信息发布平台，严禁电商闭环**：
-   - 本项目定位于纯信息发布平台，绝对**不提供**在线电商交易闭环。
-   - 严禁引入或使用任何“购物车 (CartItem)”、“订单 (Order)”、“在线支付流水 (Payment)”、“物流发货 (Delivery)”逻辑与表结构。
-   - 任何涉及资金流动的仅限平台自身服务（例如：购买发帖配额、置顶帖子、商家入驻认证），不包含物理商品的 C2C/B2C 交易。
+   - 定位于纯信息发布与撮合平台，绝对**不提供**在线电商商品交易闭环。
+   - 严禁引入“购物车 (CartItem)”、“订单 (Order)”、“物流发货 (Delivery)”表结构。
+   - 支付仅限平台虚拟货币 (PC) 的充值及购买平台增值服务（发帖配额、置顶）。
 2. **轻量化位置体系，坚决废弃 LBS 地图 SDK**：
-   - 客户端严禁引入高德、腾讯等重型 3D/2D 地图 SDK，因为这将导致包体积暴增且增加下沉市场的维护成本。
-   - 位置信息不使用基于 `latitude` / `longitude` 的 Haversine 球面距离计算。
-   - 彻底转为轻量级文本层级方案。
-3. **Web 端严禁引入新的重量级 CSS 框架**：
-   - 所有的 UI 请复用 `admin-web/src/index.css` 中定义好的 `md-*` 规范库，严禁随便写入难以维护的 inline-style 或者重新引回 Tailwind 类。
+   - 严禁引入任何第三方重型地图 SDK。只能使用 Android 原生定位框架或纯文本解析。
+3. **严格遵守 Material 3 设计语言**：
+   - Android 端必须使用 MaterialTheme.colorScheme 中的动态语义色，严禁在业务模块中重新定义“淘宝红”、“硬编码白”等破坏全局深浅色切换的颜色。所有组件需保持留白与高级感。
 
 ---
 
 ## 🚀 自动化编译与发版指引 (Build Rules)
 
 **客户端安全编译指令 (必须在 PowerShell 中执行)**：
-为了防止内存溢出、文件锁死以及 Hilt 增量缓存失效，请**强烈建议**在修改后执行 Clean 全量构建：
-```powershell
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"; cd android; .\gradlew.bat clean assembleRelease -x lintVitalAnalyzeRelease --no-daemon
-```
-*(默认输出路径：`D:\GitHub-lslife-V6.0\android\app\build\outputs\apk\release\app-release.apk`)*
-
-**服务端 Web 编译与后端安全部署指令 (需在 admin-web / backend 目录执行)**：
-```powershell
-# 在 admin-web 目录下执行：
-npm.cmd run build
-# 然后切换到 backend 目录下执行：
-node deploy_web.cjs
-node deploy_clean.mjs  # 若修改了后端逻辑
-```
+为了防止内存溢出、文件锁死、Hilt 增量缓存失效以及中文乱码（Mojibake），请**强制**使用以下 Clean 全量构建指令（并避免使用 PowerShell 原生字符串替换包含中文的文件，请使用 Python 或专用工具）：
+`powershell
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"; cd d:\GitHub-lslife-V6.0\android; .\gradlew.bat clean assembleRelease -x lintVitalAnalyzeRelease --no-daemon --no-configuration-cache
+`
 
 ---
 
 ## 🎯 二次开发交接与下一阶段任务 (Next Stage Handover)
 
-在下一轮开启的新对话中，新接手的架构师/Agent 请基于当前完美的 **V9.0** 基准代码，立刻推进以下硬核攻坚战：
+基于当前极具高级感和流畅度的 **V8.36** 基线代码，下一轮开启新对话的架构师/Agent 请立刻推进以下攻坚战：
 
-1. **层级地址选择器 UI 落地 (Cascading Address Picker)**
-   - **目标**：在 Android 客户端的发帖页面、同城动态发布页、商家入驻页，实现一套基于“省-市-县-镇”四级的滑动选择器（配合 Material 3 BottomSheet）。
-   - **痛点**：因为废弃了 LBS 地图 SDK 定位，必须提供流畅且纯本地化的文本地址层级录入体验。此任务为最高优先级！
-2. **AI 图片处理管线工具化 (Image Pipeline Tooling)**
-   - **目标**：当前还有部分分类的占位图片需要重塑。请封装固化之前的 Python (`rembg` + `Pillow`) 512x512 包围盒自动去背景裁剪脚本，使其成为可一键批量调用的标准 CLI 工具。
-
+1. **纯文本层级地址选择器 UI 落地 (Cascading Address Picker)**
+   - **状态**：目前“一键获取原生定位”已在首页和发布页跑通，且自动提取乡镇。
+   - **目标**：用户在发帖页如果定位失败，需要手动点击“请选择 >”，此时必须弹出一个基于“省-市-县-镇”四级的滑动/列表选择器（结合 M3 BottomSheet）。纯本地化文本驱动，无需地图渲染。
+2. **Prisma 数据库迁移与新字段同步**
+   - **目标**：确保线上 PostgreSQL 环境 (
+px prisma db push) 结构与 Schema 同步，为下一阶段的新业务（如商家入驻扩展字段）做好准备。

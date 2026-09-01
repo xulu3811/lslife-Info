@@ -109,7 +109,8 @@ data class PromotionStatsResponse(
     val contactViews: Int,
     val totalFavorites: Int,
     val beatRate: Int,
-    val bumpCards: Int
+    val bumpCards: Int,
+    val pcBalance: Int = 0
 )
 
 @Serializable

@@ -74,8 +74,34 @@ setInterval(async () => {
         data: { vipCards: 0 }
       });
       console.log(`[Cron] 已自动清零 ${wallets.length} 个用户的 VIP 曝光卡`);
+
+      // 发放本月免费曝光卡 (VIP 每月送 30 张, Premium 每月送 100 张)
+      const vips = await prisma.user.findMany({
+        where: { membershipTier: { in: ['vip', 'premium'] } }
+      });
+      for (const vip of vips) {
+        const amount = vip.membershipTier === 'premium' ? 100 : 30;
+        await prisma.merchantWallet.upsert({
+          where: { merchantId: vip.id },
+          update: { vipCards: amount },
+          create: { merchantId: vip.id, retailCards: 0, vipCards: amount }
+        });
+        await prisma.cardTransaction.create({
+          data: {
+            userId: vip.id,
+            type: 'ADD',
+            amount,
+            retailBefore: 0, // 仅记流水
+            retailAfter: 0,
+            vipBefore: 0,
+            vipAfter: amount,
+            reason: `月初自动发放 ${vip.membershipTier} 会员曝光卡`
+          }
+        });
+      }
+      console.log(`[Cron] 已向 ${vips.length} 个会员下发本月曝光卡`);
     } catch (e) {
-      console.error('[Cron] 清零 VIP 曝光卡失败:', e);
+      console.error('[Cron] 清零/下发 VIP 曝光卡失败:', e);
     }
   }
 }, 1000 * 60 * 60); // 每小时执行一次检查

@@ -31,7 +31,7 @@ fun AddressPickerBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
@@ -47,10 +47,10 @@ fun AddressPickerBottomSheet(
                 TextButton(onClick = {
                     coroutineScope.launch { sheetState.hide() }.invokeOnCompletion { onDismissRequest() }
                 }) {
-                    Text("取消", color = Color.Gray, fontSize = 16.sp)
+                    Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
                 }
                 
-                Text("选择所在地区", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text("选择所在地区", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 
                 TextButton(onClick = {
                     val addressStr = listOfNotNull(
@@ -63,7 +63,7 @@ fun AddressPickerBottomSheet(
                     onAddressSelected(addressStr)
                     coroutineScope.launch { sheetState.hide() }.invokeOnCompletion { onDismissRequest() }
                 }) {
-                    Text("确定", color = Color(0xFFE53935), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("确定", color = MaterialTheme.colorScheme.primary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
 

@@ -207,6 +207,7 @@ data class Post(
     val marketingHook: String? = null,
     val isFeatured: Boolean = false,
     val isUrgent: Boolean = false,
+    val isTop: Boolean = false,
     val distanceText: String? = null,
     val activeTimeText: String? = null,
     val badgeText: String? = null,

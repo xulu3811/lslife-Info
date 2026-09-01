@@ -38,41 +38,82 @@ router.post(
       costCards = 2; // 急售标签 2张卡/次
     }
 
-    // 检查并扣除曝光卡
-    const wallet = await prisma.merchantWallet.findUnique({ where: { merchantId: req.userId! } });
-    const retail = wallet?.retailCards || 0;
-    const vip = wallet?.vipCards || 0;
+    // 检查并扣除曝光卡与 PC 余额
+    const merchantWallet = await prisma.merchantWallet.findUnique({ where: { merchantId: req.userId! } });
+    const userWallet = await prisma.userWallet.findUnique({ where: { userId: req.userId! } });
     
-    if (retail + vip < costCards) {
-      throw new ApiError(400, '余额不足，去获取');
+    const retail = merchantWallet?.retailCards || 0;
+    const vip = merchantWallet?.vipCards || 0;
+    const pcBalance = userWallet?.coinBalance || 0;
+    
+    // 扣除逻辑：优先抵扣 vip 卡，其次 retail 卡，最后抵扣 PC (1卡 = 5PC)
+    const PC_PER_CARD = 5;
+    
+    let deductVip = 0;
+    let deductRetail = 0;
+    let deductPc = 0;
+    
+    if (retail + vip >= costCards) {
+      deductVip = Math.min(vip, costCards);
+      deductRetail = costCards - deductVip;
+    } else {
+      deductVip = vip;
+      deductRetail = retail;
+      const remainingCards = costCards - vip - retail;
+      deductPc = remainingCards * PC_PER_CARD;
+      
+      if (pcBalance < deductPc) {
+        throw new ApiError(400, '曝光卡及 PC 余额均不足，请先充值');
+      }
     }
 
-    const deductVip = Math.min(vip, costCards);
-    const deductRetail = costCards - deductVip;
+    await prisma.$transaction(async (tx) => {
+      // 1. 扣除曝光卡
+      if (deductVip > 0 || deductRetail > 0) {
+        await tx.merchantWallet.upsert({
+          where: { merchantId: req.userId! },
+          update: {
+            vipCards: { decrement: deductVip },
+            retailCards: { decrement: deductRetail }
+          },
+          create: {
+            merchantId: req.userId!,
+            vipCards: 0,
+            retailCards: 0
+          }
+        });
 
-    await prisma.merchantWallet.upsert({
-      where: { merchantId: req.userId! },
-      update: {
-        vipCards: { decrement: deductVip },
-        retailCards: { decrement: deductRetail }
-      },
-      create: {
-        merchantId: req.userId!,
-        vipCards: 0,
-        retailCards: 0
+        await tx.cardTransaction.create({
+          data: {
+            userId: req.userId!,
+            type: 'DEDUCT',
+            amount: deductVip + deductRetail,
+            retailBefore: retail,
+            retailAfter: retail - deductRetail,
+            vipBefore: vip,
+            vipAfter: vip - deductVip,
+            reason: `购买帖子推广 (${type})抵扣`
+          }
+        });
       }
-    });
 
-    await prisma.cardTransaction.create({
-      data: {
-        userId: req.userId!,
-        type: 'DEDUCT',
-        amount: costCards,
-        retailBefore: retail,
-        retailAfter: retail - deductRetail,
-        vipBefore: vip,
-        vipAfter: vip - deductVip,
-        reason: `购买帖子推广 (${type})`
+      // 2. 扣除 PC
+      if (deductPc > 0) {
+        await tx.userWallet.upsert({
+          where: { userId: req.userId! },
+          update: { coinBalance: { decrement: deductPc } },
+          create: { userId: req.userId!, coinBalance: 0, totalRecharged: 0 }
+        });
+
+        await tx.walletLog.create({
+          data: {
+            userId: req.userId!,
+            amount: -deductPc,
+            balanceAfter: pcBalance - deductPc,
+            tradeType: 'CONSUME_PROMOTION',
+            relatedBizId: postId
+          }
+        });
       }
     });
 
@@ -96,7 +137,7 @@ router.post(
     } else if (type === 'TAG') {
       await prisma.post.update({
         where: { id: postId },
-        data: { isUrgent: true }
+        data: { isUrgent: true, isSponsored: true }
       });
       await prisma.promotionTask.create({
         data: {
@@ -161,6 +202,9 @@ router.get(
     const wallet = await prisma.merchantWallet.findUnique({ where: { merchantId: req.userId! } });
     const bumpCards = (wallet?.retailCards || 0) + (wallet?.vipCards || 0);
 
+    const userWallet = await prisma.userWallet.findUnique({ where: { userId: req.userId! } });
+    const pcBalance = userWallet?.coinBalance || 0;
+
     // 随机生成同行击败率 (只是营销噱头)
     const beatRate = 15 + Math.floor(Math.random() * 60); // 15% - 75%
 
@@ -169,7 +213,8 @@ router.get(
       contactViews: Math.floor(totalViews * 0.1), // 模拟联系次数
       totalFavorites,
       beatRate,
-      bumpCards
+      bumpCards,
+      pcBalance
     });
   })
 );
