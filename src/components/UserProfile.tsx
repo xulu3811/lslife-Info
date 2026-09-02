@@ -31,7 +31,7 @@ const SEED_NOTIFICATIONS: AppNotification[] = [
     id: 'sys-1',
     type: 'system',
     title: '🎉 实名认证成功 · 奖励已到账',
-    content: '您的个人实名认证已绑定，同城清远为您解锁 “金牌吃货” 尊贵特权！',
+    content: '您的个人实名认证已绑定，清远同城为您解锁 “金牌吃货” 尊贵特权！',
     timestamp: '昨天 18:30',
     read: true,
   },

@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
                     androidx.compose.material3.AlertDialog(
                         onDismissRequest = { showPermissionRationale.value = false },
                         title = { androidx.compose.material3.Text("需要通知权限") },
-                        text = { androidx.compose.material3.Text("为了防止您错过同城买家/商家的私聊和订单通知，请允许同城清远发送系统通知。") },
+                        text = { androidx.compose.material3.Text("为了防止您错过同城买家/商家的私聊和订单通知，请允许清远同城发送系统通知。") },
                         confirmButton = {
                             androidx.compose.material3.TextButton(onClick = {
                                 showPermissionRationale.value = false

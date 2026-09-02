@@ -32,7 +32,7 @@ const aliyunProvider: SmsProvider = {
     const params = {
       RegionId: "cn-hangzhou",
       PhoneNumbers: phone,
-      SignName: process.env.ALIYUN_SMS_SIGN_NAME || '同城清远',
+      SignName: process.env.ALIYUN_SMS_SIGN_NAME || '清远同城',
       TemplateCode: process.env.ALIYUN_SMS_TEMPLATE_CODE || 'SMS_000000',
       TemplateParam: JSON.stringify({ code })
     };

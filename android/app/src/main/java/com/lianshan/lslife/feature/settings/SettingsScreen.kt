@@ -219,7 +219,7 @@ fun SettingsScreen(
                 )
                 SettingsActionRow(
                     icon = Icons.Outlined.Info,
-                    title = "关于同城清远",
+                    title = "关于清远同城",
                     subtitle = "当前版本 v${BuildConfig.VERSION_NAME}",
                     onClick = onOpenAbout,
                     showDivider = false

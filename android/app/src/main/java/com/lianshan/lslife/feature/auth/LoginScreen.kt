@@ -120,7 +120,7 @@ fun LoginScreen(
 
                 // 品牌主标题
                 Text(
-                    text = "同城清远",
+                    text = "清远同城",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Medium,
                     letterSpacing = 0.5.sp,

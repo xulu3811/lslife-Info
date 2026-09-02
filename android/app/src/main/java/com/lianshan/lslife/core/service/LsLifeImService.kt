@@ -114,7 +114,7 @@ class LsLifeImService : Service() {
         )
 
         val notification: Notification = NotificationCompat.Builder(this, LsLifeApplication.CHANNEL_ID_FOREGROUND)
-            .setContentTitle("同城清远生活：即时通信守护中")
+            .setContentTitle("清远同城生活：即时通信守护中")
             .setContentText("保持交易沟通长连接，保护对话隐私与订单通知不漏回")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setPriority(NotificationCompat.PRIORITY_LOW)

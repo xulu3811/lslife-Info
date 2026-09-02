@@ -1,10 +1,10 @@
-﻿# 同城清远 (Qingyuan Smart Local Life Service Platform) - V9.0 深度交接与架构总结文档
+﻿# 清远同城 (Qingyuan Smart Local Life Service Platform) - V1.0 深度交接与架构总结文档
 
 ## 📌 项目定位与当前状态 (Project State & Objective Reality)
 本项目是一款针对县域级市场（目标覆盖人口 3~10 万，高并发支撑 3 万）量身打造的**纯净本地同城分类信息与生活服务平台**。
 
-历经多个版本的硬核迭代，目前项目已全面跨越至 **V9.0 (Material 3 重构与架构补全版)**。
-我们在 V8.0 品牌重塑的基础上，彻底完成了 Web 管理后台的现代化改造，并成功构建了 Android 客户端的 OTA 自动升级闭环：
+历经多个版本的硬核迭代，目前项目已全面跨越至 **V1.0 (Material 3 重构与架构补全版)**。
+我们在 V1.0 品牌重塑的基础上，彻底完成了 Web 管理后台的现代化改造，并成功构建了 Android 客户端的 OTA 自动升级闭环：
 1. **Web 管理后台彻底重构为 Google Material 3 规范**：废弃了早期冗余且割裂的浮雕、玻璃拟态样式（Tailwind + CSS 混编），统一升级为原汁原味的 Google Workspace 风格。所有页面（包括 dashboard、实名认证审核、用户管理、系统安全控制、App版本管理、分类管理等）已实现高度一致的设计语言。
 2. **Dashboard 科技感数据大屏**：打通了 `/admin/server-status` 与前端 Dashboard，实现了高频轮询展示服务器 CPU、内存、磁盘以及 PM2 后端进程存活状态的实时监控图表。
 3. **OTA 热更新极速触达与闭环**：完善了 Web 端的 APK 拖拽/上传、MD5 校验与 URL 回填功能。客户端通过 WebSocket 实时监听 `APP_UPDATE_AVAILABLE` 指令，实现了后台一键强制或静默发版。
@@ -51,7 +51,7 @@
 
 ## 🛑 平台红线与开发原则 (Core Platform Rules)
 
-> **以下为同城清远体系的绝对红线，任何 Agent 或开发者不得违背：**
+> **以下为清远同城体系的绝对红线，任何 Agent 或开发者不得违背：**
 
 1. **纯信息发布平台，严禁电商闭环**：
    - 本项目定位于纯信息发布平台，绝对**不提供**在线电商交易闭环。
@@ -73,7 +73,7 @@
 ```powershell
 $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"; cd android; .\gradlew.bat clean assembleRelease -x lintVitalAnalyzeRelease --no-daemon
 ```
-*(默认输出路径：`D:\GitHub-lslife-V6.0\android\app\build\outputs\apk\release\app-release.apk`)*
+*(默认输出路径：`D:\GitHub-lslife-V1.0\android\app\build\outputs\apk\release\app-release.apk`)*
 
 **服务端 Web 编译与后端安全部署指令 (需在 admin-web / backend 目录执行)**：
 ```powershell
@@ -88,7 +88,7 @@ node deploy_clean.mjs  # 若修改了后端逻辑
 
 ## 🎯 二次开发交接与下一阶段任务 (Next Stage Handover)
 
-在下一轮开启的新对话中，新接手的架构师/Agent 请基于当前完美的 **V9.0** 基准代码，立刻推进以下硬核攻坚战：
+在下一轮开启的新对话中，新接手的架构师/Agent 请基于当前完美的 **V1.0** 基准代码，立刻推进以下硬核攻坚战：
 
 1. **层级地址选择器 UI 落地 (Cascading Address Picker)**
    - **目标**：在 Android 客户端的发帖页面、同城动态发布页、商家入驻页，实现一套基于“省-市-县-镇”四级的滑动选择器（配合 Material 3 BottomSheet）。

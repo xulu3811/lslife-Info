@@ -43,7 +43,7 @@ router.post(
       orderNo: subscriptionNo,
       amount: plan.price,
       channel: channel as PayChannel,
-      description: `同城清远-${plan.name}`,
+      description: `清远同城-${plan.name}`,
     });
 
     const payment = await prisma.payment.create({

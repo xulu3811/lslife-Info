@@ -25,9 +25,9 @@ import com.qingyuan.lslife.ui.theme.Dimens
 
 @Composable
 fun AboutScreen(onBack: () -> Unit) {
-    InfoPage(title = "关于同城清远", onBack = onBack) {
+    InfoPage(title = "关于清远同城", onBack = onBack) {
         Text(
-            "同城清远",
+            "清远同城",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -42,7 +42,7 @@ fun AboutScreen(onBack: () -> Unit) {
             style = MaterialTheme.typography.bodyMedium,
         )
         Text(
-            "© 2026 同城清远 · 智慧同城生活平台",
+            "© 2026 清远同城 · 智慧同城生活平台",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

@@ -94,7 +94,7 @@ Antigravity 二次开发把系统从「C 端同城 App + mock 后端」推进到
 | 主机 | `iv-yeckqap0cgcva4hay1hj`，Ubuntu，kernel 6.8 |
 | 运行用户 | `lslife`（免密 SSH OK） |
 | 应用目录 | `/home/lslife/lslife-backend` |
-| Node | v20.19.5（用户空间） |
+| Node | V1.0（用户空间） |
 | 进程 | PM2 `lslife-api` **4 instances / cluster**，uptime ~16h，重启计数 10 |
 | 监听 | `:4000` 全网；Postgres `127.0.0.1:5432`；Nginx 80/443 |
 | 健康 | 本机与公网 HTTPS 均 `status:up` |

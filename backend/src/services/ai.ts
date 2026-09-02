@@ -42,7 +42,7 @@ const mockProvider: AiProvider = {
       .slice(0, 2);
     return {
       reply:
-        `您好！我是同城清远智能助手。收到您的需求「${prompt}」。\n\n` +
+        `您好！我是清远同城智能助手。收到您的需求「${prompt}」。\n\n` +
         '为您推荐清远壮族瑶族自治县的本地好物，点击卡片可直接下单体验哦！',
       recommendations: foodPicks,
     };

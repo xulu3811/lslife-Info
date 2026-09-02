@@ -1,85 +1,77 @@
-﻿# 同城清远 (Qingyuan Smart Local Life Service Platform) - V8.36 深度交接与架构总结文档
+# 🏢 清远智慧同城生活服务平台项目 (V1.0) 深度交接与全栈架构白皮书
 
-## 📌 项目定位与当前状态 (Project State & Objective Reality)
-本项目是一款针对县域级市场（目标覆盖人口 3~10 万，高并发支撑 3 万）量身打造的**纯净本地同城分类信息与生活服务平台**。
-
-历经多个版本的硬核迭代，项目已全面跨越至 **V8.36 (原生秒开与全系 Material 3 纯净视觉版)**。
-在重构了 Web 管理后台和完善 OTA 自动升级闭环后，近期我们在客户端层面的极致性能与 UI 统一上取得了决定性成果：
-1. **商业推广模块彻底 M3 化**：对“我的钱包”、“超级会员”、“推广中心”等核心页面进行了彻底重构。移除了早期的“淘宝式大红尖角标签”与硬编码颜色，全系采用 MaterialTheme.colorScheme 的 primaryContainer、	ertiaryContainer 等动态语义色。
-2. **全局货币符号精简**：通过底层 strings.xml 将全站的“清远币”统一重构为极简的 **PC**，并重绘了单行平滑式的资产概览卡片，UI 空间利用率大幅提升。
-3. **首页秒开架构 (Offline-First Cache)**：引入本地强缓存引擎，冷启动 **0毫秒瞬间渲染** 首页瀑布流历史数据，彻底终结了 1-2 秒的骨架屏等待期。
-4. **原生轻量化 GPS 引擎**：彻底抛弃高德/腾讯等沉重的 LBS 地图 SDK，使用纯粹的原生 LocationManager 结合正则提取算法，直接输出“镇/街道”级纯文本。
+> **文档用途**：本白皮书旨在为下一次会话（Secondary Development）的新 Agent 或架构师提供最详尽、最底层的系统全景图。请下一任接手者仔细阅读本说明，以保证项目风格与底层逻辑的绝对延续。
 
 ---
 
-## 🏗 核心模块、业务逻辑与算法 (Core Architecture & Logic)
+## 📌 一、 项目定位与当前状态 (Project State)
 
-### 1. 首页秒开与本地强缓存引擎 (Offline-First Cache)
-*   **极致体验**：利用 SharedPreferences + Kotlinx Serialization 将首页推荐列表静默落盘。ViewModel 在 init 阶段瞬间反序列化并渲染数据，实现“断网可见、秒级开屏”，后台再静默覆盖最新数据。
-
-### 2. 轻量化原生位置解析算法 (Native Geolocation)
-*   **脱离 Map SDK**：封装 LocationHelper.kt。
-*   **正则行政区划提取**：通过正则 (?<=县|区|市)[^县区市]+?(镇|街道|乡) 直接将地理位置转换为下沉市场用户最关心的乡镇级纯文本，极大幅度减小了 APK 包体积和内存占用。
-
-### 3. 千人千面：基于 JSONB 的动态属性表单 (Dynamic Attributes Schema)
-*   **非结构化存储**：底层 PostgreSQL 采用 ttributes: Json? 字段，实现免 Schema 变更的无限分类扩展。客户端利用 CategorySchemaRegistry 在 Compose UI 中动态渲染多选标签与表单。
-
-### 4. 深度即时通讯与区块链级交易存证 (Deep IM & Blockchain Storage)
-*   **安全通信协议**：基于 WebSocket 直连，后端执行 **AES-256-CBC** 对称加密。利用上一条消息的哈希值计算 **SHA-256 级联哈希**，构建不可篡改的消息证据链。
-
-### 5. 统一合规审批流与发布拦截 (Unified Approval & Risk Control)
-*   **强鉴权拦截**：Node.js 后端强行挂载风控中间件，系统通过 AI_REVIEWING -> MANUAL_REVIEWING -> PUBLISHED 的严格状态机控制非法内容外流。
+本项目定位于**县域下沉市场的纯净版同城分类信息与生活服务撮合平台**。
+在最近的研发迭代中，项目完成了以下决定性跨越：
+1. **全面跨入 V1.0 商业级基线**：全盘清除了历史版本的技术债与遗留硬编码字眼，正式更名为“清远同城 V1.0”，并已全套输出《软件著作权》所需的 60 页源代码鉴别材料与设计说明书文档。
+2. **发布系统UI的美学重构**：彻底重构了发布界面的 `CategoryTreeBottomSheet`。全面拥抱 Material 3，引入了胶囊状紧凑型搜索栏（44.dp）、无边框 Surface 视觉流、以及基于 `primaryContainer` 的左侧动态导航高亮，UI 尺寸完美对齐首页骨架比例。
 
 ---
 
-## 💻 技术栈底座 (Technology Stack)
+## 🏗 二、 核心底层逻辑与独家算法 (Core Logic & Algorithms)
 
-### Android 客户端 (Frontend)
-*   **语言 / 核心 SDK**: Kotlin / Min SDK 24 / Target SDK 34 / JDK 17
-*   **UI 框架**: Jetpack Compose / Material3 / 响应式动态色彩主题
-*   **架构**: MVVM / MVI 单向数据流 / Dagger Hilt 依赖注入 / Coroutines & StateFlow
-*   **网络与持久化**: Retrofit2 / OkHttp3 / WebSockets / Room DB (本地聊天缓存)
+### 1. 首页秒开：本地强缓存引擎 (Offline-First Cache)
+- **底层逻辑**：针对下沉市场网络波动的痛点，抛弃传统的每次冷启动 Fetch 策略。
+- **技术实现**：利用 `SharedPreferences` 结合 `Kotlinx Serialization` 将首页推荐流静默落盘。在 `ViewModel.init` 阶段，瞬间（0毫秒）反序列化并渲染上一帧历史数据，实现“断网可见、秒级开屏”，随后后台静默获取最新数据并平滑覆盖。
 
-### 服务端 Web 与 API (Backend)
-*   **环境 / 框架**: Node.js / Express / TypeScript / PM2 热载托管
-*   **Web 框架 (admin-web)**: React / Vite / 纯 CSS3 自定义 M3 样式
-*   **数据库 / ORM**: PostgreSQL (5432) / Prisma ORM
-*   **服务器端点**: API BaseURL: https://mentalhlp.site/api/
+### 2. 脱钩地图SDK：原生轻量化位置解析 (Native Geolocation Regex)
+- **底层逻辑**：严格遵从轻量化红线，坚决不接入高德/百度等沉重的第三方 LBS SDK，以防 App 极度膨胀。
+- **技术实现**：封装 `LocationHelper.kt`，调用纯粹的原生 `LocationManager`。获取反向地理编码后，利用极简正则算法 `(?<=县|区|市)[^县区市]+?(镇|街道|乡)` 直接抽取出用户最关心的“乡镇级”纯文本标签。
 
----
+### 3. 千人千面：无模式动态属性表单 (Schemaless JSONB)
+- **底层逻辑**：房产、二手车、家政需要的表单字段截然不同，无法通过传统二维表固化。
+- **技术实现**：PostgreSQL 底层统一采用 `attributes: JsonB?` 字段。Android 客户端基于 `CategorySchemaRegistry` 动态下发并渲染多选标签与输入表单，实现无限垂直品类的免发版扩展。
 
-## 🛑 平台红线与开发原则 (Core Platform Rules)
-
-> **以下为同城清远体系的绝对红线，新接手的 Agent 或开发者不得违背：**
-
-1. **纯信息发布平台，严禁电商闭环**：
-   - 定位于纯信息发布与撮合平台，绝对**不提供**在线电商商品交易闭环。
-   - 严禁引入“购物车 (CartItem)”、“订单 (Order)”、“物流发货 (Delivery)”表结构。
-   - 支付仅限平台虚拟货币 (PC) 的充值及购买平台增值服务（发帖配额、置顶）。
-2. **轻量化位置体系，坚决废弃 LBS 地图 SDK**：
-   - 严禁引入任何第三方重型地图 SDK。只能使用 Android 原生定位框架或纯文本解析。
-3. **严格遵守 Material 3 设计语言**：
-   - Android 端必须使用 MaterialTheme.colorScheme 中的动态语义色，严禁在业务模块中重新定义“淘宝红”、“硬编码白”等破坏全局深浅色切换的颜色。所有组件需保持留白与高级感。
+### 4. 铁壁防御：加密与区块链级存证 (Crypto & Hash Chain)
+- **底层逻辑**：保障买卖双方的商业沟通绝对私密与防抵赖。
+- **技术实现**：基于 WebSocket 直连，Node.js 侧强制使用 **AES-256-CBC** 对称加密所有聊天载荷。同时，利用上一条消息的哈希值计算本条消息的 **SHA-256 级联哈希**，构建不可篡改的消息证据链条。
 
 ---
 
-## 🚀 自动化编译与发版指引 (Build Rules)
+## 💻 三、 全栈技术栈清单 (Technology Stack)
 
-**客户端安全编译指令 (必须在 PowerShell 中执行)**：
-为了防止内存溢出、文件锁死、Hilt 增量缓存失效以及中文乱码（Mojibake），请**强制**使用以下 Clean 全量构建指令（并避免使用 PowerShell 原生字符串替换包含中文的文件，请使用 Python 或专用工具）：
-`powershell
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"; cd d:\GitHub-lslife-V6.0\android; .\gradlew.bat clean assembleRelease -x lintVitalAnalyzeRelease --no-daemon --no-configuration-cache
-`
+### 📱 客户端 (Android / Kotlin)
+- **核心基座**: Kotlin, JDK 17, Target SDK 34, Min SDK 24。
+- **UI & 动效**: Jetpack Compose, Material 3 动态语义色彩。
+- **架构范式**: MVI 单向数据流 (StateFlow), MVVM, Dagger Hilt 依赖注入, Coroutines 并发。
+- **网络与缓存**: Retrofit2, OkHttp3, Room DB (用于本地高并发聊天日志缓存)。
+
+### 🌐 服务端 (Node.js / Express)
+- **运行环境**: Node.js v20+, TypeScript 强类型约束, PM2 进程守护。
+- **API 范式**: Express.js 提供高并发 RESTful API，挂载严格的 Auth 中间件与风控体系。
+- **持久化层**: Prisma ORM, PostgreSQL (5432) 提供事务与 JSONB 高级查询支持。
+
+### 🖥 后台管控台 (Admin-Web)
+- **Web 栈**: React 18, Vite 构建, 纯 CSS3 手撸的类 M3 后台皮肤（不依赖沉重的组件库以保证极速响应）。
 
 ---
 
-## 🎯 二次开发交接与下一阶段任务 (Next Stage Handover)
+## 🛑 四、 系统红线与接手原则 (Red Lines)
 
-基于当前极具高级感和流畅度的 **V8.36** 基线代码，下一轮开启新对话的架构师/Agent 请立刻推进以下攻坚战：
+> **接替本项目的下一代 Agent 或架构师，在编码时必须时刻默念以下三大红线：**
+
+1. **绝对纯粹的撮合平台，严禁涉足电商闭环！**
+   - 绝不允许在数据库中新建任何如 `ShoppingCart` (购物车) 或 `OrderDelivery` (物流发货) 的表结构。平台仅提供虚拟货币 (PC) 进行推广位购买。
+2. **坚守原生轻量定位，严禁引入第三方 LBS 依赖！**
+   - 不允许在 `build.gradle` 中引入任何臃肿的第三方地图包。
+3. **M3 动态色彩纪律，严禁写死颜色！**
+   - Compose 中不允许出现 `Color(0xFFFF0000)` 之类的硬编码。所有组件背景与字体颜色必须从 `MaterialTheme.colorScheme` (如 `primaryContainer`, `onSurfaceVariant`) 中提取，以支持系统级深浅色主题无缝切换。
+
+---
+
+## 🚀 五、 下一阶段二次开发核心任务 (Next Tasks)
+
+新对话开启后，请优先从以下硬骨头着手推进：
 
 1. **纯文本层级地址选择器 UI 落地 (Cascading Address Picker)**
-   - **状态**：目前“一键获取原生定位”已在首页和发布页跑通，且自动提取乡镇。
-   - **目标**：用户在发帖页如果定位失败，需要手动点击“请选择 >”，此时必须弹出一个基于“省-市-县-镇”四级的滑动/列表选择器（结合 M3 BottomSheet）。纯本地化文本驱动，无需地图渲染。
-2. **Prisma 数据库迁移与新字段同步**
-   - **目标**：确保线上 PostgreSQL 环境 (
-px prisma db push) 结构与 Schema 同步，为下一阶段的新业务（如商家入驻扩展字段）做好准备。
+   - **场景**：目前系统仅支持“一键GPS定位”。当定位失败时，用户需要手动选择乡镇。
+   - **任务**：在 `PublishScreen` (发帖页)，实现一个基于纯本地数据的“省-市-县-镇”四级滑动/列表选择器（结合 M3 `ModalBottomSheet`）。纯文本驱动，无需网络和地图渲染。
+2. **Prisma 数据库的线上演进 (Schema Sync)**
+   - **任务**：随着 V1.0 业务的展开，需对线上 PostgreSQL 进行 `npx prisma db push` 操作，以安全地同步可能扩容的商家扩展字段，为后续的企业蓝V认证做准备。
+3. **PowerShell 增量编译与防乱码规范 (Safe Build)**
+   - **注意**：Android 编译时，必须使用命令 `$env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"; .\gradlew.bat clean assembleRelease ...`，严禁使用原生 PowerShell 直接做源码的字符替换（会引发 GBK/UTF-8 Mojibake 乱码灾难），务必使用 Python 脚本处理源码修改。

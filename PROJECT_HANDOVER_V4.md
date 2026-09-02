@@ -1,15 +1,15 @@
-# 同城清远 (Qingyuan Smart Local Life Service Platform) - V4.00 深度交接与架构总结文档
+# 清远同城 (Qingyuan Smart Local Life Service Platform) - V1.0 深度交接与架构总结文档
 
 ## 📌 项目定位与当前演进状态 (Project State & Evolution)
 本项目是一款专注于县域级市场（下沉市场，覆盖人口 3~10 万，支撑 3 万高并发）的高端**本地同城分类信息与生活服务平台**。
 
-历经多个大版本的爆发式迭代，项目现已全面进化至 **V4.00 (全栈深度重构与 Joybuy 级极简美学版)**。
-在具备区块链防篡改存证与高保真实物抠图的基底上，V4.00 实现了三大核爆级跨越：
+历经多个大版本的爆发式迭代，项目现已全面进化至 **V1.0 (全栈深度重构与 Joybuy 级极简美学版)**。
+在具备区块链防篡改存证与高保真实物抠图的基底上，V1.0 实现了三大核爆级跨越：
 1. **基于 DeepSeek AI 引擎的先审后发双重风控系统**；
 2. **底层基于 Postgres JSONB 的动态发布属性架构**；
 3. **客户端界面彻底向国际化 Joybuy/Uber 式 3D Soft UI (软阴影极简美学) 的颠覆性升级**。
 
-当前系统已完成全链路修复与测试，服务端平稳运行于阿里云，客户端最新产物为 `LsLife-v4.00-release.apk`。
+当前系统已完成全链路修复与测试，服务端平稳运行于阿里云，客户端最新产物为 `LsLife-V1.0-release.apk`。
 
 ---
 
@@ -69,7 +69,7 @@
 
 ## 🚀 自动化编译、发版与规范 (Build & Routing Rules)
 
-*   **发版归档**：Release 编译产物统一归档至 `D:\LsLife\releases\` 目录。项目根目录 `version.properties` 会在打包时自动递增 VersionCode（最新包为 V4.00 架构版本）。
+*   **发版归档**：Release 编译产物统一归档至 `D:\LsLife\releases\` 目录。项目根目录 `version.properties` 会在打包时自动递增 VersionCode（最新包为 V1.0 架构版本）。
 *   **标准编译指令 (必须在 PowerShell 中执行)**：
   ```powershell
   $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"; .\gradlew.bat assembleRelease -x lintVitalAnalyzeRelease
@@ -81,7 +81,7 @@
 
 ## 🎯 二次开发交接与下一阶段指引 (Next Stage Handover)
 
-接手此项目进行**二次开发**的架构师/Agent，请基于当前极度稳定、高度唯美的 V4.00 盘，优先规划并开启以下新工作：
+接手此项目进行**二次开发**的架构师/Agent，请基于当前极度稳定、高度唯美的 V1.0 盘，优先规划并开启以下新工作：
 
 1. **动态属性表单 (Dynamic Attributes) 的深度透出**
    - 当前底层 JSONB 与发布端已支持。下一阶段需要在 `PostDetailScreen` (商品详情页) 中，将这些存入 JSONB 的动态属性（如“成色：99新”、“月薪：5k-8k”）优雅地渲染展示出来。

@@ -1,0 +1,3006 @@
+# 清远智慧同城生活服务平台 V1.0 - 源代码鉴别材料
+
+此文件为提取的前连续30页与后连续30页源代码（每页50行，合计3000行）。
+
+```text
+package com.qingyuan.lslife
+import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
+import dagger.hilt.android.HiltAndroidApp
+@HiltAndroidApp
+class LsLifeApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannels()
+    }
+    private fun createNotificationChannels() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERV...
+            try {
+                notificationManager.deleteNotificationChannel("lslife_im_channel...
+                notificationManager.deleteNotificationChannel("lslife_im_channel...
+                notificationManager.deleteNotificationChannel("lslife_im_channel...
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            val imChannel = NotificationChannel(
+                CHANNEL_ID_IM,
+                "即时通信新消息提醒",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "接收同城买家、商家及业务订单的实时聊天弹窗与横幅提示"
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 250, 200, 250)
+                enableLights(true)
+                setShowBadge(true)
+                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLI...
+                val soundUri = android.media.RingtoneManager.getDefaultUri(andro...
+                val audioAttributes = android.media.AudioAttributes.Builder()
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_S...
+                    .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_C...
+                    .build()
+                setSound(soundUri, audioAttributes)
+            }
+            val fgChannel = NotificationChannel(
+                CHANNEL_ID_FOREGROUND,
+                "即时通信后台守护服务",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "保持即时通信长连接在应用挂起或后台时的持续运作，防止漏回商机"
+                enableVibration(false)
+                setShowBadge(false)
+            }
+            notificationManager.createNotificationChannels(listOf(imChannel, fgC...
+        }
+    }
+    companion object {
+        const val CHANNEL_ID_IM = "lslife_im_channel_v4"
+        const val CHANNEL_ID_FOREGROUND = "lslife_foreground_service"
+    }
+}
+package com.qingyuan.lslife
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.getValue
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.qingyuan.lslife.core.model.ThemeMode
+import com.qingyuan.lslife.feature.settings.UpdateDialog
+import com.qingyuan.lslife.feature.settings.UpdateViewModel
+import com.qingyuan.lslife.ui.LsLifeApp
+import com.qingyuan.lslife.ui.SessionViewModel
+import com.qingyuan.lslife.ui.theme.LsLifeTheme
+import dagger.hilt.android.AndroidEntryPoint
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+    private val sessionViewModel: SessionViewModel by viewModels()
+    private val updateViewModel: UpdateViewModel by viewModels()
+    private val showPermissionRationale = kotlinx.coroutines.flow.MutableStateFl...
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (!isGranted) {
+            showPermissionRationale.value = true
+        }
+    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        requestNotificationPermission()
+        handleChatIntent(intent)
+        setContent {
+            val themeMode by sessionViewModel.themeMode.collectAsStateWithLifecy...
+            val isLoggedIn by sessionViewModel.isLoggedIn.collectAsStateWithLife...
+            val updateInfo by updateViewModel.updateInfo.collectAsStateWithLifec...
+            val useDarkTheme = when (themeMode) {
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+            }
+            androidx.compose.runtime.LaunchedEffect(isLoggedIn) {
+                if (isLoggedIn == true) {
+                    updateViewModel.checkForUpdate()
+                }
+            }
+            LsLifeTheme(darkTheme = useDarkTheme) {
+                LsLifeApp(sessionViewModel = sessionViewModel)
+                val showRationale by showPermissionRationale.collectAsStateWithL...
+                if (showRationale) {
+                    androidx.compose.material3.AlertDialog(
+                        onDismissRequest = { showPermissionRationale.value = fal...
+                        title = { androidx.compose.material3.Text("需要通知权限") },
+                        text = { androidx.compose.material3.Text("为了防止您错过同城买家/商家...
+                        confirmButton = {
+                            androidx.compose.material3.TextButton(onClick = {
+                                showPermissionRationale.value = false
+                                val intent = Intent(android.provider.Settings.AC...
+                                    putExtra(android.provider.Settings.EXTRA_APP...
+                                }
+                                startActivity(intent)
+                            }) {
+                                androidx.compose.material3.Text("去设置开启")
+                            }
+                        },
+                        dismissButton = {
+                            androidx.compose.material3.TextButton(onClick = { sh...
+                                androidx.compose.material3.Text("暂不")
+                            }
+                        }
+                    )
+                }
+                if (updateInfo != null) {
+                    UpdateDialog(
+                        versionInfo = updateInfo!!,
+                        viewModel = updateViewModel,
+                        onDismiss = {
+                            updateViewModel.dismissUpdate()
+                        }
+                    )
+                }
+            }
+        }
+    }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleChatIntent(intent)
+    }
+    private fun handleChatIntent(intent: Intent?) {
+        val sessionId = intent?.getStringExtra("navigate_to_chat_session_id")
+        val senderId = intent?.getStringExtra("navigate_to_chat_sender_id") ?: "...
+        val senderName = intent?.getStringExtra("navigate_to_chat_sender_name") ...
+        if (!sessionId.isNullOrBlank()) {
+            sessionViewModel.triggerNavigateToChat(sessionId, senderId, senderNa...
+            intent.removeExtra("navigate_to_chat_session_id")
+        }
+    }
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST...
+                if (shouldShowRequestPermissionRationale(Manifest.permission.POS...
+                    showPermissionRationale.value = true
+                } else {
+                    try {
+                        requestPermissionLauncher.launch(Manifest.permission.POS...
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
+    }
+}
+package com.qingyuan.lslife.core.config
+object AppConfig {
+}
+package com.qingyuan.lslife.core.data
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import java.io.InputStreamReader
+import javax.inject.Inject
+import javax.inject.Singleton
+@Serializable
+data class AddressNode(
+    val code: String,
+    val name: String,
+    val children: List<AddressNode>? = null
+)
+@Singleton
+class AddressManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
+    private var rootNodes: List<AddressNode>? = null
+    private val json = Json { ignoreUnknownKeys = true }
+    suspend fun getAddresses(): List<AddressNode> = withContext(Dispatchers.IO) ...
+        if (rootNodes != null) {
+            return@withContext rootNodes!!
+        }
+        try {
+            context.assets.open("pcas.json").use { inputStream ->
+                val jsonString = InputStreamReader(inputStream).readText()
+                rootNodes = json.decodeFromString<List<AddressNode>>(jsonString)
+                rootNodes!!
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+}
+package com.qingyuan.lslife.core.data
+import com.qingyuan.lslife.core.model.LoginResult
+import com.qingyuan.lslife.core.model.User
+import com.qingyuan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.LoginRequest
+import com.qingyuan.lslife.core.network.RealNameRequest
+import com.qingyuan.lslife.core.network.RegisterRequest
+import com.qingyuan.lslife.core.network.safeCall
+import com.qingyuan.lslife.core.network.ResetPasswordRequest
+import com.qingyuan.lslife.core.network.SendEmailCodeRequest
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
+@Singleton
+class AuthRepository @Inject constructor(
+    private val api: ApiService,
+    private val tokenStore: TokenStore,
+) {
+    val isLoggedIn: Flow<Boolean> = tokenStore.tokenFlow.map { it != null }
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
+    fun cachedMe(): User? = _currentUser.value
+    suspend fun register(phone: String, email: String, password: String, nicknam...
+        safeCall { api.register(RegisterRequest(phone, email, password, nickname...
+            .onSuccess { tokenStore.save(it.token) }
+    suspend fun sendEmailCode(email: String): Result<Map<String, String>> =
+        safeCall { api.sendEmailCode(SendEmailCodeRequest(email)) }
+    suspend fun resetPassword(email: String, code: String, newPassword: String):...
+        safeCall { api.resetPassword(ResetPasswordRequest(email, code, newPasswo...
+    suspend fun login(phone: String, password: String): Result<LoginResult> =
+        safeCall { api.login(LoginRequest(phone, password)) }
+            .onSuccess { tokenStore.save(it.token) }
+    suspend fun changePassword(oldPassword: String, newPassword: String): Result...
+        safeCall { api.changePassword(com.qingyuan.lslife.core.network.ChangePas...
+    suspend fun me(): Result<User> = safeCall { api.me() }.onSuccess { _currentU...
+    suspend fun performOcr(imageUrl: String): Result<com.qingyuan.lslife.core.ne...
+        safeCall { api.performOcr(com.qingyuan.lslife.core.network.OcrRequest(im...
+    suspend fun realName(name: String, idCard: String, idCardFrontImage: String?...
+        safeCall { api.realName(RealNameRequest(name, idCard, idCardFrontImage, ...
+    suspend fun updateProfile(nickname: String?, avatar: String?): Result<User> ...
+        safeCall { api.updateProfile(com.qingyuan.lslife.core.model.ProfileUpdat...
+    suspend fun logout() {
+        _currentUser.value = null
+        tokenStore.clear()
+    }
+}
+package com.qingyuan.lslife.core.data
+import com.qingyuan.lslife.core.model.CategoryNode
+import com.qingyuan.lslife.core.model.CategorySchemaResponse
+import com.qingyuan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.safeCall
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
+@Singleton
+class CategoryRepository @Inject constructor(
+    private val api: ApiService
+) {
+    private val _categoryTree = MutableStateFlow<List<CategoryNode>>(emptyList()...
+    val categoryTree: StateFlow<List<CategoryNode>> = _categoryTree.asStateFlow(...
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading.asStateFlow()
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+    private val schemaCache = mutableMapOf<String, CategorySchemaResponse>()
+    suspend fun getCategoryTree(forceRefresh: Boolean = false): Result<List<Cate...
+        if (!forceRefresh && _categoryTree.value.isNotEmpty()) {
+            return Result.success(_categoryTree.value)
+        }
+        _loading.value = true
+        _error.value = null
+        val res = safeCall { api.getCategoryTree() }
+        _loading.value = false
+        res.onSuccess { tree ->
+            _categoryTree.value = tree
+            _error.value = null
+        }.onFailure { e ->
+            if (_categoryTree.value.isEmpty()) {
+                _error.value = e.message ?: "获取分类数据失败"
+            }
+        }
+        return res
+    }
+    suspend fun getCategorySchema(id: String): Result<CategorySchemaResponse> {
+        schemaCache[id]?.let { return Result.success(it) }
+        val res = safeCall { api.getCategorySchema(id) }
+        res.onSuccess { schemaCache[id] = it }
+        return res
+    }
+    fun findLeafCategoryAndPath(tree: List<CategoryNode>, targetId: String): Pai...
+        fun findNodeAndPath(nodes: List<CategoryNode>, pathPrefix: String): Pair...
+            for (node in nodes) {
+                val currentPath = if (pathPrefix.isEmpty()) node.name else "$pat...
+                if (node.id == targetId) return node to currentPath
+                if (node.children.isNotEmpty()) {
+                    val found = findNodeAndPath(node.children, currentPath)
+                    if (found != null) return found
+                }
+            }
+            return null
+        }
+        val target = findNodeAndPath(tree, "") ?: return null
+        val (node, path) = target
+        if (node.isLeaf) return node to path
+        fun findFirstLeaf(n: CategoryNode, p: String): Pair<CategoryNode, String...
+            if (n.isLeaf) return n to p
+            for (child in n.children) {
+                val found = findFirstLeaf(child, "$p > ${child.name}")
+                if (found != null) return found
+            }
+            return null
+        }
+        return findFirstLeaf(node, path)
+    }
+    fun findFirstLeafAndPath(tree: List<CategoryNode>): Pair<CategoryNode, Strin...
+        fun search(nodes: List<CategoryNode>, pathPrefix: String): Pair<Category...
+            for (node in nodes) {
+                val currentPath = if (pathPrefix.isEmpty()) node.name else "$pat...
+                if (node.isLeaf) {
+                    return Pair(node, currentPath)
+                }
+                if (node.children.isNotEmpty()) {
+                    val found = search(node.children, currentPath)
+                    if (found != null) return found
+                }
+            }
+            return null
+        }
+        return search(tree, "")
+    }
+}
+package com.qingyuan.lslife.core.data
+import android.content.Context
+import com.qingyuan.lslife.core.database.ImDao
+import com.qingyuan.lslife.core.database.LocalConversationEntity
+import com.qingyuan.lslife.core.database.LocalMessageEntity
+import com.qingyuan.lslife.core.network.ApiService
+import com.qingyuan.lslife.core.network.RealtimeClient
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
+@Singleton
+class ImRepository @Inject constructor(
+    private val api: ApiService,
+    private val realtimeClient: RealtimeClient,
+    private val imDao: ImDao,
+    private val authRepository: AuthRepository,
+    @ApplicationContext private val context: Context
+) {
+    private val prefs = context.getSharedPreferences("chat_repo_prefs", Context....
+    private val json = Json { ignoreUnknownKeys = true }
+    val totalUnreadCount: Flow<Int> = imDao.observeTotalUnread().map { it ?: 0 }
+    private val _incomingMessages = kotlinx.coroutines.flow.MutableSharedFlow<St...
+        extraBufferCapacity = 64,
+        onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDES...
+    )
+    val incomingMessages: kotlinx.coroutines.flow.SharedFlow<String> = _incoming...
+    private val _ackEvents = kotlinx.coroutines.flow.MutableSharedFlow<String>(
+        extraBufferCapacity = 64,
+        onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDES...
+    )
+    val ackEvents: kotlinx.coroutines.flow.SharedFlow<String> = _ackEvents
+    @Volatile
+    var activeChatSessionId: String? = null
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.I...
+    fun initRepository() {
+        realtimeClient.connect()
+        repositoryScope.launch {
+            syncConversationsQuietly()
+        }
+    }
+    init {
+        repositoryScope.launch {
+            realtimeClient.events.collect { text ->
+                try {
+                    val obj = json.parseToJsonElement(text).jsonObject
+                    val eventType = obj["event"]?.jsonPrimitive?.content ?: obj[...
+                    when (eventType) {
+                        "FORCE_LOGOUT" -> {
+                            authRepository.logout()
+                        }
+                        "DATA_REFRESH_REQUIRED" -> {
+                            _incomingMessages.emit(obj.toString())
+                        }
+                        "USER_STATE_CHANGED" -> {
+                            authRepository.me()
+                        }
+                        "chat_message" -> {
+                            val msgObj = obj["message"]?.jsonObject ?: return@co...
+                            val msgId = msgObj["id"]?.jsonPrimitive?.content ?: ...
+                            val convId = msgObj["sessionId"]?.jsonPrimitive?.con...
+                            val senderId = msgObj["senderId"]?.jsonPrimitive?.co...
+                            val msgType = msgObj["type"]?.jsonPrimitive?.content...
+                            val content = msgObj["content"]?.jsonPrimitive?.cont...
+                            val createdAtStr = msgObj["createdAt"]?.jsonPrimitiv...
+                            val createdAt = parseDateToLong(createdAtStr)
+                            imDao.upsertMessage(
+                                LocalMessageEntity(
+                                    msgId = msgId,
+                                    conversationId = convId,
+                                    senderId = senderId,
+                                    msgType = msgType,
+                                    content = content,
+                                    createdAt = createdAt,
+                                    sendStatus = "SENT"
+                                )
+                            )
+                            syncConversationsQuietly() // Refresh conversation l...
+                            _incomingMessages.emit(msgObj.toString())
+                        }
+                        "message_recalled" -> {
+                            val msgId = obj["messageId"]?.jsonPrimitive?.content...
+                            imDao.recallMessage(msgId, "[已撤回一条消息]")
+                            syncConversationsQuietly()
+                        }
+                        "MSG_ACK" -> {
+                            val clientMsgId = obj["clientMsgId"]?.jsonPrimitive?...
+                            val status = obj["status"]?.jsonPrimitive?.content ?...
+                            val convId = obj["conversationId"]?.jsonPrimitive?.c...
+                            if (convId != null) {
+                                imDao.updateMessageStatusAndConvId(clientMsgId, ...
+                            } else {
+                                imDao.updateMessageStatus(clientMsgId, status)
+                            }
+                            syncConversationsQuietly()
+                            _ackEvents.emit(obj.toString())
+                        }
+                        "offline_sync" -> {
+                            val convId = obj["conversationId"]?.jsonPrimitive?.c...
+                            val msgsArray = obj["messages"]?.jsonArray
+                            val entities = msgsArray?.mapNotNull { el ->
+                                try {
+                                    val mo = el.jsonObject
+                                    LocalMessageEntity(
+                                        msgId = mo["id"]?.jsonPrimitive?.content...
+                                        conversationId = convId,
+                                        senderId = mo["senderId"]?.jsonPrimitive...
+                                        msgType = mo["msgType"]?.jsonPrimitive?....
+                                        content = mo["content"]?.jsonPrimitive?....
+                                        createdAt = parseDateToLong(mo["createdA...
+                                        sendStatus = "SENT"
+                                    )
+                                } catch (e: Exception) { null }
+                            }
+                            if (!entities.isNullOrEmpty()) {
+                                imDao.upsertMessages(entities)
+                                syncConversationsQuietly()
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+    private var syncJob: kotlinx.coroutines.Job? = null
+    fun syncConversationsQuietly() {
+        syncJob?.cancel()
+        syncJob = repositoryScope.launch {
+            try {
+                val response = api.chatSessions()
+                if (response.code == 0 && response.data != null) {
+                    val sessions = response.data
+                    val entities = sessions.map { session ->
+                        val lastMsgAt = parseDateToLong(session.updatedAt)
+                        LocalConversationEntity(
+                            conversationId = session.id,
+                            peerId = session.targetUser?.id ?: "",
+                            peerName = session.targetUser?.nickname ?: "未知用户",
+                            peerAvatar = session.targetUser?.avatar,
+                            targetId = null,
+                            lastMessage = session.lastMessage ?: "",
+                            lastMessageAt = lastMsgAt,
+                            unreadCount = session.unread
+                        )
+                    }
+                    imDao.replaceAllConversations(entities)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+    suspend fun sendMessage(convId: String, toUserId: String, targetId: String?,...
+        val clientMsgId = UUID.randomUUID().toString()
+        val currentUser = authRepository.cachedMe()
+        val senderId = currentUser?.id ?: ""
+        imDao.upsertMessage(
+            LocalMessageEntity(
+                msgId = clientMsgId,
+                conversationId = convId.ifEmpty { "new" },
+                senderId = senderId,
+                msgType = type,
+                content = content,
+                createdAt = System.currentTimeMillis(),
+                sendStatus = "SENDING"
+            )
+        )
+        realtimeClient.sendChatMessage(
+            clientMsgId = clientMsgId,
+            toUserId = toUserId,
+            targetId = targetId,
+            content = content,
+            type = type,
+            mediaHash = mediaHash
+        )
+    }
+    fun recallMessage(messageId: String) {
+        realtimeClient.sendRecallMessage(messageId)
+    }
+    fun syncOffline(conversationId: String) {
+        realtimeClient.sendOfflineSync(conversationId)
+    }
+    suspend fun syncMessagesFromRest(conversationId: String) {
+        try {
+            val response = api.chatMessages(conversationId)
+            if (response.code == 0 && response.data != null) {
+                val entities = response.data.map { msg ->
+                    LocalMessageEntity(
+                        msgId = msg.id,
+                        conversationId = conversationId,
+                        senderId = msg.senderId,
+                        msgType = msg.type,
+                        content = msg.content,
+                        createdAt = parseDateToLong(msg.createdAt),
+                        sendStatus = "SENT"
+                    )
+                }
+                if (entities.isNotEmpty()) {
+                    imDao.upsertMessages(entities)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    fun deleteConversation(conversationId: String) {
+        repositoryScope.launch {
+            imDao.deleteConversation(conversationId)
+            imDao.deleteMessagesByConvId(conversationId)
+            try {
+                api.deleteChatSession(conversationId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            syncConversationsQuietly()
+        }
+    }
+    fun hideConversation(conversationId: String) {
+        deleteConversation(conversationId)
+    }
+    private fun parseDateToLong(dateStr: String?): Long {
+        if (dateStr.isNullOrBlank()) return System.currentTimeMillis()
+        return try {
+            val format = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", jav...
+            format.timeZone = java.util.TimeZone.getTimeZone("UTC")
+            val cleanStr = dateStr.substringBefore(".").substringBefore("Z")
+            format.parse(cleanStr)?.time ?: System.currentTimeMillis()
+        } catch (e: Exception) {
+            System.currentTimeMillis()
+        }
+    }
+    fun markSessionRead(convId: String) {
+        if (convId.isBlank() || convId == "new") return
+        repositoryScope.launch {
+            try {
+                imDao.clearUnreadCount(convId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            realtimeClient.sendReadAck(convId)
+            try {
+                api.chatMessages(convId)
+            } catch (e: Exception) {}
+        }
+    }
+}
+package com.qingyuan.lslife.core.data
+import com.qingyuan.lslife.core.database.MerchantDao
+import com.qingyuan.lslife.core.database.MerchantEntity
+import com.qingyuan.lslife.core.model.*
+import com.qingyuan.lslife.core.network.*
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import javax.inject.Inject
+import javax.inject.Singleton
+@Singleton
+class LsRepository @Inject constructor(
+    private val api: ApiService,
+    private val merchantDao: MerchantDao,
+    private val categoryRepository: CategoryRepository,
+) {
+    suspend fun merchants(category: String?, q: String?, sort: String, page: Int...
+        val result = safeCall { api.merchants(category = category?.takeIf { it !...
+        result.onSuccess { resPage ->
+            if ((category == null || category == "all") && page == 1) {
+                runCatching {
+                    merchantDao.upsertAll(resPage.list.map { it.toEntity() })
+                }
+            }
+        }
+        if (result.isFailure && category in listOf(null, "all") && q.isNullOrBla...
+            val cached = runCatching { merchantDao.getAll() }.getOrNull().orEmpt...
+            if (cached.isNotEmpty()) {
+                return Result.success(MerchantPage(cached.size, 1, cached.size, ...
+            }
+        }
+        return result
+    }
+    suspend fun getCachedMerchants(): List<Merchant> {
+        return runCatching { merchantDao.getAll() }.getOrNull().orEmpty().map { ...
+    }
+    suspend fun recommended() = safeCall { api.recommended() }
+    suspend fun merchant(id: String) = safeCall { api.merchant(id) }
+    suspend fun getBanners() = safeCall { api.getBanners() }
+    suspend fun getHomeMatrix() = safeCall { api.getHomeMatrix() }
+    suspend fun addresses() = safeCall { api.addresses() }
+    suspend fun addAddress(body: AddressBody) = safeCall { api.addAddress(body) ...
+    suspend fun updateAddress(id: String, body: AddressBody) = safeCall { api.up...
+    suspend fun deleteAddress(id: String) = safeCall { api.deleteAddress(id) }
+    suspend fun createPost(req: CreatePostRequest) = safeCall { api.createPost(r...
+    suspend fun posts(
+        category: String? = null,
+        publisherType: String? = null,
+        listingType: String? = null,
+        publisherId: String? = null,
+        mine: Boolean? = null,
+        q: String? = null,
+        minPrice: Double? = null,
+        maxPrice: Double? = null,
+        sortBy: String? = null,
+        attrFilter: Map<String, String>? = null,
+        postType: String? = null,
+        page: Int = 1,
+        pageSize: Int = 20
+    ) = safeCall {
+        val attrJson = attrFilter?.takeIf { it.isNotEmpty() }?.let { map ->
+            kotlinx.serialization.json.Json.encodeToString(
+                kotlinx.serialization.json.JsonObject.serializer(),
+                buildJsonObject { map.forEach { (k, v) -> put(k, v) } }
+            )
+        }
+        api.posts(category, publisherType, listingType, publisherId, mine, q, mi...
+    }
+    suspend fun dynamics(category: String? = null, page: Int = 1, pageSize: Int ...
+        api.getDynamics(category, page, pageSize, lat, lng)
+    }
+    suspend fun quota() = safeCall { api.quota() }
+    suspend fun getDiscoverPosts(categoryId: String?) = safeCall { api.getDiscov...
+    suspend fun post(id: String) = safeCall { api.post(id) }
+    suspend fun refreshPost(id: String) = safeCall { api.refreshPost(id) }
+    suspend fun toggleFavorite(id: String) = safeCall { api.toggleFavorite(id) }
+    suspend fun getFavorites(page: Int = 1, pageSize: Int = 50) = safeCall { api...
+    suspend fun getFootprints(page: Int = 1, pageSize: Int = 50) = safeCall { ap...
+    suspend fun clearFootprints() = safeCall { api.clearFootprints() }
+    suspend fun toggleFollow(userId: String) = safeCall { api.toggleFollow(userI...
+    suspend fun getFollowers(userId: String, page: Int = 1, pageSize: Int = 50) ...
+    suspend fun getFollowing(userId: String, page: Int = 1, pageSize: Int = 50) ...
+    suspend fun updatePost(id: String, req: CreatePostRequest) = safeCall { api....
+    suspend fun updatePostStatus(id: String, status: String) = safeCall { api.up...
+    suspend fun auditAdminPost(id: String, action: String, note: String?) = safe...
+        val body = mutableMapOf("action" to action)
+        if (note != null) body["note"] = note
+        api.auditAdminPost(id, body)
+    }
+    suspend fun deletePost(id: String) = safeCall { api.deletePost(id) }
+    suspend fun plans() = safeCall { api.plans() }
+    suspend fun subscribe(tier: String) = safeCall { api.subscribe(SubscribeRequ...
+    suspend fun notifications() = safeCall { api.notifications() }
+    suspend fun readAllNotifications() = safeCall { api.readAllNotifications() }
+    suspend fun categoryTree(forceRefresh: Boolean = false) = categoryRepository...
+    suspend fun categorySchema(id: String) = categoryRepository.getCategorySchem...
+    suspend fun aiRecommend(prompt: String) = safeCall { api.aiRecommend(AiReque...
+    suspend fun aiGenerateDescription(
+        title: String? = null,
+        categoryId: String? = null,
+        draft: String? = null,
+        schema: List<DynamicField> = emptyList(),
+    ): Result<AiGenerateDescResponse> = safeCall { api.aiGenerateDescription(AiG...
+    suspend fun uploadImage(part: okhttp3.MultipartBody.Part) = safeCall { api.u...
+    suspend fun uploadChatImage(part: okhttp3.MultipartBody.Part) = safeCall { a...
+    suspend fun uploadImagesBatch(parts: List<okhttp3.MultipartBody.Part>) = saf...
+    suspend fun uploadAudio(part: okhttp3.MultipartBody.Part) = safeCall { api.u...
+    suspend fun getMerchantCertifyStatus(): Result<MerchantCertification?> = saf...
+    suspend fun submitMerchantCertification(req: MerchantCertifyRequest) = safeC...
+    suspend fun confirmActive() = safeCall { api.confirmActive() }
+    suspend fun performBusinessOcr(url: String) = safeCall { api.performBusiness...
+    suspend fun getUserPublicProfile(userId: String): Result<PublicUserResponse>...
+    suspend fun buyPromotion(req: PromotionBuyRequest) = safeCall { api.buyPromo...
+    suspend fun getMyPromotions(): Result<List<PromotionTask>> = safeCall { api....
+    suspend fun getPromotionStats(): Result<PromotionStatsResponse> = safeCall {...
+    suspend fun rechargeCards(req: RechargeCardsRequest): Result<Unit> = safeCal...
+    suspend fun getMyPostsForPromotion(): Result<PostPage> = safeCall { api.post...
+}
+private fun Merchant.toEntity() = MerchantEntity(
+    id = id, name = name, rating = rating, distance = distance, sales = sales, a...
+    tags = tags.joinToString("|"), deliveryFee = deliveryFee, deliveryTime = del...
+    logo = logo, category = category, cachedAt = System.currentTimeMillis(),
+)
+private fun MerchantEntity.toMerchant() = Merchant(
+    id = id, name = name, rating = rating, distance = distance, sales = sales, a...
+    tags = if (tags.isBlank()) emptyList() else tags.split("|"), deliveryFee = d...
+    logo = logo, banner = logo, isFood = false, category = category, province = ...
+    description = "", address = "", phone = "",
+)
+package com.qingyuan.lslife.core.data
+import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import com.qingyuan.lslife.core.model.ThemeMode
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import com.qingyuan.lslife.core.model.NotificationMode
+import javax.inject.Inject
+import javax.inject.Singleton
+private val Context.dataStore by preferencesDataStore(name = "ls_session")
+@Singleton
+class TokenStore @Inject constructor(
+    @ApplicationContext private val context: Context,
+) {
+    private val tokenKey = stringPreferencesKey("token")
+    private val themeModeKey = stringPreferencesKey("theme_mode")
+    private val notificationModeKey = stringPreferencesKey("notification_mode")
+    private val keepAliveKey = booleanPreferencesKey("keep_alive_im")
+    var cachedToken: String? = null
+        private set
+    init {
+        kotlinx.coroutines.DelicateCoroutinesApi::class
+        @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
+        kotlinx.coroutines.GlobalScope.launch {
+            context.dataStore.data.map { it[tokenKey] }.collect { cachedToken = ...
+        }
+    }
+    val tokenFlow: Flow<String?> = context.dataStore.data.map { it[tokenKey] }
+    val themeModeFlow: Flow<ThemeMode> = context.dataStore.data.map {
+        ThemeMode.fromStorage(it[themeModeKey])
+    }
+    val notificationModeFlow: Flow<NotificationMode> = context.dataStore.data.ma...
+        NotificationMode.fromStorage(it[notificationModeKey])
+    }
+    val keepAliveFlow: Flow<Boolean> = context.dataStore.data.map {
+        it[keepAliveKey] ?: true // default to true
+    }
+    suspend fun current(): String? = tokenFlow.first()
+    suspend fun save(token: String) {
+        context.dataStore.edit { it[tokenKey] = token }
+    }
+    suspend fun clear() {
+        context.dataStore.edit { it.remove(tokenKey) }
+    }
+    suspend fun setThemeMode(mode: ThemeMode) {
+        context.dataStore.edit { it[themeModeKey] = mode.storageValue }
+    }
+    suspend fun setNotificationMode(mode: NotificationMode) {
+        context.dataStore.edit { it[notificationModeKey] = mode.storageValue }
+    }
+    suspend fun setKeepAlive(enabled: Boolean) {
+        context.dataStore.edit { it[keepAliveKey] = enabled }
+    }
+}
+package com.qingyuan.lslife.core.database
+import androidx.room.Database
+import androidx.room.RoomDatabase
+@Database(
+    entities = [
+        MerchantEntity::class,
+        ChatSessionEntity::class,
+        LocalMessageEntity::class,
+        LocalConversationEntity::class
+    ],
+    version = 3,
+    exportSchema = false
+)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun merchantDao(): MerchantDao
+    abstract fun chatSessionDao(): ChatSessionDao
+    abstract fun imDao(): ImDao
+}
+package com.qingyuan.lslife.core.database
+import androidx.room.Dao
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.PrimaryKey
+import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
+@Entity(tableName = "chat_sessions")
+data class ChatSessionEntity(
+    @PrimaryKey val id: String,
+    val user1Id: String,
+    val user2Id: String,
+    val targetUserId: String?,
+    val targetUserNickname: String?,
+    val targetUserAvatar: String?,
+    val lastMessage: String?,
+    val unread1: Int, // 当前登录用户 (user1) 的未读数
+    val unread2: Int,
+    val updatedAt: Long
+)
+@Dao
+interface ChatSessionDao {
+    @Query("SELECT COALESCE(SUM(unread1), 0) FROM chat_sessions WHERE user1Id = ...
+    fun observeTotalUnread(currentUserId: String): Flow<Int>
+    @Query("SELECT * FROM chat_sessions WHERE user1Id = :currentUserId ORDER BY ...
+    suspend fun getAllSessions(currentUserId: String): List<ChatSessionEntity>
+    @Query("UPDATE chat_sessions SET unread1 = 0 WHERE id = :sessionId AND user1...
+    suspend fun clearUnread(sessionId: String, currentUserId: String)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertSessions(sessions: List<ChatSessionEntity>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertSession(session: ChatSessionEntity)
+    @Query("UPDATE chat_sessions SET lastMessage = :lastMsg, unread1 = unread1 +...
+    suspend fun updateSessionMessage(sessionId: String, currentUserId: String, l...
+    @Query("DELETE FROM chat_sessions WHERE id = :sessionId AND user1Id = :curre...
+    suspend fun deleteSession(sessionId: String, currentUserId: String)
+}
+package com.qingyuan.lslife.core.database
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+@Entity(tableName = "merchant_cache")
+data class MerchantEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val rating: Double,
+    val distance: Double,
+    val sales: Int,
+    val avgPrice: Double,
+    val tags: String,
+    val deliveryFee: Double,
+    val deliveryTime: Int,
+    val logo: String,
+    val category: String?,
+    val cachedAt: Long,
+)
+package com.qingyuan.lslife.core.database
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
+@Dao
+interface ImDao {
+    @Query("SELECT * FROM local_messages WHERE conversationId = :convId ORDER BY...
+    fun getMessagesFlow(convId: String): Flow<List<LocalMessageEntity>>
+    @Query("SELECT * FROM local_messages WHERE conversationId IN (:convIds) ORDE...
+    fun getMessagesFlowByConvIds(convIds: List<String>): Flow<List<LocalMessageE...
+    @Query("SELECT COUNT(*) FROM local_messages WHERE conversationId = :convId")
+    suspend fun getMessageCount(convId: String): Int
+    @Query("SELECT * FROM local_conversations ORDER BY lastMessageAt DESC")
+    fun getConversationsFlow(): Flow<List<LocalConversationEntity>>
+    @Query("SELECT * FROM local_conversations WHERE conversationId = :convId")
+    suspend fun getConversation(convId: String): LocalConversationEntity?
+    @Query("SELECT * FROM local_conversations WHERE peerId = :peerId LIMIT 1")
+    suspend fun getConversationByPeerId(peerId: String): LocalConversationEntity...
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertMessages(messages: List<LocalMessageEntity>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertMessage(message: LocalMessageEntity)
+    @Query("UPDATE local_messages SET sendStatus = :status WHERE msgId = :msgId"...
+    suspend fun updateMessageStatus(msgId: String, status: String)
+    @Query("UPDATE local_messages SET sendStatus = :status, conversationId = :co...
+    suspend fun updateMessageStatusAndConvId(msgId: String, status: String, conv...
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertConversation(conversation: LocalConversationEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertConversations(conversations: List<LocalConversationEntity>...
+    @androidx.room.Transaction
+    suspend fun replaceAllConversations(conversations: List<LocalConversationEnt...
+        clearConversations()
+        upsertConversations(conversations)
+    }
+    @Query("SELECT SUM(unreadCount) FROM local_conversations")
+    fun observeTotalUnread(): Flow<Int?>
+    @Query("UPDATE local_conversations SET unreadCount = 0 WHERE conversationId ...
+    suspend fun clearUnreadCount(convId: String)
+    @Query("DELETE FROM local_conversations")
+    suspend fun clearConversations()
+    @Query("DELETE FROM local_messages")
+    suspend fun clearMessages()
+    @Query("DELETE FROM local_messages WHERE msgId IN (:msgIds)")
+    suspend fun deleteMessages(msgIds: Set<String>)
+    @Query("DELETE FROM local_conversations WHERE conversationId = :convId")
+    suspend fun deleteConversation(convId: String)
+    @Query("DELETE FROM local_messages WHERE conversationId = :convId")
+    suspend fun deleteMessagesByConvId(convId: String)
+    @Query("UPDATE local_messages SET msgType = 'RECALLED', content = :recallTex...
+    suspend fun recallMessage(msgId: String, recallText: String)
+}
+package com.qingyuan.lslife.core.database
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+@Entity(tableName = "local_messages")
+data class LocalMessageEntity(
+    @PrimaryKey val msgId: String,
+    val conversationId: String,
+    val senderId: String,
+    val msgType: String, // TEXT, IMAGE, PRODUCT_CARD
+    val content: String, // 解密后的展示文本或JSON
+    val createdAt: Long,
+    val sendStatus: String // SENDING, SENT, FAILED
+)
+@Entity(tableName = "local_conversations")
+data class LocalConversationEntity(
+    @PrimaryKey val conversationId: String,
+    val peerId: String,
+    val peerName: String,
+    val peerAvatar: String?,
+    val targetId: String?,
+    val lastMessage: String,
+    val lastMessageAt: Long,
+    val unreadCount: Int
+)
+package com.qingyuan.lslife.core.database
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+@Dao
+interface MerchantDao {
+    @Query("SELECT * FROM merchant_cache ORDER BY sales DESC")
+    suspend fun getAll(): List<MerchantEntity>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertAll(items: List<MerchantEntity>)
+    @Query("DELETE FROM merchant_cache")
+    suspend fun clear()
+}
+package com.qingyuan.lslife.core.location
+import android.annotation.SuppressLint
+import android.content.Context
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.os.Bundle
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import javax.inject.Inject
+import javax.inject.Singleton
+@Singleton
+class NativeLocationClient @Inject constructor(
+    private val context: Context
+) {
+    @SuppressLint("MissingPermission") // Ensure permissions are requested at UI...
+    fun getLocationUpdates(intervalMs: Long = 10000L): Flow<Location> = callback...
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE)...
+        val hasNetworkProvider = locationManager.isProviderEnabled(LocationManag...
+        val hasGpsProvider = locationManager.isProviderEnabled(LocationManager.G...
+        val listener = object : LocationListener {
+            override fun onLocationChanged(location: Location) {
+                trySend(location)
+            }
+            override fun onStatusChanged(provider: String?, status: Int, extras:...
+            override fun onProviderEnabled(provider: String) {}
+            override fun onProviderDisabled(provider: String) {}
+        }
+        if (hasNetworkProvider) {
+            locationManager.requestLocationUpdates(
+                LocationManager.NETWORK_PROVIDER,
+                intervalMs,
+                10f, // min distance in meters
+                listener
+            )
+        } else if (hasGpsProvider) {
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                intervalMs,
+                10f,
+                listener
+            )
+        }
+        awaitClose {
+            locationManager.removeUpdates(listener)
+        }
+    }
+}
+package com.qingyuan.lslife.core.model
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+@Serializable
+data class AdminDashboardData(
+    val totalUsers: Int = 0,
+    val totalMembers: Int = 0,
+    val kycPercentage: String = "0%",
+    val verifiedMerchants: Int = 0,
+    val serverStorageStatus: String = "未知",
+    val totalRecharge: Double = 0.0
+)
+@Serializable
+data class AdminKycUser(
+    val id: String,
+    val phone: String,
+    val nickname: String?,
+    val realName: String?,
+    val idCardHash: String?,
+    val idCardFrontImage: String?,
+    val idCardBackImage: String?,
+    val idCardHandheldImage: String?,
+    val realNameStatus: String,
+    val updatedAt: String
+)
+@Serializable
+data class AdminPostUser(
+    val nickname: String?,
+    val phone: String?
+)
+@Serializable
+data class AdminPost(
+    val id: String,
+    val title: String,
+    val description: String?,
+    val status: String,
+    val reviewNote: String?,
+    val images: List<String> = emptyList(),
+    val attributes: JsonElement? = null,
+    val user: AdminPostUser?,
+    val createdAt: String
+)
+@Serializable
+data class AdminUser(
+    val id: String,
+    val phone: String,
+    val nickname: String?,
+    val avatar: String?,
+    val status: String,
+    val realNameStatus: String,
+    val membershipTier: String,
+    val walletBalance: Double = 0.0,
+    val createdAt: String
+)
+@Serializable
+data class AdminUsersResponse(
+    val items: List<AdminUser>,
+    val total: Int,
+    val page: Int,
+    val limit: Int
+)
+@Serializable
+data class AdminCategory(
+    val id: String,
+    val name: String,
+    val iconUrl: String? = null,
+    val parentId: String? = null,
+    val sortOrder: Int,
+    val isLeaf: Boolean,
+    val isActive: Boolean,
+    val attributeSchema: String
+)
+@Serializable
+data class AdminMerchant(
+    val id: String,
+    val name: String,
+    val logo: String?,
+    val phone: String,
+    val status: String,
+    val createdAt: String
+)
+@Serializable
+data class AdminMerchantsResponse(
+    val list: List<AdminMerchant>
+)
+@Serializable
+data class AdminActionRequest(
+    val action: String,
+    val note: String? = null,
+    val reason: String? = null
+)
+@Serializable
+data class AdminStatusRequest(
+    val status: String
+)
+@Serializable
+data class ServerMonitorRam(
+    val total: String,
+    val used: String,
+    val percent: Float
+)
+@Serializable
+data class ServerMonitorCpu(
+    val cores: Int,
+    val loadAvg: Float,
+    val percent: Float
+)
+@Serializable
+data class ServerMonitorDisk(
+    val total: String,
+    val used: String,
+    val percent: Int
+)
+@Serializable
+data class ServerMonitorPm2(
+    val name: String,
+    val status: String,
+    val memory: String,
+    val cpu: Float,
+    val restarts: Int,
+    val uptime: Long
+)
+@Serializable
+data class ServerMonitorData(
+    val ram: ServerMonitorRam,
+    val cpu: ServerMonitorCpu,
+    val disk: ServerMonitorDisk,
+    val pm2: List<ServerMonitorPm2>
+)
+package com.qingyuan.lslife.core.model
+enum class FieldType {
+    SINGLE_CHOICE,   // 单选 (如：朝向、户型、学历) -> 渲染为 ChipGroup
+    MULTI_CHOICE,    // 多选 (如：特色、福利、服务包含) -> 渲染为 FilterChip Group
+    NUMBER_INPUT,    // 数字输入 (如：面积、工作年限)
+    TEXT_INPUT       // 文本输入
+}
+data class AttributeSchema(
+    val key: String,                  // 存入DB的字段名 (如 "area", "orientation")
+    val label: String,                // UI展示名 (如 "面积 (㎡)", "朝向")
+    val type: FieldType,              // 控件渲染类型
+    val options: List<String> = emptyList(), // 可选的选项列表
+    val unit: String = "",            // 输入框后缀单位 (如 "㎡", "年", "元")
+    val isRequired: Boolean = false   // 是否必填
+)
+package com.qingyuan.lslife.core.model
+import kotlinx.serialization.Serializable
+@Serializable
+data class DiscoverSection(
+    val categoryId: String,
+    val categoryName: String,
+    val posts: List<Post>
+)
+package com.qingyuan.lslife.core.model
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonObject
+@Serializable
+enum class TradeMode {
+    INFO_PUBLISH,
+    INFO
+}
+@Serializable
+enum class PostType {
+    CLASSIFIED
+}
+@Serializable
+data class ApiEnvelope<T>(
+    val code: Int,
+    val message: String,
+    val data: T? = null,
+)
+@Serializable
+data class Banner(
+    val id: String,
+    val title: String,
+    val imageUrl: String,
+    val linkUrl: String? = null,
+    val sortOrder: Int = 0,
+    val isActive: Boolean = true,
+)
+@Serializable
+data class HomeMatrixData(
+    val featuredMerchants: List<Post> = emptyList(),
+    val specialOffers: List<Post> = emptyList(),
+)
+@Serializable
+data class User(
+    val id: String,
+    val phone: String,
+    val email: String? = null,
+    val nickname: String,
+    val role: String = "USER",
+    val avatar: String? = null,
+    val membershipTier: String = "free",
+    val realNameStatus: String = "none",
+    val realName: String? = null,
+    val walletBalance: Double = 0.0,
+    val points: Int = 0,
+    val followersCount: Int = 0,
+    val followingCount: Int = 0,
+    val favoritesCount: Int = 0,
+    val footprintsCount: Int = 0,
+    val identityType: String = "NORMAL",
+    val creditScore: Int = 100,
+    val status: String = "active",
+    val profileReviewStatus: String = "APPROVED",
+    val pendingNickname: String? = null,
+    val pendingAvatar: String? = null,
+    val privileges: JsonElement? = null
+) {
+    val isMerchant: Boolean
+        get() = identityType == "MERCHANT_VERIFIED"
+}
+@Serializable
+data class AdminUserListItem(
+    val id: String,
+    val phone: String,
+    val email: String? = null,
+    val nickname: String,
+    val avatar: String? = null,
+    val status: String = "active",
+    val createdAt: String
+)
+@Serializable
+data class AdminUserListResponse(
+    val items: List<AdminUserListItem>,
+    val total: Int,
+    val page: Int,
+    val limit: Int
+)
+@Serializable
+data class Reporter(
+    val id: String,
+    val nickname: String,
+    val avatar: String? = null,
+    val phone: String
+)
+@Serializable
+data class Report(
+    val id: String,
+    val reporterId: String,
+    val targetType: String,
+    val targetId: String,
+    val reason: String,
+    val status: String,
+    val createdAt: String,
+    val updatedAt: String,
+    val reporter: Reporter? = null,
+    val targetTitle: String? = null
+)
+@Serializable
+data class LoginResult(val token: String, val user: User)
+@Serializable
+data class Merchant(
+    val id: String,
+    val name: String,
+    val rating: Double,
+    val distance: Double,
+    val sales: Int,
+    val avgPrice: Double,
+    val tags: List<String> = emptyList(),
+    val deliveryFee: Double,
+    val deliveryTime: Int,
+    val logo: String,
+    val banner: String,
+    val isFood: Boolean = false,
+    val category: String? = null,
+    val province: String? = null,
+    val city: String? = null,
+    val district: String? = null,
+    val town: String? = null,
+    val description: String,
+    val address: String,
+    val phone: String,
+    val email: String? = null,
+    val ownerId: String? = null,
+)
+@Serializable
+data class MerchantPage(
+    val total: Int,
+    val page: Int,
+    val pageSize: Int,
+    val list: List<Merchant>,
+)
+@Serializable
+data class Address(
+    val id: String,
+    val name: String,
+    val phone: String,
+    val email: String? = null,
+    val tag: String,
+    val address: String,
+    val isDefault: Boolean,
+)
+@Serializable
+data class Post(
+    val id: String,
+    val publisherType: String = "INDIVIDUAL",
+    val merchantId: String? = null,
+    val listingType: String = "GOODS",
+    val category: String,
+    val title: String,
+    val description: String,
+    val price: Double? = null,
+    val contactPhone: String? = null,
+    @kotlinx.serialization.SerialName("tradeMode")
+    val _tradeMode: TradeMode = TradeMode.INFO_PUBLISH,
+    val postType: PostType = PostType.CLASSIFIED,
+    val likeCount: Int = 0,
+    val isSponsored: Boolean = false,
+    val isFavorite: Boolean = false,
+    val isFollowing: Boolean = false,
+    val images: List<String> = emptyList(),
+    val imageWidth: Int? = null,
+    val imageHeight: Int? = null,
+    val status: String,
+    val province: String? = null,
+    val city: String? = null,
+    val district: String? = null,
+    val town: String? = null,
+    val streetAddress: String? = null,
+    val attributes: @Serializable(with = FlexibleJsonObjectSerializer::class) Js...
+    val reviewNote: String? = null,
+    val createdAt: String,
+    val topic: String? = null,
+    val linkedCommerceId: String? = null,
+    val sellerType: String = "INDIVIDUAL",
+    val marketingHook: String? = null,
+    val isFeatured: Boolean = false,
+    val isUrgent: Boolean = false,
+    val isTop: Boolean = false,
+    val distanceText: String? = null,
+    val activeTimeText: String? = null,
+    val badgeText: String? = null,
+    val user: PostUser? = null,
+    val merchant: PostMerchant? = null,
+) {
+    val tradeMode: TradeMode
+        get() = com.qingyuan.lslife.feature.publish.getEffectiveTradeMode(_trade...
+}
+@Serializable
+data class PostMerchant(
+    val name: String,
+    val logo: String,
+    val status: String? = null,
+)
+@Serializable
+data class PostUser(
+    val id: String? = null,
+    val nickname: String? = null,
+    val avatar: String? = null,
+    val isMerchant: Boolean = false,
+    val authLabel: String = "认证个人用户",
+    val merchantId: String? = null,
+    val identityType: String? = null
+)
+@Serializable
+data class PostPage(
+    val total: Int,
+    val page: Int,
+    val pageSize: Int,
+    val list: List<Post>,
+    val aggregations: Map<String, Map<String, Int>> = emptyMap(),
+)
+@Serializable
+data class FavoriteToggleResponse(
+    val isFavorite: Boolean,
+    val likeCount: Int
+)
+@Serializable
+data class Quota(val used: Int, val limit: Int, val tier: String, val remaining:...
+@Serializable
+data class MembershipPlan(
+    val tier: String,
+    val name: String,
+    val price: Double,
+    val period: String,
+    val benefits: List<String>,
+)
+@Serializable
+data class NotificationItem(
+    val id: String,
+    val type: String,
+    val title: String,
+    val content: String,
+    val orderId: String? = null,
+    val read: Boolean,
+    val createdAt: String,
+)
+@Serializable
+data class NotificationResult(val list: List<NotificationItem>, val unread: Int)
+@Serializable
+data class AiRecommendation(
+    val merchantId: String,
+    val itemId: String,
+    val name: String,
+    val price: Double,
+)
+@Serializable
+data class AiReply(val reply: String, val recommendations: List<AiRecommendation...
+@Serializable
+data class ProfileUpdateRequest(
+    val nickname: String? = null,
+    val avatar: String? = null,
+)
+@Serializable
+data class ChatUser(
+    val id: String,
+    val nickname: String,
+    val avatar: String? = null,
+)
+@Serializable
+data class ChatSession(
+    val id: String,
+    val targetUser: ChatUser? = null,
+    val lastMessage: String? = null,
+    val unread: Int = 0,
+    val updatedAt: String,
+)
+@Serializable
+data class WalletTransaction(
+    val id: String,
+    val type: String, // points | cash
+    val amount: Double,
+    val balanceBefore: Double,
+    val balanceAfter: Double,
+    val bizType: String,
+    val description: String? = null,
+    val createdAt: String,
+)
+@Serializable
+data class Pagination(
+    val page: Int,
+    val limit: Int,
+    val total: Int,
+    val totalPages: Int,
+)
+@Serializable
+data class UserWalletResponse(
+    val coinBalance: Int,
+    val totalRecharged: Double
+)
+@Serializable
+data class WalletLog(
+    val id: String,
+    val userId: String,
+    val amount: Int,
+    val balanceAfter: Int,
+    val tradeType: String,
+    val relatedBizId: String? = null,
+    val createdAt: String
+)
+@Serializable
+data class WalletLogPage(
+    val items: List<WalletLog> = emptyList(),
+    val pagination: Pagination
+)
+@Serializable
+data class RechargePackage(
+    val id: Int,
+    val price: Double,
+    val coinsAmount: Int,
+    val bonusCoins: Int = 0,
+    val isActive: Boolean = true
+)
+@Serializable
+data class ConsumeRequest(
+    val amount: Int,
+    val tradeType: String,
+    val relatedBizId: String? = null
+)
+    if (!req.file) throw new ApiError(400, '未找到上传的音频文件');
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+    const url = `${publicBaseUrl(req)}/chat_audio/${req.file.filename}`;
+    return ok(res, { url, mediaHash: hash });
+  }),
+);
+const APK_DIR = path.resolve(__dirname, '../../public/apks');
+fs.mkdirSync(APK_DIR, { recursive: true });
+const apkStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, APK_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname) || '.apk';
+    cb(null, `lslife_${Date.now()}${ext}`);
+  },
+});
+const apkUpload = multer({
+  storage: apkStorage,
+  limits: { fileSize: 150 * 1024 * 1024 }, // 150MB
+  fileFilter: (_req, file, cb) => {
+    const isApk =
+      file.mimetype === 'application/vnd.android.package-archive' ||
+      file.mimetype === 'application/octet-stream' ||
+      file.originalname.toLowerCase().endsWith('.apk');
+    if (isApk) cb(null, true);
+    else cb(new ApiError(400, '只允许上传 APK 文件'));
+  },
+});
+router.post(
+  '/apk',
+  requireAdminAuth,
+  apkUpload.single('apk'),
+  asyncHandler(async (req, res) => {
+    if (!req.file) throw new ApiError(400, '未找到上传的 APK 文件');
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const md5 = crypto.createHash('md5').update(fileBuffer).digest('hex');
+    const url = `${publicBaseUrl(req)}/apks/${req.file.filename}`;
+    return ok(res, {
+      url,
+      fileSize: req.file.size,
+      md5,
+      filename: req.file.filename,
+    });
+  }),
+);
+export default router;
+import { Router } from 'express';
+import { prisma } from '../lib/prisma.js';
+import { ok, ApiError } from '../lib/http.js';
+import { asyncHandler } from '../middleware/error.js';
+import { requireAuth, optionalAuth } from '../middleware/auth.js';
+import { z } from 'zod';
+const router = Router();
+router.get(
+  '/:id/public',
+  optionalAuth,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        nickname: true,
+        avatar: true,
+        identityType: true,
+        realNameStatus: true,
+        createdAt: true,
+        merchantCertification: {
+          select: {
+            status: true,
+            businessLicenseUrl: true,
+            storeName: true,
+            certType: true
+          }
+        }
+      },
+    });
+    if (!user) {
+      throw new ApiError(404, '用户不存在或已注销');
+    }
+    const isMerchant = !!user.merchantCertification && user.merchantCertificatio...
+    let authLabel = '普通用户';
+    if (isMerchant) {
+        authLabel = '认证商家';
+    } else if (user.realNameStatus === 'verified') {
+        authLabel = '认证个人用户';
+    }
+    let isFollowing = false;
+    if (req.userId) {
+      const follow = await prisma.follow.findUnique({
+        where: { followerId_followingId: { followerId: req.userId, followingId: ...
+      });
+      isFollowing = !!follow;
+    }
+    const responseUser = {
+        id: user.id,
+        nickname: user.nickname,
+        avatar: user.avatar,
+        identityType: user.identityType,
+        createdAt: user.createdAt,
+        isMerchant,
+        authLabel,
+        isFollowing,
+        businessLicenseUrl: isMerchant ? (user.merchantCertification?.businessLi...
+        storeName: isMerchant ? (user.merchantCertification?.storeName || null) ...
+        certType: isMerchant ? (user.merchantCertification?.certType || null) : ...
+    };
+    return ok(res, responseUser, '获取公开用户信息成功');
+  }),
+);
+router.get(
+  '/search',
+  asyncHandler(async (req, res) => {
+    const { q } = req.query;
+    if (!q || typeof q !== 'string') {
+      return ok(res, [], '请输入搜索词');
+    }
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { phone: q },
+          { nickname: { contains: q } }
+        ]
+      },
+      select: {
+        id: true,
+        nickname: true,
+        avatar: true,
+        identityType: true,
+        createdAt: true
+      },
+      take: 20
+    });
+    return ok(res, users, '搜索成功');
+  })
+);
+router.get(
+  '/:id/showcase',
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        nickname: true,
+        avatar: true,
+        role: true,
+        createdAt: true,
+        merchantInfo: true,
+      },
+    });
+    if (!user) {
+      throw new ApiError(404, '用户不存在');
+    }
+    const posts = await prisma.post.findMany({
+      where: { userId: id, status: 'published' },
+      orderBy: [
+        { isTop: 'desc' },
+        { refreshedAt: 'desc' },
+        { createdAt: 'desc' }
+      ],
+      take: 20,
+    });
+    return ok(res, {
+      profile: user,
+      posts: posts.map((p) => ({
+        ...p,
+        images: JSON.parse(p.images) as string[],
+        attributes: (p.attributes as any) as Record<string, string>,
+      })),
+    }, '获取橱窗信息成功');
+  })
+);
+router.post(
+  '/:id/follow',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const followingId = req.params.id;
+    const followerId = req.userId!;
+    if (followingId === followerId) {
+      throw new ApiError(400, '不能关注自己');
+    }
+    const targetUser = await prisma.user.findUnique({ where: { id: followingId }...
+    if (!targetUser) throw new ApiError(404, '目标用户不存在');
+    const existingFollow = await prisma.follow.findUnique({
+      where: { followerId_followingId: { followerId, followingId } }
+    });
+    let isFollowing = false;
+    if (existingFollow) {
+      await prisma.$transaction([
+        prisma.follow.delete({ where: { id: existingFollow.id } }),
+        prisma.user.update({ where: { id: followerId }, data: { followingCount: ...
+        prisma.user.update({ where: { id: followingId }, data: { followersCount:...
+      ]);
+    } else {
+      await prisma.$transaction([
+        prisma.follow.create({ data: { followerId, followingId } }),
+        prisma.user.update({ where: { id: followerId }, data: { followingCount: ...
+        prisma.user.update({ where: { id: followingId }, data: { followersCount:...
+      ]);
+      isFollowing = true;
+    }
+    return ok(res, { isFollowing }, isFollowing ? '关注成功' : '已取消关注');
+  })
+);
+router.get(
+  '/:id/followers',
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { page, pageSize } = z
+      .object({
+        page: z.coerce.number().min(1).default(1),
+        pageSize: z.coerce.number().min(1).max(50).default(20),
+      })
+      .parse(req.query);
+    const followers = await prisma.follow.findMany({
+      where: { followingId: id },
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        follower: {
+          select: {
+            id: true,
+            nickname: true,
+            avatar: true,
+            identityType: true,
+            realNameStatus: true,
+            merchantCertification: { select: { status: true } }
+          }
+        }
+      }
+    });
+    const total = await prisma.follow.count({ where: { followingId: id } });
+    const list = followers.map(f => {
+      const u = f.follower;
+      const isMerchant = !!u.merchantCertification && u.merchantCertification.st...
+      let authLabel = '普通用户';
+      if (isMerchant) authLabel = '认证商家';
+      else if (u.realNameStatus === 'verified') authLabel = '认证个人用户';
+      return {
+        id: u.id,
+        nickname: u.nickname,
+        avatar: u.avatar,
+        identityType: authLabel,
+        authLabel: authLabel
+      };
+    });
+    return ok(res, { list, total, page, pageSize });
+  })
+);
+router.get(
+  '/:id/following',
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { page, pageSize } = z
+      .object({
+        page: z.coerce.number().min(1).default(1),
+        pageSize: z.coerce.number().min(1).max(50).default(20),
+      })
+      .parse(req.query);
+    const following = await prisma.follow.findMany({
+      where: { followerId: id },
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        following: {
+          select: {
+            id: true,
+            nickname: true,
+            avatar: true,
+            identityType: true,
+            realNameStatus: true,
+            merchantCertification: { select: { status: true } }
+          }
+        }
+      }
+    });
+    const total = await prisma.follow.count({ where: { followerId: id } });
+    const list = following.map(f => {
+      const u = f.following;
+      const isMerchant = !!u.merchantCertification && u.merchantCertification.st...
+      let authLabel = '普通用户';
+      if (isMerchant) authLabel = '认证商家';
+      else if (u.realNameStatus === 'verified') authLabel = '认证个人用户';
+      return {
+        id: u.id,
+        nickname: u.nickname,
+        avatar: u.avatar,
+        identityType: authLabel,
+        authLabel: authLabel
+      };
+    });
+    return ok(res, { list, total, page, pageSize });
+  })
+);
+export default router;
+import { Router } from 'express';
+import { z } from 'zod';
+import { prisma } from '../lib/prisma.js';
+import { ok, ApiError } from '../lib/http.js';
+import { asyncHandler } from '../middleware/error.js';
+import { requireAuth } from '../middleware/auth.js';
+import { UserWalletService } from '../services/UserWalletService.js';
+const router = Router();
+const walletService = new UserWalletService();
+router.get(
+  '/info',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    let wallet = await prisma.userWallet.findUnique({
+      where: { userId: req.userId! }
+    });
+    if (!wallet) {
+      wallet = await prisma.userWallet.create({
+        data: {
+          userId: req.userId!,
+          coinBalance: 0,
+          totalRecharged: 0.00,
+          version: 0
+        }
+      });
+    }
+    return ok(res, {
+      coinBalance: wallet.coinBalance,
+      totalRecharged: wallet.totalRecharged
+    });
+  })
+);
+router.get(
+  '/logs',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { page = '1', limit = '20' } = req.query;
+    const pageNum = parseInt(page as string) || 1;
+    const limitNum = parseInt(limit as string) || 20;
+    const total = await prisma.walletLog.count({
+      where: { userId: req.userId! }
+    });
+    const logs = await prisma.walletLog.findMany({
+      where: { userId: req.userId! },
+      orderBy: { createdAt: 'desc' },
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum
+    });
+    return ok(res, {
+      items: logs,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.ceil(total / limitNum)
+      }
+    });
+  })
+);
+router.get(
+  '/packages',
+  asyncHandler(async (req, res) => {
+    const packages = await prisma.rechargePackage.findMany({
+      where: { isActive: true },
+      orderBy: { price: 'asc' }
+    });
+    return ok(res, packages);
+  })
+);
+const rechargeSchema = z.object({
+  packageId: z.number(),
+  payChannel: z.string().optional()
+});
+router.post(
+  '/recharge',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { packageId } = rechargeSchema.parse(req.body);
+    const pkg = await prisma.rechargePackage.findUnique({
+      where: { id: packageId }
+    });
+    if (!pkg) throw new ApiError(404, '套餐不存在');
+    const amount = pkg.coinsAmount + pkg.bonusCoins;
+    await prisma.$transaction(async (tx) => {
+      const wallet = await tx.userWallet.findUnique({
+        where: { userId: req.userId! }
+      });
+      if (!wallet) throw new ApiError(400, '用户钱包不存在');
+      await tx.userWallet.update({
+        where: { userId: req.userId! },
+        data: {
+          coinBalance: wallet.coinBalance + amount,
+          totalRecharged: wallet.totalRecharged + pkg.price,
+          version: wallet.version + 1
+        }
+      });
+      await tx.walletLog.create({
+        data: {
+          userId: req.userId!,
+          amount: amount,
+          balanceAfter: wallet.coinBalance + amount,
+          tradeType: 'RECHARGE',
+          relatedBizId: pkg.id.toString()
+        }
+      });
+    });
+    return ok(res, { success: true, message: '充值成功' });
+  })
+);
+const consumeSchema = z.object({
+  amount: z.number().int().positive(),
+  tradeType: z.string(),
+  relatedBizId: z.string().optional()
+});
+router.post(
+  '/consume',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { amount, tradeType, relatedBizId } = consumeSchema.parse(req.body);
+    try {
+      const result = await walletService.consumeCoins(req.userId!, amount, trade...
+      return ok(res, result);
+    } catch (e: any) {
+      if (e.message === 'INSUFFICIENT_BALANCE') {
+        throw new ApiError(402, '余额不足，请充值');
+      } else if (e.message === 'WALLET_NOT_FOUND') {
+        throw new ApiError(404, '钱包不存在');
+      } else if (e.message === 'CONCURRENT_CONFLICT') {
+        throw new ApiError(409, '请求冲突，请重试');
+      }
+      throw e;
+    }
+  })
+);
+export default router;
+import { WebSocketServer, WebSocket } from 'ws';
+import type { Server } from 'node:http';
+import { verifyToken } from '../lib/jwt.js';
+import { prisma } from '../lib/prisma.js';
+import { encryptChatMessage, decryptChatMessage, generateEvidenceHash } from '.....
+import Redis from 'ioredis';
+import { env } from '../config/env.js';
+interface ExtWebSocket extends WebSocket {
+  isAlive?: boolean;
+  userId?: string;
+}
+const clients = new Map<string, Set<ExtWebSocket>>();
+const rooms = new Map<string, Set<ExtWebSocket>>();
+const redisPub = new Redis(env.redisUrl);
+const redisSub = new Redis(env.redisUrl);
+const WS_CHANNEL = 'ws:messages';
+redisSub.subscribe(WS_CHANNEL, (err) => {
+  if (err) console.error('[WS Hub] Failed to subscribe to Redis channel', err);
+  else console.log(`[WS Hub] Subscribed to Redis channel: ${WS_CHANNEL}`);
+});
+redisSub.on('message', (channel, message) => {
+  if (channel !== WS_CHANNEL) return;
+  try {
+    const { type, target, payload } = JSON.parse(message);
+    const data = JSON.stringify(payload);
+    if (type === 'user' && target) {
+      const set = clients.get(target);
+      if (set) {
+        for (const ws of set) {
+          if (ws.readyState === WebSocket.OPEN) ws.send(data);
+        }
+      }
+    } else if (type === 'room' && target) {
+      const set = rooms.get(target);
+      if (set) {
+        for (const ws of set) {
+          if (ws.readyState === WebSocket.OPEN) ws.send(data);
+        }
+      }
+    } else if (type === 'broadcast') {
+      for (const set of clients.values()) {
+        for (const ws of set) {
+          if (ws.readyState === WebSocket.OPEN) ws.send(data);
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[WS Hub] Failed to parse Redis message', e);
+  }
+});
+export function pushToUser(userId: string, payload: Record<string, unknown>) {
+  redisPub.publish(WS_CHANNEL, JSON.stringify({ type: 'user', target: userId, pa...
+}
+export function pushToRoom(room: string, payload: Record<string, unknown>) {
+  redisPub.publish(WS_CHANNEL, JSON.stringify({ type: 'room', target: room, payl...
+}
+export function broadcastToAll(payload: Record<string, unknown>) {
+  redisPub.publish(WS_CHANNEL, JSON.stringify({ type: 'broadcast', payload }));
+}
+export function attachRealtime(server: Server) {
+  const wss = new WebSocketServer({
+    server,
+    path: '/ws',
+    maxPayload: 50 * 1024 * 1024
+  });
+  const pingInterval = setInterval(() => {
+    wss.clients.forEach((ws: WebSocket) => {
+       const extWs = ws as ExtWebSocket;
+       if (extWs.isAlive === false) {
+          console.log('[WS Hub] Terminating inactive half-open socket for user:'...
+          return extWs.terminate();
+       }
+       extWs.isAlive = false;
+       extWs.ping();
+    });
+  }, 30_000);
+  wss.on('close', () => {
+    clearInterval(pingInterval);
+  });
+  wss.on('connection', (ws: ExtWebSocket, req) => {
+    try {
+      const url = new URL(req.url ?? '', 'http://localhost');
+      const token = url.searchParams.get('token');
+      if (!token) return ws.close(4001, 'missing token');
+      const { sub: userId } = verifyToken(token);
+      ws.isAlive = true;
+      ws.userId = userId;
+      if (!clients.has(userId)) clients.set(userId, new Set());
+      clients.get(userId)!.add(ws);
+      ws.send(JSON.stringify({ event: 'connected', userId, timestamp: Date.now()...
+      ws.on('pong', () => {
+        ws.isAlive = true;
+      });
+      ws.on('ping', () => {
+        ws.isAlive = true;
+      });
+      ws.on('message', async (data) => {
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.action === 'ping') {
+             ws.isAlive = true;
+             ws.send(JSON.stringify({ event: 'pong', timestamp: Date.now() }));
+             return;
+          }
+          if (msg.action === 'subscribe' && msg.room) {
+             const room = msg.room as string;
+             if (!rooms.has(room)) rooms.set(room, new Set());
+             rooms.get(room)!.add(ws);
+             ws.send(JSON.stringify({ event: 'subscribed', room }));
+             return;
+          }
+          if (msg.action === 'sync_offline') {
+             const conversationId = msg.conversationId as string | undefined;
+             const targetConvs = conversationId && conversationId !== 'all'
+                 ? [{ id: conversationId }]
+                 : await prisma.chatSession.findMany({
+                     where: {
+                       OR: [
+                         { user1Id: userId },
+                         { user2Id: userId }
+                       ]
+                     },
+                     select: { id: true }
+                   });
+             for (const c of targetConvs) {
+               const msgs = await prisma.chatMessage.findMany({
+                 where: { sessionId: c.id },
+                 orderBy: { createdAt: 'desc' },
+                 take: 50
+               });
+               if (msgs.length > 0) {
+                 msgs.reverse(); // 恢复升序
+                 const decryptedMsgs = msgs.map(m => ({
+                   ...m,
+                   content: (m.isEncrypted && !m.isRecalled) ? decryptChatMessag...
+                   msgType: m.type   // 确保字段名与客户端一致
+                 }));
+                 ws.send(JSON.stringify({ event: 'offline_sync', conversationId:...
+               }
+             }
+             return;
+          }
+          if (msg.action === 'chat') {
+             console.log(`\n[DEBUG-TIME] chat action received at: ${Date.now()} ...
+             const clientMsgId = msg.clientMsgId || require('crypto').randomUUID...
+             const toUserId = msg.toUserId;
+             const content = msg.content;
+             const type = msg.type || 'TEXT';
+             const mediaHash = msg.mediaHash || null;
+             if (!toUserId || !content) return;
+             if (userId === toUserId) {
+                 ws.send(JSON.stringify({ event: 'error', message: '不能给自己发送消息' }...
+                 return;
+             }
+             const user1Id = userId < toUserId ? userId : toUserId;
+             const user2Id = userId < toUserId ? toUserId : userId;
+             let conv = await prisma.chatSession.findFirst({
+                 where: { user1Id, user2Id }
+             });
+             if (!conv) {
+                 conv = await prisma.chatSession.create({
+                     data: { user1Id, user2Id, lastMessage: '' }
+                 });
+             }
+             const prevMsg = await prisma.chatMessage.findFirst({
+                 where: { sessionId: conv.id },
+                 orderBy: { createdAt: 'desc' },
+                 select: { evidenceHash: true }
+             });
+             const now = new Date();
+             const evidenceHash = generateEvidenceHash(conv.id, userId, now, con...
+             const encryptedContent = encryptChatMessage(content);
+             const isUser1 = userId === conv.user1Id;
+             const [savedMessage, updatedConv] = await prisma.$transaction([
+                 prisma.chatMessage.create({
+                     data: {
+                         id: clientMsgId,
+                         sessionId: conv.id,
+                         senderId: userId,
+                         type: type,
+                         content: encryptedContent,
+                         evidenceHash: evidenceHash,
+                         createdAt: now
+                     }
+                 }),
+                 prisma.chatSession.update({
+                     where: { id: conv.id },
+                     data: {
+                         lastMessage: encryptedContent,
+                         unread1: !isUser1 ? { increment: 1 } : undefined,
+                         unread2: isUser1 ? { increment: 1 } : undefined,
+                         deletedBy: []
+                     }
+                 })
+             ]);
+             console.log(`[DEBUG-TIME] DB Transaction completed at: ${Date.now()...
+             ws.send(JSON.stringify({
+                 event: 'MSG_ACK',
+                 clientMsgId,
+                 serverMsgId: savedMessage.id,
+                 conversationId: conv.id,
+                 status: 'SENT'
+             }));
+             console.log(`[DEBUG-TIME] MSG_ACK sent to sender at: ${Date.now()}`...
+             const payload = {
+                 event: 'chat_message',
+                 message: {
+                    id: savedMessage.id,
+                    sessionId: savedMessage.sessionId,
+                    senderId: savedMessage.senderId,
+                    type: savedMessage.type,
+                    content: msg.content,
+                    createdAt: savedMessage.createdAt
+                 }
+             };
+             pushToUser(toUserId, payload);
+             console.log(`[DEBUG-TIME] pushToUser completed at: ${Date.now()}`);
+             return;
+          }
+          if (msg.action === 'read_ack' && msg.sessionId) {
+             const sessionId = msg.sessionId as string;
+             const conv = await prisma.chatSession.findUnique({ where: { id: ses...
+             if (conv && (conv.user1Id === userId || conv.user2Id === userId)) {
+                const isUser1 = conv.user1Id === userId;
+                await prisma.chatSession.update({
+                   where: { id: sessionId },
+                   data: {
+                      unread1: isUser1 ? 0 : undefined,
+                      unread2: !isUser1 ? 0 : undefined
+                   }
+                });
+             }
+             return;
+          }
+          if (msg.action === 'recall') {
+             return;
+          }
+        } catch (e) {
+          console.error("WS message error", e);
+        }
+      });
+      ws.on('close', () => {
+        clients.get(userId)?.delete(ws);
+        if (clients.get(userId)?.size === 0) clients.delete(userId);
+        rooms.forEach((subs, roomName) => {
+           subs.delete(ws);
+           if (subs.size === 0) rooms.delete(roomName);
+        });
+      });
+    } catch {
+      ws.close(4003, 'invalid token');
+    }
+  });
+  return wss;
+}
+import { Router } from 'express';
+import { prisma } from '../lib/prisma.js';
+import { ok, ApiError } from '../lib/http.js';
+import { asyncHandler } from '../middleware/error.js';
+const router = Router();
+interface CategoryNodeResponse {
+  id: string;
+  name: string;
+  icon: string | null;
+  iconUrl: string | null;
+  parentId: string | null;
+  sortOrder: number;
+  isLeaf: boolean;
+  isActive: boolean;
+  isHot: boolean;
+  attributeSchema: any[];
+  children: CategoryNodeResponse[];
+}
+router.get(
+  '/tree',
+  asyncHandler(async (_req, res) => {
+    const allCategories = await prisma.category.findMany({
+      where: {
+        OR: [
+          { isActive: true },
+          { isActive: { equals: undefined } }
+        ]
+      },
+      orderBy: { sortOrder: 'asc' },
+    });
+    const buildTree = (parentId: string | null): CategoryNodeResponse[] => {
+      return allCategories
+        .filter((c) => c.parentId === parentId)
+        .map((c) => {
+          let schema: any[] = [];
+          try {
+            if (c.attributeSchema) {
+              schema = typeof c.attributeSchema === 'string' ? JSON.parse(c.attr...
+            }
+          } catch {
+            schema = [];
+          }
+          const iconUrlValue = c.iconUrl ?? null;
+          const iconValue = c.icon ?? null;
+          return {
+            id: c.id,
+            name: c.name,
+            icon: iconValue,
+            iconUrl: iconUrlValue,
+            parentId: c.parentId,
+            sortOrder: c.sortOrder,
+            isLeaf: c.isLeaf,
+            isActive: (c as any).isActive !== undefined ? (c as any).isActive : ...
+            isHot: (c as any).isHot ?? false,
+            attributeSchema: schema,
+            children: buildTree(c.id),
+          };
+        });
+    };
+    const tree = buildTree(null);
+    return ok(res, tree);
+  }),
+);
+router.get(
+  '/hot',
+  asyncHandler(async (_req, res) => {
+    const hotCategories = await prisma.category.findMany({
+      where: {
+        isHot: true,
+        OR: [
+          { isActive: true },
+          { isActive: { equals: undefined } }
+        ]
+      },
+      orderBy: { sortOrder: 'asc' },
+    });
+    const result = hotCategories.map((c) => {
+      let schema: any[] = [];
+      try {
+        if (c.attributeSchema) {
+          schema = typeof c.attributeSchema === 'string' ? JSON.parse(c.attribut...
+        }
+      } catch {
+        schema = [];
+      }
+      return {
+        id: c.id,
+        name: c.name,
+        icon: c.icon ?? null,
+        iconUrl: c.iconUrl ?? null,
+        parentId: c.parentId,
+        sortOrder: c.sortOrder,
+        isLeaf: c.isLeaf,
+        isActive: (c as any).isActive !== undefined ? (c as any).isActive : true...
+        isHot: (c as any).isHot ?? false,
+        attributeSchema: schema,
+      };
+    });
+    return ok(res, result);
+  }),
+);
+router.get(
+  '/:id/schema',
+  asyncHandler(async (req, res) => {
+    const category = await prisma.category.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!category) {
+      throw new ApiError(404, '分类不存在');
+    }
+    let schema: any[] = [];
+    try {
+      if (category.attributeSchema) {
+        schema = typeof category.attributeSchema === 'string' ? JSON.parse(categ...
+      }
+    } catch {
+      schema = [];
+    }
+    return ok(res, {
+      categoryId: category.id,
+      name: category.name,
+      isLeaf: category.isLeaf,
+      attributeSchema: schema,
+    });
+  }),
+);
+export default router;
+import { env } from '../config/env.js';
+import { prisma } from '../lib/prisma.js';
+import { ApiError } from '../lib/http.js';
+export interface AiRecommendation {
+  merchantId: string;
+  itemId: string;
+  name: string;
+  price: number;
+}
+export interface AiReply {
+  reply: string;
+  recommendations: AiRecommendation[];
+}
+export interface AiProvider {
+  recommend(prompt: string): Promise<AiReply>;
+  generateText(prompt: string): Promise<string>;
+}
+async function buildMerchantContext() {
+  const merchants = await prisma.merchant.findMany();
+  return merchants.map((m) => ({
+    id: m.externalId ?? m.id,
+    name: m.name,
+    tags: JSON.parse(m.tags) as string[],
+    items: [] as any[],
+  }));
+}
+const mockProvider: AiProvider = {
+  async recommend(prompt) {
+    const merchants = await buildMerchantContext();
+    const foodPicks = merchants
+      .flatMap((m) => m.items.slice(0, 1).map((i) => ({ merchantId: m.id, itemId...
+      .slice(0, 2);
+    return {
+      reply:
+        `您好！我是清远同城智能助手。收到您的需求「${prompt}」。\n\n` +
+        '为您推荐清远壮族瑶族自治县的本地好物，点击卡片可直接下单体验哦！',
+      recommendations: foodPicks,
+    };
+  },
+  async generateText(prompt) {
+    const hintMatch = prompt.match(/“(.+)”/);
+    const hint = hintMatch ? hintMatch[1] : '这件宝贝';
+    return `我这里有一款非常不错的${hint}，平时很爱惜，功能一切正常，配件齐全。\n因为近期用不上了，所以低价转让给有需要的朋友。\n\n支持...
+  },
+};
+const dashscopeProvider: AiProvider = {
+  async recommend(prompt) {
+    if (!env.aiApiKey) throw new Error('AI_API_KEY 未配置');
+    const merchants = await buildMerchantContext();
+    const sys =
+      '你是熟悉广东省清远市清远壮族瑶族自治县的同城生活专家。请基于给定商户数据做定制推荐, ' +
+      '只输出合法 JSON: {"reply":"...","recommendations":[{"merchantId","itemId","nam...
+    const resp = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/...
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${en...
+      body: JSON.stringify({
+        model: env.aiModel,
+        messages: [
+          { role: 'system', content: sys },
+          { role: 'user', content: `商户数据:\n${JSON.stringify(merchants)}\n\n用户留言:...
+        ],
+        response_format: { type: 'json_object' },
+      }),
+    });
+    const data = (await resp.json()) as { choices?: Array<{ message?: { content?...
+    const text = data.choices?.[0]?.message?.content ?? '{}';
+    return JSON.parse(text) as AiReply;
+  },
+  async generateText(prompt) {
+    if (!env.aiApiKey) throw new Error('AI_API_KEY 未配置');
+    const resp = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/...
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${en...
+      body: JSON.stringify({
+        model: env.aiModel,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = (await resp.json()) as { choices?: Array<{ message?: { content?...
+    return data.choices?.[0]?.message?.content ?? '';
+  },
+};
+const deepseekProvider: AiProvider = {
+  async recommend(prompt) {
+    if (!env.aiApiKey) {
+      console.warn('[AI] AI_API_KEY 未配置，降级为 mock 推荐');
+      return mockProvider.recommend(prompt);
+    }
+    const merchants = await buildMerchantContext();
+    const sys =
+      '你是熟悉广东省清远市清远壮族瑶族自治县的同城生活专家。请基于给定商户数据做定制推荐, ' +
+      '只输出合法 JSON: {"reply":"...","recommendations":[{"merchantId":"","itemId":"...
+    const resp = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${en...
+      body: JSON.stringify({
+        model: env.aiModel || 'deepseek-chat',
+        messages: [
+          { role: 'system', content: sys },
+          { role: 'user', content: `商户数据:\n${JSON.stringify(merchants)}\n\n用户留言:...
+        ],
+        response_format: { type: 'json_object' },
+      }),
+    });
+    const data = (await resp.json()) as any;
+    if (data.error) {
+      throw new ApiError(500, data.error.message || 'AI API Error');
+    }
+    const text = data.choices?.[0]?.message?.content ?? '{}';
+    return JSON.parse(text) as AiReply;
+  },
+  async generateText(prompt) {
+    if (!env.aiApiKey) throw new Error('AI_API_KEY 未配置，请在 .env 中设置');
+    const resp = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${en...
+      body: JSON.stringify({
+        model: env.aiModel || 'deepseek-chat',
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' }
+      }),
+    });
+    const data = (await resp.json()) as any;
+    if (data.error) {
+      throw new ApiError(500, data.error.message || 'AI API Error');
+    }
+    return data.choices?.[0]?.message?.content ?? '{}';
+  },
+};
+export function getAiProvider(): AiProvider {
+  return deepseekProvider;
+}
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+class TrieNode {
+    children: Map<string, TrieNode> = new Map();
+    isEnd: boolean = false;
+    word: string = '';
+    level: number = 1;
+}
+export class DFAEngine {
+    private root: TrieNode = new TrieNode();
+    private isInitialized: boolean = false;
+    async init() {
+        this.root = new TrieNode();
+        const words = await prisma.sensitiveWord.findMany();
+        for (const w of words) {
+            this.addWord(w.word, w.level);
+        }
+        this.isInitialized = true;
+        console.log(`[DFA] Loaded ${words.length} sensitive words into Trie.`);
+    }
+    addWord(word: string, level: number = 1) {
+        let node = this.root;
+        for (const char of word) {
+            if (!node.children.has(char)) {
+                node.children.set(char, new TrieNode());
+            }
+            node = node.children.get(char)!;
+        }
+        node.isEnd = true;
+        node.word = word;
+        node.level = level;
+    }
+    match(text: string): { matched: boolean; words: {word: string, level: number...
+        if (!this.isInitialized) return { matched: false, words: [] };
+        const matchedWords = new Set<{word: string, level: number}>();
+        for (let i = 0; i < text.length; i++) {
+            let node = this.root;
+            for (let j = i; j < text.length; j++) {
+                const char = text[j];
+                if (!node.children.has(char)) break;
+                node = node.children.get(char)!;
+                if (node.isEnd) {
+                    matchedWords.add({word: node.word, level: node.level});
+                }
+            }
+        }
+        const result = Array.from(matchedWords).filter((v, i, a) => a.findIndex(...
+        return {
+            matched: result.length > 0,
+            words: result
+        };
+    }
+}
+export const dfaEngine = new DFAEngine();
+import { prisma } from '../lib/prisma.js';
+export const startLifecycleCron = () => {
+  const sweep = async () => {
+    try {
+      console.log('[LifecycleCron] Running lifecycle sweep...');
+      const now = new Date();
+      const archivedMoments = await prisma.post.updateMany({
+        where: {
+          postType: 'MOMENT',
+          status: 'published',
+          expireAt: { lt: now }
+        },
+        data: { status: 'archived' }
+      });
+      if (archivedMoments.count > 0) {
+        console.log(`[LifecycleCron] Archived ${archivedMoments.count} MOMENT po...
+      }
+      const expiredPosts = await prisma.post.updateMany({
+        where: {
+          postType: 'CLASSIFIED',
+          status: 'published',
+          expireAt: { lt: now }
+        },
+        data: { status: 'expired' }
+      });
+      if (expiredPosts.count > 0) {
+        console.log(`[LifecycleCron] Expired ${expiredPosts.count} CLASSIFIED po...
+      }
+      const suspendedMerchants = await prisma.merchantCertification.updateMany({
+        where: {
+          status: 'APPROVED',
+          OR: [
+            { expireAt: { lt: now } },
+            { lastConfirmedAt: { lt: new Date(now.getTime() - 90 * 24 * 60 * 60 ...
+          ]
+        },
+        data: { status: 'SUSPENDED' }
+      });
+      if (suspendedMerchants.count > 0) {
+        console.log(`[LifecycleCron] Suspended ${suspendedMerchants.count} merch...
+      }
+    } catch (error) {
+      console.error('[LifecycleCron] Error during sweep:', error);
+    }
+  };
+  setInterval(sweep, 1000 * 60 * 60);
+  setTimeout(sweep, 5000);
+};
+import { env } from '../config/env.js';
+import { dfaEngine } from './dfa.js';
+export interface ModerationResult {
+  pass: boolean;
+  status: 'PUBLISHED' | 'MANUAL_REVIEWING' | 'REJECTED' | 'AI_REVIEWING';
+  note?: string;
+  matchedWords?: string[];
+  level?: number;
+}
+export function moderateContent(title: string, description: string): ModerationR...
+  if (!env.contentModerationEnabled) {
+    return { pass: true, status: 'PUBLISHED' };
+  }
+  const text = `${title} ${description}`;
+  const dfaResult = dfaEngine.match(text);
+  if (dfaResult.matched) {
+    const blockedWords = dfaResult.words.filter(w => w.level >= 3);
+    if (blockedWords.length > 0) {
+      return {
+        pass: false,
+        status: 'REJECTED',
+        note: `触发严重违禁词: ${blockedWords.map(w => w.word).join(', ')}`,
+        matchedWords: blockedWords.map(w => w.word),
+        level: 3
+      };
+    }
+    const reviewWords = dfaResult.words.filter(w => w.level === 2);
+    if (reviewWords.length > 0) {
+      return {
+        pass: true,
+        status: 'MANUAL_REVIEWING',
+        note: `包含可疑词汇: ${reviewWords.map(w => w.word).join(', ')}`,
+        matchedWords: reviewWords.map(w => w.word),
+        level: 2
+      };
+    }
+  }
+  return { pass: true, status: 'AI_REVIEWING', note: '等待 AI 引擎复核' };
+}
+import { getAiProvider } from './ai.js';
+import { prisma } from '../lib/prisma.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const UPLOAD_DIR = path.resolve(__dirname, '../../public/uploads');
+async function triggerVisionReview(images: string[]): Promise<{ pass: boolean; s...
+  if (images.length === 0) return { pass: true, status: 'PUBLISHED', reason: '无图...
+  if (!env.geminiApiKey) {
+     return { pass: true, status: 'MANUAL_REVIEWING', reason: 'Gemini API Key 未配...
+  }
+  try {
+    const inlineDataList = [];
+    for (const url of images) {
+      if (url.includes('/uploads/')) {
+        const filename = url.split('/').pop();
+        if (filename) {
+          const filePath = path.join(UPLOAD_DIR, filename);
+          if (fs.existsSync(filePath)) {
+            const base64 = fs.readFileSync(filePath).toString('base64');
+            const ext = path.extname(filename).toLowerCase();
+            const mimeType = ext === '.webp' ? 'image/webp' : ext === '.png' ? '...
+            inlineDataList.push({
+              inline_data: { mime_type: mimeType, data: base64 }
+            });
+          }
+        }
+      }
+    }
+    if (inlineDataList.length === 0) {
+       return { pass: true, status: 'MANUAL_REVIEWING', reason: '无有效图片，转人工' };
+    }
+    const payload = {
+      contents: [{
+        parts: [
+          { text: "作为本地生活平台审核员，请分析这些图片是否包含色情、血腥、暴恐、违禁品等违规内容。输出必须是严格的JSON格式：{\"pa...
+          ...inlineDataList
+        ]
+      }],
+      generationConfig: { response_mime_type: "application/json" }
+    };
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1be...
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json() as any;
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    const parsed = JSON.parse(text);
+    return {
+      pass: !!parsed.pass,
+      status: ['PUBLISHED', 'MANUAL_REVIEWING', 'REJECTED'].includes(parsed.stat...
+      reason: parsed.reason || 'Gemini 检查完成'
+    };
+  } catch (e) {
+    console.error('[Vision Review] Error:', e);
+    return { pass: true, status: 'MANUAL_REVIEWING', reason: '视觉审查异常，降级人工' };
+  }
+}
+export async function triggerAiReview(postId: string, title: string, description...
+  try {
+    const textReviewPromise = (async () => {
+      const prompt = `你是一个本地生活服务平台的内容审核AI助手。
+需要你对以下用户发布的商品/服务内容进行深度语义剖析（涉政、涉黄、暴恐、黑产等）。
+标题: ${title}
+内容描述: ${description}
+请严格遵守只输出一个 JSON 对象，结构如下：
+- "pass": boolean (是否通过)
+- "status": "PUBLISHED" | "MANUAL_REVIEWING" | "REJECTED" (如果内容完全纯净合规，无任何违规/广告，返...
+- "reason": string (解释你的判断原因，特别提醒审核员需要注意的点)
+JSON 结果：`;
+      const result = await getAiProvider().generateText(prompt);
+      let parsed: { pass: boolean; status: string; reason: string };
+      try {
+        const cleanJson = result.replace(/```json/g, '').replace(/```/g, '').tri...
+        parsed = JSON.parse(cleanJson);
+      } catch (e) {
+        console.error('[AI Review] Failed to parse JSON response:', result);
+        return { pass: true, status: 'MANUAL_REVIEWING', reason: '解析失败，降级人工' };
+      }
+      return {
+        pass: parsed.pass,
+        status: ['PUBLISHED', 'MANUAL_REVIEWING', 'REJECTED'].includes(parsed.st...
+        reason: parsed.reason
+      };
+    })();
+    const [textResult, visionResult] = await Promise.all([textReviewPromise, tri...
+    let finalStatus = 'PUBLISHED';
+    if (textResult.status === 'REJECTED' || visionResult.status === 'REJECTED') ...
+      finalStatus = 'REJECTED';
+    } else if (textResult.status === 'MANUAL_REVIEWING' || visionResult.status =...
+      finalStatus = 'MANUAL_REVIEWING';
+    }
+    const combinedNote = `[Text: ${textResult.reason}] [Vision: ${visionResult.r...
+    await prisma.post.update({
+      where: { id: postId },
+      data: {
+        status: finalStatus,
+        reviewNote: combinedNote
+      }
+    });
+    console.log(`[AI Review] Post ${postId} reviewed. Status -> ${finalStatus}`)...
+  } catch (error) {
+    console.error(`[AI Review] Error processing post ${postId}:`, error);
+    await prisma.post.update({
+      where: { id: postId },
+      data: { status: 'MANUAL_REVIEWING', reviewNote: 'AI 服务调用失败，降级转人工' }
+    });
+  }
+}
+export async function triggerProfileAiReview(userId: string, nickname: string | ...
+  if (!nickname) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { profileReviewStatus: 'MANUAL_REVIEWING', profileReviewNote: '自动进入头...
+    });
+    return;
+  }
+  try {
+    const prompt = `你是一个本地生活服务平台的内容审核AI助手。
+需要你对以下用户的昵称进行深度语义剖析（涉政、涉黄、暴恐、黑产等）。
+昵称: ${nickname}
+请严格遵守只输出一个 JSON 对象，结构如下：
+- "pass": boolean (是否通过)
+- "status": "MANUAL_REVIEWING" | "REJECTED" (如果合规，请返回 MANUAL_REVIEWING 进入人工头像与昵称...
+- "reason": string (解释你的判断原因，特别提醒审核员需要注意的点)
+JSON 结果：`;
+    const result = await getAiProvider().generateText(prompt);
+    let parsed: { pass: boolean; status: string; reason: string };
+    try {
+      const cleanJson = result.replace(/```json/g, '').replace(/```/g, '').trim(...
+      parsed = JSON.parse(cleanJson);
+      if (parsed.status === 'PUBLISHED') {
+        parsed.status = 'MANUAL_REVIEWING';
+      }
+    } catch (e) {
+      console.error('[AI Review] Failed to parse profile JSON response:', result...
+      await prisma.user.update({
+        where: { id: userId },
+        data: { profileReviewStatus: 'MANUAL_REVIEWING', profileReviewNote: 'AI ...
+      });
+      return;
+    }
+    const newStatus = ['MANUAL_REVIEWING', 'REJECTED'].includes(parsed.status)
+      ? parsed.status
+      : 'MANUAL_REVIEWING';
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        profileReviewStatus: newStatus,
+        profileReviewNote: `[DeepSeek AI] ${parsed.reason}`
+      }
+    });
+    console.log(`[AI Review] User profile ${userId} reviewed. Status -> ${newSta...
+  } catch (error) {
+    console.error(`[AI Review] Error processing user profile ${userId}:`, error)...
+    await prisma.user.update({
+      where: { id: userId },
+      data: { profileReviewStatus: 'MANUAL_REVIEWING', profileReviewNote: 'AI 服务...
+    });
+  }
+}
+import { env } from '../config/env.js';
+export type PayChannel = 'wechat' | 'alipay' | 'wallet' | 'mock';
+export interface CreatePaymentInput {
+  orderNo: string;
+  amount: number;
+  channel: PayChannel;
+  description: string;
+}
+export interface CreatePaymentResult {
+  prepayPayload: Record<string, unknown>;
+  transactionId: string;
+}
+export interface PaymentProvider {
+  createPayment(input: CreatePaymentInput): Promise<CreatePaymentResult>;
+  verifyCallback(rawBody: unknown, headers: Record<string, unknown>): Promise<{ ...
+}
+const mockProvider: PaymentProvider = {
+  async createPayment(input) {
+    const transactionId = `MOCK${Date.now()}${Math.floor(Math.random() * 1000)}`...
+    return {
+      transactionId,
+      prepayPayload: {
+        channel: input.channel,
+        mock: true,
+        confirmUrl: `/api/payments/mock-confirm`,
+        orderNo: input.orderNo,
+        amount: input.amount,
+      },
+    };
+  },
+  async verifyCallback(rawBody) {
+    const body = rawBody as { orderNo: string; transactionId?: string };
+    return {
+      orderNo: body.orderNo,
+      success: true,
+      transactionId: body.transactionId ?? `MOCK${Date.now()}`,
+    };
+  },
+};
+const wechatProvider: PaymentProvider = {
+  async createPayment(input) {
+    console.log('[Pay:wechat] 微信统一下单', input.orderNo);
+    return {
+      transactionId: `WX${Date.now()}`,
+      prepayPayload: {
+        appId: 'wx123456',
+        timeStamp: String(Math.floor(Date.now() / 1000)),
+        nonceStr: 'random',
+        package: 'prepay_id=wx123',
+        signType: 'RSA',
+        paySign: 'mock_sign'
+      },
+    };
+  },
+  async verifyCallback(rawBody, headers) {
+    console.log('[Pay:wechat] 验证回调签名', headers);
+    const body = rawBody as { resource?: { ciphertext: string }; out_trade_no?: ...
+    const isValidSignature = true;
+    if (!isValidSignature) {
+       return { orderNo: '', success: false, transactionId: '' };
+    }
+    const orderNo = body.out_trade_no ?? `MOCK_${Date.now()}`;
+    return {
+      orderNo,
+      success: true,
+      transactionId: `WX_TRANS_${Date.now()}`
+    };
+  },
+};
+export function getPaymentProvider(): PaymentProvider {
+  switch (env.payProvider) {
+    case 'wechat':
+    case 'alipay':
+      return wechatProvider;
+    default:
+      return mockProvider;
+  }
+}
+export interface DynamicField {
+  key: string;
+  label: string;
+  fieldType: 'TEXT' | 'SELECT' | 'MULTI_SELECT' | 'NUMBER' | 'BOOLEAN';
+  required: boolean;
+  options?: string[];
+  placeholder?: string;
+}
+const schemas: Record<string, DynamicField[]> = {
+  cat_5_rent: [
+    { key: 'price_per_month', label: '租金/月(元)', fieldType: 'NUMBER', required: t...
+    { key: 'payment_method', label: '付款方式', fieldType: 'SELECT', required: true,...
+    { key: 'facilities', label: '配置设施', fieldType: 'MULTI_SELECT', required: fal...
+    { key: 'layout', label: '户型', fieldType: 'SELECT', required: true, options: ...
+    { key: 'area', label: '面积(平方米)', fieldType: 'NUMBER', required: true, placeh...
+  ],
+  cat_6_sale: [
+    { key: 'total_price', label: '总价(万元)', fieldType: 'NUMBER', required: true, ...
+    { key: 'down_payment', label: '首付(万元)', fieldType: 'NUMBER', required: true,...
+    { key: 'property_years', label: '产权年限', fieldType: 'SELECT', required: true,...
+    { key: 'five_years_unique', label: '满五唯一', fieldType: 'SELECT', required: tr...
+    { key: 'layout', label: '户型', fieldType: 'SELECT', required: true, options: ...
+    { key: 'area', label: '面积(平方米)', fieldType: 'NUMBER', required: true, placeh...
+  ],
+  cat_1_idle: [
+    { key: 'condition', label: '成色', fieldType: 'SELECT', required: true, option...
+    { key: 'delivery', label: '交易方式', fieldType: 'SELECT', required: true, optio...
+  ],
+  cat_2_service: [
+    { key: 'service_type', label: '服务类型', fieldType: 'SELECT', required: true, o...
+    { key: 'billing', label: '计费标准', fieldType: 'SELECT', required: true, option...
+  ],
+  cat_3_repair: [
+    { key: 'repair_type', label: '维修范围', fieldType: 'TEXT', required: true, plac...
+    { key: 'fee', label: '上门费', fieldType: 'SELECT', required: true, options: ['...
+  ],
+  cat_8_job: [
+    { key: 'salary', label: '薪资待遇', fieldType: 'SELECT', required: true, options...
+    { key: 'experience', label: '经验要求', fieldType: 'SELECT', required: true, opt...
+    { key: 'education', label: '学历要求', fieldType: 'SELECT', required: true, opti...
+  ],
+  cat_7_carpool: [
+    { key: 'departure', label: '出发地', fieldType: 'TEXT', required: true, placeho...
+    { key: 'destination', label: '目的地', fieldType: 'TEXT', required: true, place...
+    { key: 'seats', label: '提供/需要座位数', fieldType: 'NUMBER', required: true, plac...
+    { key: 'time', label: '出发时间', fieldType: 'TEXT', required: true, placeholder...
+  ],
+  default: []
+};
+export class SchemaEngine {
+  static getSchema(categoryId: string): DynamicField[] {
+    if (!categoryId) return schemas['default'];
+    if (schemas[categoryId]) {
+      return schemas[categoryId];
+    }
+    for (const key of Object.keys(schemas)) {
+      if (key !== 'default' && categoryId.startsWith(key)) {
+        return schemas[key];
+      }
+    }
+    return schemas['default'];
+  }
+}
+import { env } from '../config/env.js';
+export interface SmsProvider {
+  send(phone: string, code: string): Promise<{ mockCode?: string }>;
+}
+const mockProvider: SmsProvider = {
+  async send(phone, code) {
+    console.log(`[SMS:mock] 向 ${phone} 发送验证码: ${code}`);
+    return { mockCode: code };
+  },
+};
+const aliyunProvider: SmsProvider = {
+  async send(phone, code) {
+    console.log(`[SMS:aliyun] TODO 调用阿里云短信 API 发送 ${phone} -> ${code}`);
+    return {};
+  },
+};
+export function getSmsProvider(): SmsProvider {
+  switch (env.smsProvider) {
+    case 'aliyun':
+    case 'tencent':
+      return aliyunProvider;
+    default:
+      return mockProvider;
+  }
+}
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+export class UserWalletService {
+  async consumeCoins(userId: string, amount: number, tradeType: string, relatedB...
+    if (amount <= 0) throw new Error('Amount must be strictly positive');
+    return await prisma.$transaction(async (tx) => {
+      const wallet = await tx.userWallet.findUnique({
+        where: { userId }
+      });
+      if (!wallet) {
+        throw new Error('WALLET_NOT_FOUND');
+      }
+      if (wallet.coinBalance < amount) {
+        throw new Error('INSUFFICIENT_BALANCE');
+      }
+      const updateResult = await tx.userWallet.updateMany({
+        where: {
+          userId: userId,
+          version: wallet.version // 【核心】乐观锁检查：必须与刚才查询的版本一致
+        },
+        data: {
+          coinBalance: wallet.coinBalance - amount,
+          version: wallet.version + 1 // 版本号自增
+        }
+      });
+      if (updateResult.count === 0) {
+        throw new Error('CONCURRENT_CONFLICT'); // 提示并发冲突，可重试
+      }
+      const balanceAfter = wallet.coinBalance - amount;
+      await tx.walletLog.create({
+        data: {
+          userId,
+          amount: -amount, // 支出记录为负
+          balanceAfter: balanceAfter,
+          tradeType,
+          relatedBizId
+        }
+      });
+      return { success: true, balanceAfter };
+    });
+  }
+  async rewardCoins(userId: string, amount: number, tradeType: string, relatedBi...
+    if (amount <= 0) throw new Error('Amount must be strictly positive');
+    return await prisma.$transaction(async (tx) => {
+      let wallet = await tx.userWallet.findUnique({
+        where: { userId }
+      });
+      if (!wallet) {
+        wallet = await tx.userWallet.create({
+          data: {
+            userId: userId,
+            coinBalance: 0,
+            version: 0
+          }
+        });
+      }
+      const updateResult = await tx.userWallet.updateMany({
+        where: {
+          userId: userId,
+          version: wallet.version
+        },
+        data: {
+          coinBalance: wallet.coinBalance + amount,
+          version: wallet.version + 1
+        }
+      });
+      if (updateResult.count === 0) {
+        throw new Error('CONCURRENT_CONFLICT');
+      }
+      const balanceAfter = wallet.coinBalance + amount;
+      await tx.walletLog.create({
+        data: {
+          userId,
+          amount: amount,
+          balanceAfter: balanceAfter,
+          tradeType,
+          relatedBizId
+        }
+      });
+      return { success: true, balanceAfter };
+    });
+  }
+}
+```

@@ -363,7 +363,7 @@ fun HomeScreen(
                                 } else if (!state.hasMore && state.posts.isNotEmpty()) {
                                     item(span = StaggeredGridItemSpan.FullLine) {
                                         Box(modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.lg), contentAlignment = Alignment.Center) {
-                                            Text("—— 同城清远，贴心服务 ——", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text("—— 清远同城，贴心服务 ——", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                 }

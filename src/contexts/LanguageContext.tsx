@@ -115,7 +115,7 @@ const translations: Record<Language, Record<string, string>> = {
     'profile.coupons': '优惠券',
     'profile.points': '尊贵积分',
     'profile.recent_spending': '近七天消费金额趋势',
-    'profile.spending_subtitle': '展示您在同城清远的日常消费波动',
+    'profile.spending_subtitle': '展示您在清远同城的日常消费波动',
     'profile.total_spending': '七日总消费',
     'profile.highest_daily': '单日最高消费',
     'profile.health_score': '消费合理度',

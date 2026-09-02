@@ -41,7 +41,7 @@ export default function Login() {
             <img src="/admin-web/logo.png" alt="qylife Logo" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px 0' }}>qylife Admin</h1>
-          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)', fontWeight: 500 }}>同城清远 - 系统管理与安全控制台</p>
+          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)', fontWeight: 500 }}>清远同城 - 系统管理与安全控制台</p>
         </div>
 
         <form onSubmit={handleLogin} className="flex-col gap-5 w-full">

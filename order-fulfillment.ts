@@ -77,7 +77,7 @@ export async function markSubscriptionPaid(subscriptionId: string, transactionId
         userId: sub.userId,
         type: 'system',
         title: '会员开通成功',
-        content: `恭喜您开通同城清远 ${sub.tier === 'premium' ? '至尊' : '超级'}会员！发布额度已提升。`,
+        content: `恭喜您开通清远同城 ${sub.tier === 'premium' ? '至尊' : '超级'}会员！发布额度已提升。`,
       },
     });
   });

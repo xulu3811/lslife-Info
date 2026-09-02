@@ -34,7 +34,7 @@ export default function AiAssistant({
     {
       id: 'welcome',
       sender: 'bot',
-      text: '您好！我是“同城清远”的智能AI生活助手。😊\n\n我可以帮您推荐清远当地特色美食（如瑶家柴火鸡、传统大汤糍）、寻找最新鲜的超市水果或下午茶饮品。请问您今天想来点什么美味？',
+      text: '您好！我是“清远同城”的智能AI生活助手。😊\n\n我可以帮您推荐清远当地特色美食（如瑶家柴火鸡、传统大汤糍）、寻找最新鲜的超市水果或下午茶饮品。请问您今天想来点什么美味？',
     },
   ]);
   const [isTyping, setIsTyping] = useState<boolean>(false);
@@ -83,7 +83,7 @@ export default function AiAssistant({
         {
           id: 'bot_' + Date.now(),
           sender: 'bot',
-          text: data.reply || '同城清远AI暂时无法解析该美食推荐。建议直接浏览下方精选商家。',
+          text: data.reply || '清远同城AI暂时无法解析该美食推荐。建议直接浏览下方精选商家。',
           recommendations: data.recommendations || [],
         },
       ]);

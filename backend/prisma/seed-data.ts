@@ -252,7 +252,7 @@ export const merchantsData: SeedMerchant[] = [
   },
   {
     id: 'm10',
-    name: '同城清远兼职直聘发布站',
+    name: '清远同城兼职直聘发布站',
     rating: 4.9,
     distance: 1.8,
     sales: 450,
